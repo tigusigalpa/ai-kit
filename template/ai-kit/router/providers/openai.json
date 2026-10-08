@@ -1,0 +1,48 @@
+{
+  "verified_documentation_date": "2026-10-08",
+  "roles": {
+    "cheap": {
+      "model": "gpt-6-luna",
+      "effort": "low"
+    },
+    "work": {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    "escalation": {
+      "model": "gpt-6-astra",
+      "effort": "high"
+    }
+  },
+  "reasoning_mode": "standard",
+  "service_tier_policy": "standard",
+  "supported_efforts": {
+    "cheap": [
+      "none",
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "work": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "escalation": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "sources": [
+    "https://developers.openai.com/api/docs/models/gpt-6-luna",
+    "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+    "https://developers.openai.com/api/docs/models/gpt-6-astra"
+  ]
+}

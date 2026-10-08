@@ -1,0 +1,11 @@
+{
+  "project_language": "English",
+  "chat_language": "Russian",
+  "sharing_mode": "private",
+  "conventions": "owner",
+  "upstream": {
+    "url": "https://github.com/tigusigalpa/ai-kit",
+    "ref": "main",
+    "source_directory": "template"
+  }
+}

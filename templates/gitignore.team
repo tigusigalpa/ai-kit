@@ -1,0 +1,162 @@
+# Application team mode: shared instructions/context remain visible
+/AGENTS.override.md
+/CLAUDE.local.md
+/ai-kit/.upstream-cache/
+/ai-kit/.install-state.json
+/ai-kit/.install-report.json
+/.ai-kit-install.lock
+/.claude/settings.local.json
+/.claude/projects/
+/.claude/cache/
+# ---- Local secrets and credentials ----
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.dist
+!.env.*.dist
+.envrc
+auth.json
+/.secrets/
+/secrets/
+*.pem
+*.p12
+*.pfx
+*.private.key
+id_rsa*
+id_ed25519*
+
+# ---- OS, editor, and temporary files ----
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
+*.tmp
+*.bak
+.idea/
+.vscode/
+.fleet/
+.history/
+
+# ---- Dependency installs and frontend build output ----
+node_modules/
+.npm/
+.pnpm-store/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/install-state.gz
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+/build/
+/dist/
+/out/
+/tmp/
+/temp/
+
+# ---- PHP / Laravel ----
+.phpunit.cache/
+.phpunit.result.cache
+.phpactor.json
+/coverage/
+/clover.xml
+/phpunit-coverage.xml
+/bootstrap/cache/*.php
+/public/hot
+/public/storage
+/public/build/
+/public_html/hot
+/public_html/storage
+/public_html/build/
+/storage/*.key
+/storage/pail/
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/app/private/*
+!/storage/app/private/.gitignore
+/database/database.sqlite
+/database/database.sqlite-*
+
+# ---- Moodle installation (do not ignore plugin source) ----
+/moodledata/
+/behat_dataroot/
+/phpunit_dataroot/
+/moodle-plugin-ci.phar
+
+# ---- Go build, profiling, and coverage output ----
+go-cache
+.go-cache
+gocache
+.gocache
+go-build
+.go-build
+/.cache/go-build/
+/pkg/mod/
+/go/pkg/mod/
+*.exe
+*.exe~
+*.test
+*.out
+*.prof
+*.coverprofile
+/cpu.prof
+/mem.prof
+# Keep intentional executable source in bin/; ignore actual build outputs per project.
+
+# ---- Python environments, caches, and generated packages ----
+.venv/
+venv/
+__pypackages__/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.pyre/
+.pytype/
+.hypothesis/
+.tox/
+.nox/
+.ipynb_checkpoints/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.egg-info/
+.eggs/
+*.egg
+*.whl
+pip-wheel-metadata/
+pip-log.txt
+pip-delete-this-directory.txt
+/.cache/pip/
+/.cache/uv/
+/.cache/pypoetry/
+.pypirc
+
+# ---- Local containers, logs, dumps, and backups ----
+/docker-compose.override.yml
+/docker-compose.override.yaml
+*.log
+*.dump
+*.sql.gz
+/dumps/
+/backups/
+
+# Deliberately track README.md, CHANGELOG.md, ordinary project docs,
+# composer.lock, go.mod, go.sum, pyproject.toml, Python lockfiles,
+# requirements files, package lockfiles, source code,
+# database migrations, and .github/workflows/.
+# Libraries may explicitly adapt their lock/artifact policy.

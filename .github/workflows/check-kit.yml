@@ -1,0 +1,26 @@
+name: Check AI-KIT
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ['3.10', '3.13']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7, verified 2026-10-08
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7, verified 2026-10-08
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Validate files and Git visibility
+        run: python scripts/check_kit.py
+      - name: Exercise installation, upgrade, and evidence behavior
+        run: python -m unittest discover -s tests -v
