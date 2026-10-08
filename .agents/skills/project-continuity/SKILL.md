@@ -11,5 +11,8 @@ For a procedure change, update current maintainer commands, this pointer contrac
 When verified facts or agreements change, synchronize this skill's scope/procedure/pointers and WIKI with the context; keep actual facts in context.
 Validate templates/links/registry and behavioral installation scenarios; record root CHANGELOG entries.
 Review explicit semantic acceptance and future-upgrade conflicts whenever installer baseline behavior changes.
+Check candidate draft preservation, state/settings validation, and adapter retirement conflicts when changing installation. Exercise installed Git visibility and portable linked-path refusal; distinguish synthetic fixtures from real application trials.
 Record actual OS/runtime and unavailable checks in the implementation record; keep source visibility checks separate from client activation.
+For reference upgrades, check the actual published tree and old paths left by overlays. Compatibility pointers link to canonical owners; never hide broken legacy links from the checker.
+When editing onboarding docs, verify examples against the actual CLI/defaults and preserve links to policy owners. Keep installation, native discovery, and measured execution claims distinct.
 Do not bootstrap the reference repository as an application or imply native/runtime checks passed from static validation.

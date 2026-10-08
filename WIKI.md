@@ -1,8 +1,13 @@
 # AI-KIT maintainer map
 
 - [README and installation](README.md)
+- [Installation examples](README.md#install)
+- [Default selections](README.md#choose-your-defaults)
+- [Sharing modes](README.md#sharing)
+- [Application updates](README.md#update-an-application-project)
 - [Current maintainer facts](PROJECT_CONTEXT.md)
 - [Implementation decisions and recommendation disposition](docs/IMPLEMENTATION.md)
+- [Manus audit findings and patch disposition](docs/MANUS_REVIEW.md)
 - [Kit decision log](docs/DECISIONS.md)
 - [Project instruction template](template/AGENTS.md)
 - [Canonical Core](template/ai-kit/CORE.md)

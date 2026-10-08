@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Prepared local patch 0.2.2 after independently reproducing three installer findings from the Manus audit of published v0.2.
+- Addressed conflict candidates by incoming-file SHA-256; preview reports paths/hashes and adjacent first-creation metadata. Exclusive creation preserves edited, concurrent, and legacy candidates.
+- Blocked agent-list replacement while tracked unselected adapters remain; preserved accepted files/state, reported exact retirement paths, and warned about untracked native instructions/skills. No automatic deletion was added.
+- Validated supported state schema, agent/file/hash types, settings, and safe paths before planning; malformed input receives a controlled refusal.
+- Added regression scenarios for candidate preservation, agent retirement, corrupt inputs, previous-version state, installed mixed-project Git visibility, and Windows junctions. Junction detection uses APIs available on Python 3.10.
+- Updated installation/adapter procedures and recorded audit evidence and deferred publication work in docs/MANUS_REVIEW.md.
+- Verified the local v0.2.2 clean and patched-public-tree suites: 43 passed, 2 linked-path checks unavailable; kit checks returned no errors/warnings. Verified a genuine v0.2.1 installation upgrade and the 85-file archive's inventory/bytes and Python 3.10 syntax. Successful hosted CI remains unverified.
+
+- Rewrote the English README as a practical onboarding guide with Windows/Linux examples, defaults, project memory, workflow, profiles, clients, sharing, upgrades, and reference-layout guidance.
+
+- Prepared local patch bundle 0.2.1 after reproducing the published v0.2 overlay's five missing-heading failures.
+- Replaced known v0.1 rule paths with compact compatibility pointers to canonical template resources, preserving old inbound links without restoring duplicated policies.
+- Documented reference-repository overlays and obsolete .gitignore_real; validated the real mixed-layout snapshot as well as the clean bundle. No checker exclusions or synthetic headings were added.
+- Made upgrade-test fixtures derive versions from VERSION; reran the patched public snapshot's suite with 32 passed tests and 1 unavailable Windows symlink test.
+
 - Prepared the working distribution identified by VERSION with clean project templates and separate maintainer context/history.
 - Consolidated language/Git/fact rules in Core, project-specific Laravel choices in the owner profile, container policy in CONTAINERS, and active model IDs in the OpenAI provider configuration.
 - Added a conservative Python installer with preview, private/team modes, managed ignore blocks, backups, conflict candidates, and unchanged-file upgrades.

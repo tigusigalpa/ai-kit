@@ -2,8 +2,8 @@
 
 ## Scope and decisions
 
-Version 0.2 consolidates the supplied Claude, Kimi, and DeepSeek reviews and the owner's agreements.
-Published main was checked at 5dd530b9046fa09742f2ac13e22fabcbde70d749 on 2026-10-08; this distribution is a local, unpublished revision.
+Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings. See [audit disposition](MANUS_REVIEW.md).
+The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The patch source check on 2026-10-08 resolved published main to 73707036c1098d8c1c81ab2c51d723c3d521f6b8; this patch remains local and unpublished by the agent.
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
 | Recommendation | Implemented treatment |
@@ -51,10 +51,39 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 - Runtime guards and automatic model switching: clients expose different controls. Optional deny examples are supplementary, not a proven universal Git ban; installer does not activate them.
 - Context/token cost claims: byte budgets are measured, but no tokenizer, runtime-loaded-context benchmark, or performance comparison has been run.
 - Additional model/client mappings: unsupported provider IDs and runtime settings remain unknown; no speculative model names or fake activation.
-- Repository description, topics, homepage, hosted reports, tags/releases: these require publication/remote changes; local work does not authorize them. A homepage is unnecessary for the first usable bundle.
+- Topics, homepage, hosted publication, tags/releases: these require remote changes; local work does not authorize them. The current repository description and MIT were independently confirmed; a homepage is unnecessary for the first usable bundle.
 - Real-project trials and Linux execution: temporary project fixtures exercise preservation and mixed manifests. These do not replace trials on actual applications or hosted CI.
 
 ## Verification
+
+### Manus patch verification
+
+Measured on 2026-10-08 for local bundle 0.2.2, on Windows with Python 3.12.14. Upstream read: 73707036c1098d8c1c81ab2c51d723c3d521f6b8; this is not a commit containing the patch.
+
+- Clean behavioral suite: 45 tests executed, 43 passed, 2 skipped. The symlink test lacks Windows privilege; the junction fixture received Access denied in this sandbox. Neither real linked-path test is claimed to have passed locally.
+- After tightening the junction helper to skip only recognized access/privilege denial, its focused check confirmed that unavailable outcome; unexpected helper errors fail the test.
+- The same suite passed on a fresh v0.2.2 overlay of the reconstructed published tree: 43 passed, 2 skipped. Old .gitignore_real, native entries, and legacy skills remained in that fixture; compatibility pointers corrected known obsolete policy paths.
+- New regressions cover edited/old/concurrently created candidates, first-creation metadata, source changes, adapter-retirement conflicts and reviewed resolution, untracked native warnings, invalid settings/state, and previous-version state.
+- An installed synthetic Go/Composer/Python project preserved local AGENTS/README/ignore rules and dependency manifests/locks. Real Git private/team checks verified shared entries/skills, Composer exclusions, deliberate Go vendoring, and hidden secrets/caches/state/candidates.
+- A separate smoke check used the actual v0.2.1 installer, then upgraded with v0.2.2. Documents, settings, and selected agents survived; a repeated plan had no writes or conflicts.
+- Junction detection uses lstat and Windows reparse tags documented in [Python 3.10 os](https://docs.python.org/3.10/library/os.html#os.stat_result.st_reparse_tag) and [stat](https://docs.python.org/3.10/library/stat.html#stat.IO_REPARSE_TAG_MOUNT_POINT), avoiding reliance on a newer pathlib method. The fixture invokes only its saved helper with a process-scoped execution policy; no persistent host setting changes.
+
+- Clean and mixed-layout kit validation returned no errors or warnings, including real Git source visibility. The changed maintainer continuity skill passed its metadata validator.
+- The archive contains exactly 85 source files; file inventory/bytes and ZIP integrity were verified. All Python sources parsed with the Python 3.10 syntax grammar. Always-loaded entries remained 1,327 bytes (template AGENTS), 1,995 (Core), and 1,058 (bootstrap prompt); these are file sizes, not measured runtime token costs.
+
+Python 3.10/3.13 runtime execution and successful hosted CI remain unverified locally; the workflow defines that matrix.
+These are synthetic project/file tests, not application runtime trials. Publication and native client behavior remain separate verification.
+
+### Overlay regression
+
+The supplied Linux/Python 3.13.16 CI failure exposed old v0.1 documents remaining beside the new v0.2 layout.
+All 91 tracked source blobs at the published revision were reconstructed with matching Git object hashes. The original checker reproduced all five missing-heading errors and the large MODELS warning.
+Patch 0.2.1 replaces known old rule documents with small canonical-resource pointers. It preserves the checker's full validation scope and does not reintroduce language/Git policy into maintainer AGENTS.
+The clean bundle and patched public snapshot both passed the unchanged checker with zero errors/warnings and real Git visibility checks on Windows/Python 3.12.14.
+The behavioral suite was rerun on the patched public snapshot: 33 tests, 32 passed, 1 Windows symlink-privilege skip. Upgrade fixtures now derive their versions from VERSION rather than pinning an old bundle number.
+Archive inventory/exact bytes and Python 3.10 syntax were verified. Successful hosted CI after publication remains unverified.
+
+### Original bundle checks
 
 - Local environment: Windows, bundled Python 3.12.14; verification date 2026-10-08.
 - Behavioral suite: 33 tests executed; 32 passed and 1 skipped. The skipped symlink test requires a Windows privilege unavailable in this session; no claim is made that it ran.

@@ -2,8 +2,10 @@
 import contextlib
 import io
 import json
+import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -21,6 +23,7 @@ class InstallerTests(unittest.TestCase):
         self.target = self.base / "project with spaces"
         self.source = self.base / "reference"
         shutil.copytree(install.ROOT, self.source, ignore=shutil.ignore_patterns("__pycache__", ".git"))
+        self.initial_version = (self.source / "VERSION").read_text(encoding="utf-8").strip()
 
     def plan(self, **options):
         return install.build_plan(self.target, root=self.source, **options)
@@ -38,7 +41,9 @@ class InstallerTests(unittest.TestCase):
     def change_source(self):
         core = self.source / "template/ai-kit/CORE.md"
         core.write_bytes(core.read_bytes() + b"\nUpstream clarification.\n")
-        (self.source / "VERSION").write_text("0.2.1\n", encoding="utf-8")
+        version_path = self.source / "VERSION"
+        major, minor, patch_version = version_path.read_text(encoding="utf-8").strip().split(".")
+        version_path.write_text(f"{major}.{minor}.{int(patch_version) + 1}\n", encoding="utf-8")
 
     def test_preview_creates_nothing(self):
         plan = self.plan()
@@ -69,7 +74,12 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual((self.target / "AGENTS.md").read_bytes(), b"Existing instructions\n")
         self.assertFalse((self.target / "ai-kit/CORE.md").exists())
         self.assertFalse((self.target / "ai-kit/.install-state.json").exists())
-        self.assertTrue((self.target / "ai-kit/.upstream-cache/candidates/AGENTS.md").exists())
+        candidate = self.target / plan["candidates"]["AGENTS.md"]["path"]
+        self.assertTrue(candidate.exists())
+        manifest = json.loads((self.target / plan["candidates"]["AGENTS.md"]["manifest"]).read_text())
+        self.assertEqual(manifest["relative_path"], "AGENTS.md")
+        self.assertEqual(manifest["source_hash"], install.digest(candidate.read_bytes()))
+        self.assertEqual(manifest["local_hash"], install.digest(b"Existing instructions\n"))
 
     def test_unchanged_baseline_upgrade_and_backup(self):
         self.apply()
@@ -92,7 +102,7 @@ class InstallerTests(unittest.TestCase):
         self.assertFalse(install.apply_plan(plan))
         self.assertEqual(old_state, (self.target / "ai-kit/.install-state.json").read_bytes())
         self.assertEqual((self.target / "ai-kit/CORE.md").read_bytes(), b"Local adapted core\n")
-        self.assertEqual((self.target / "ai-kit/VERSION").read_text().strip(), "0.2.0")
+        self.assertEqual((self.target / "ai-kit/VERSION").read_text().strip(), self.initial_version)
 
     def test_explicit_semantic_acceptance_preserves_future_adaptations(self):
         self.apply()
@@ -236,6 +246,239 @@ class InstallerTests(unittest.TestCase):
             self.assertFalse(self.target.exists())
             self.write("AGENTS.md", b"Existing\n")
             self.assertEqual(install.main([str(self.target), "--apply"]), 2)
+
+    def test_repeated_candidate_conflict_preserves_draft_and_manifest(self):
+        self.write("AGENTS.md", b"Project instructions\n")
+        plan = self.plan()
+        info = plan["candidates"]["AGENTS.md"]
+        self.assertFalse(self.target.joinpath(info["path"]).exists())
+        self.assertFalse(install.apply_plan(plan))
+        self.write(info["path"], b"Human reviewed draft\n")
+        old_manifest = self.target.joinpath(info["manifest"]).read_bytes()
+        self.write("AGENTS.md", b"Another local edit\n")
+        again = self.plan()
+        self.assertFalse(again["candidates"]["AGENTS.md"]["matches_source"])
+        self.assertFalse(install.apply_plan(again))
+        self.assertEqual(self.target.joinpath(info["path"]).read_bytes(), b"Human reviewed draft\n")
+        self.assertEqual(self.target.joinpath(info["manifest"]).read_bytes(), old_manifest)
+        self.assertFalse((self.target / "ai-kit/.install-state.json").exists())
+
+    def test_new_source_candidate_preserves_previous_and_legacy_drafts(self):
+        self.write("AGENTS.md", b"Project instructions\n")
+        legacy = "ai-kit/.upstream-cache/candidates/AGENTS.md"
+        self.write(legacy, b"Legacy review draft\n")
+        first = self.plan()
+        install.apply_plan(first)
+        old_path = first["candidates"]["AGENTS.md"]["path"]
+        self.write(old_path, b"Current review draft\n")
+        source = self.source / "template/AGENTS.md"
+        source.write_bytes(source.read_bytes() + b"\nNew upstream instructions.\n")
+        next_plan = self.plan()
+        new_path = next_plan["candidates"]["AGENTS.md"]["path"]
+        self.assertNotEqual(old_path, new_path)
+        self.assertFalse(self.target.joinpath(new_path).exists())
+        install.apply_plan(next_plan)
+        self.assertEqual(self.target.joinpath(new_path).read_bytes(), source.read_bytes())
+        self.assertEqual(self.target.joinpath(old_path).read_bytes(), b"Current review draft\n")
+        self.assertEqual(self.target.joinpath(legacy).read_bytes(), b"Legacy review draft\n")
+
+    def test_candidate_created_after_preview_is_never_overwritten(self):
+        self.write("AGENTS.md", b"Project instructions\n")
+        plan = self.plan()
+        path = plan["candidates"]["AGENTS.md"]["path"]
+        self.write(path, b"Draft created after preview\n")
+        self.assertFalse(install.apply_plan(plan))
+        self.assertEqual(self.target.joinpath(path).read_bytes(), b"Draft created after preview\n")
+
+    def test_agent_retirement_conflict_preserves_active_files_and_state(self):
+        self.apply(agents=["codex", "claude"])
+        state_path = self.target / "ai-kit/.install-state.json"
+        original_state = state_path.read_bytes()
+        self.write("CLAUDE.md", b"Locally adapted Claude instructions\n")
+        plan = self.plan(agents=["codex", "copilot"])
+        self.assertIn("CLAUDE.md", plan["adapter_conflicts"])
+        self.assertEqual(len(plan["adapter_conflicts"]), 9)
+        self.assertTrue(install.needs_review(plan))
+        self.assertFalse(install.apply_plan(plan))
+        self.assertEqual(state_path.read_bytes(), original_state)
+        self.assertFalse((self.target / ".github/copilot-instructions.md").exists())
+        self.assertEqual((self.target / "CLAUDE.md").read_bytes(), b"Locally adapted Claude instructions\n")
+        self.assertIn("CLAUDE.md", json.loads(original_state)["files"])
+        self.assertFalse(self.plan(agents=["codex", "claude"])["adapter_conflicts"])
+
+    def test_reviewed_manual_retirement_allows_new_selection(self):
+        self.apply(agents=["codex", "claude"])
+        plan = self.plan(agents=["codex", "copilot"])
+        for relative in plan["adapter_conflicts"]:
+            path = install.safe_path(self.target, relative)
+            path.resolve().relative_to(self.target.resolve())
+            path.unlink()
+        self.apply(agents=["codex", "copilot"])
+        state = json.loads((self.target / "ai-kit/.install-state.json").read_text())
+        self.assertEqual(state["agents"], ["codex", "copilot"])
+        self.assertNotIn("CLAUDE.md", state["files"])
+        self.assertTrue((self.target / ".github/copilot-instructions.md").exists())
+
+    def test_untracked_unselected_adapter_and_skills_are_reported(self):
+        self.write("CLAUDE.md", b"Custom Claude instructions\n")
+        self.write(".claude/skills/custom/SKILL.md", b"Custom native skill\n")
+        plan = self.apply()
+        self.assertTrue(any("Untracked unselected claude" in warning for warning in plan["warnings"]))
+        self.assertTrue(any("Unselected .claude/skills" in warning for warning in plan["warnings"]))
+        self.assertEqual((self.target / "CLAUDE.md").read_bytes(), b"Custom Claude instructions\n")
+        self.assertEqual((self.target / ".claude/skills/custom/SKILL.md").read_bytes(), b"Custom native skill\n")
+
+    def test_state_validation_refuses_shapes_before_planning(self):
+        valid = {"schema": 1, "accepted_version": "0.2.1", "agents": ["codex"], "files": {}}
+        cases = [{}, {**valid, "schema": 99}, {**valid, "schema": True},
+                 {**valid, "accepted_version": []}, {**valid, "agents": "codex"},
+                 {**valid, "agents": ["codex", 1]}, {**valid, "agents": ["codex", "codex"]},
+                 {**valid, "agents": ["unknown"]}, {**valid, "files": []},
+                 {**valid, "files": {"AGENTS.md": "bad"}},
+                 {**valid, "files": {"AGENTS.md": {"source_hash": "bad", "installed_hash": "a" * 64}}},
+                 {**valid, "files": {"AGENTS.md": {"source_hash": "a" * 64, "installed_hash": None}}},
+                 {**valid, "files": {"AGENTS.md": {"source_hash": "a" * 64, "installed_hash": "b" * 64,
+                                                  "local_adaptation": 1}}},
+                 {**valid, "files": {"../outside": {"source_hash": "a" * 64, "installed_hash": "b" * 64}}}]
+        for state in cases:
+            with self.subTest(state=state):
+                self.write("ai-kit/.install-state.json", json.dumps(state).encode())
+                with self.assertRaises(ValueError):
+                    self.plan()
+                self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_cli_corrupt_state_reports_refusal_without_traceback(self):
+        self.write("ai-kit/.install-state.json",
+                   json.dumps({"schema": 99, "agents": ["codex", 1], "files": {}}).encode())
+        errors = io.StringIO()
+        with contextlib.redirect_stderr(errors), contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(install.main([str(self.target), "--apply"]), 1)
+        self.assertIn("Installation refused: Unsupported installer state schema", errors.getvalue())
+        self.assertNotIn("Traceback", errors.getvalue())
+        self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_settings_type_validation_is_controlled(self):
+        valid = json.loads((self.source / "template/ai-kit/settings.json").read_text())
+        for field, value in [("project_language", 1), ("chat_language", []), ("sharing_mode", {}),
+                             ("conventions", False), ("upstream", "not-an-object"),
+                             ("upstream", {"ref": 1})]:
+            with self.subTest(field=field, value=value):
+                self.write("ai-kit/settings.json", json.dumps({**valid, field: value}).encode())
+                with self.assertRaises(ValueError):
+                    self.plan()
+                self.assertFalse((self.target / "AGENTS.md").exists())
+
+    def test_previous_bundle_state_and_project_data_survive_upgrade(self):
+        (self.source / "VERSION").write_text("0.2.1\n", encoding="utf-8")
+        self.write("README.md", b"Existing application documentation\n")
+        self.write(".gitignore", b"custom.cache\n")
+        self.apply()
+        self.write("ai-kit/.upstream-cache/candidates/AGENTS.md", b"Old review work\n")
+        (self.source / "VERSION").write_text(self.initial_version + "\n", encoding="utf-8")
+        self.apply()
+        state = json.loads((self.target / "ai-kit/.install-state.json").read_text())
+        self.assertEqual(state["schema"], 1)
+        self.assertEqual(state["accepted_version"], self.initial_version)
+        self.assertEqual((self.target / "README.md").read_bytes(), b"Existing application documentation\n")
+        self.assertTrue((self.target / ".gitignore").read_bytes().startswith(b"custom.cache\n"))
+        self.assertEqual((self.target / "ai-kit/.upstream-cache/candidates/AGENTS.md").read_bytes(),
+                         b"Old review work\n")
+
+    def test_existing_mixed_project_and_installed_git_visibility(self):
+        git = os.environ.get("AI_KIT_GIT") or shutil.which("git")
+        if not git:
+            self.skipTest("Git unavailable for installed-project visibility check")
+        files = {"AGENTS.md": b"Reviewed application instructions\n",
+                 "README.md": b"Existing application documentation\n",
+                 ".gitignore": b"custom.cache\n",
+                 "web/composer.json": b'{"require": {}}\n', "web/composer.lock": b"{}\n",
+                 "web/vendor/autoload.php": b"<?php\n",
+                 "api/go.mod": b"module example.test/api\n", "api/go.sum": b"fixture checksum\n",
+                 "api/vendor/modules.txt": b"# intentional vendor fixture\n",
+                 "tools/pyproject.toml": b'[project]\nname = "fixture-tools"\n',
+                 "tools/uv.lock": b"version = 1\n", "tools/requirements.txt": b"# fixture\n",
+                 "tools/__pycache__/task.pyc": b"cache", ".env": b"FIXTURE=local\n",
+                 ".env.example": b"FIXTURE=example\n", "api/go-cache/item": b"cache",
+                 "api/result.out": b"output", "custom.cache": b"local"}
+        for path, data in files.items():
+            self.write(path, data)
+        pending = self.plan(agents=["codex", "claude"])
+        self.assertFalse(install.apply_plan(pending))
+        self.assertFalse((self.target / "ai-kit/.install-state.json").exists())
+        subprocess.run([git, "-C", str(self.target), "init", "--quiet"], check=True,
+                       capture_output=True, timeout=20)
+
+        def ignored(path):
+            result = subprocess.run([git, "-C", str(self.target), "-c", "core.excludesFile=",
+                                     "check-ignore", "--no-index", "-q", path],
+                                    capture_output=True, timeout=20)
+            self.assertIn(result.returncode, (0, 1), result.stderr.decode(errors="replace"))
+            return result.returncode == 0
+
+        shared = ["AGENTS.md", "ai-kit/CORE.md", ".agents/skills/go-work/SKILL.md",
+                  "CLAUDE.md", ".claude/skills/go-work/SKILL.md"]
+        visible = ["README.md", "CHANGELOG.md", ".env.example", "web/composer.json",
+                   "web/composer.lock", "api/go.mod", "api/go.sum", "api/vendor/modules.txt",
+                   "tools/pyproject.toml", "tools/uv.lock", "tools/requirements.txt"]
+        hidden = [".env", "custom.cache", "web/vendor/autoload.php", "api/go-cache/item",
+                  "api/result.out", "tools/__pycache__/task.pyc", "ai-kit/.install-state.json",
+                  pending["candidates"]["AGENTS.md"]["path"]]
+        for mode in ("private", "team"):
+            with self.subTest(mode=mode):
+                self.apply(mode=mode, agents=["codex", "claude"], accept_local=["AGENTS.md"])
+                for path in visible:
+                    self.assertFalse(ignored(path), path)
+                for path in hidden:
+                    self.assertTrue(ignored(path), path)
+                for path in shared:
+                    self.assertEqual(ignored(path), mode == "private", path)
+                self.assertEqual((self.target / "AGENTS.md").read_bytes(), files["AGENTS.md"])
+                self.assertEqual((self.target / "README.md").read_bytes(), files["README.md"])
+                self.assertTrue((self.target / ".gitignore").read_bytes().startswith(files[".gitignore"]))
+                for path in ["web/composer.lock", "api/go.mod", "api/go.sum", "tools/uv.lock"]:
+                    self.assertEqual((self.target / path).read_bytes(), files[path])
+                self.assertFalse(self.plan()["actions"])
+
+    @unittest.skipUnless(os.name == "nt", "Windows junction fixture")
+    def test_windows_junctions_refused_and_excluded_from_module_scan(self):
+        shell = shutil.which("powershell") or shutil.which("pwsh")
+        if not shell:
+            self.skipTest("PowerShell unavailable for junction fixture")
+        self.target.mkdir()
+        outside = self.base / "outside"
+        outside.mkdir()
+        (outside / "composer.json").write_bytes(b"{}\n")
+        sentinel = outside / "preserved.txt"
+        sentinel.write_bytes(b"Keep outside data\n")
+        helper = install.ROOT / "tests/fixtures/create-junction.ps1"
+
+        def junction(link):
+            # Both paths are confined to this disposable test fixture.
+            link.absolute().relative_to(self.base.resolve())
+            outside.resolve().relative_to(self.base.resolve())
+            result = subprocess.run([shell, "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+                                     "-File", str(helper),
+                                     "-LinkPath", str(link), "-TargetPath", str(outside)],
+                                    capture_output=True, timeout=30)
+            if result.returncode == 77:
+                self.skipTest("Junction creation unavailable: " + result.stderr.decode(errors="replace"))
+            self.assertEqual(result.returncode, 0, result.stderr.decode(errors="replace"))
+            self.assertTrue(install.is_link(link))
+            self.addCleanup(link.rmdir)
+
+        nested = self.target / "ai-kit"
+        junction(nested)
+        with self.assertRaises(ValueError):
+            self.plan()
+        root_link = self.base / "linked root"
+        junction(root_link)
+        with self.assertRaisesRegex(ValueError, "linked target root"):
+            install.build_plan(root_link, root=self.source)
+        module_link = self.target / "linked module"
+        junction(module_link)
+        self.assertEqual(install.module_ignores(self.target), [])
+        self.assertEqual(sentinel.read_bytes(), b"Keep outside data\n")
+        self.assertFalse((outside / "settings.json").exists())
 
 
 if __name__ == "__main__":

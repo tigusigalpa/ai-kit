@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import sys
 import uuid
 
@@ -18,10 +19,25 @@ OWNED = {"README.md", "PROJECT_CONTEXT.md", "WIKI.md", "CHANGELOG.md", "docs/DEC
          "docs/adr/0000-template.md"}
 ENTRIES = {"CLAUDE.md": "claude", "KIMI.md": "kimi", "MANUS.md": "manus"}
 AGENTS = {"codex", "claude", "kimi", "manus", "copilot", "cursor", "aider"}
+OPTIONAL = {"copilot": ("copilot-instructions.md", ".github/copilot-instructions.md"),
+            "cursor": ("ai-kit.mdc", ".cursor/rules/ai-kit.mdc"),
+            "aider": ("CONVENTIONS.md", "CONVENTIONS.md")}
 
 
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def is_link(path: Path) -> bool:
+    """Recognize symlinks and Windows junctions on Python 3.10 and later."""
+    try:
+        info = path.lstat()
+    except FileNotFoundError:
+        return False
+    return stat.S_ISLNK(info.st_mode) or getattr(info, "st_reparse_tag", None) in {
+        getattr(stat, "IO_REPARSE_TAG_SYMLINK", -1),
+        getattr(stat, "IO_REPARSE_TAG_MOUNT_POINT", -2),
+    }
 
 
 def safe_path(target: Path, relative: str) -> Path:
@@ -33,7 +49,7 @@ def safe_path(target: Path, relative: str) -> Path:
     for candidate in [path, *path.parents]:
         if candidate == target.parent:
             break
-        if candidate.is_symlink() or (hasattr(candidate, "is_junction") and candidate.is_junction()):
+        if is_link(candidate):
             raise ValueError(f"Refusing linked installation path: {candidate}")
     if path.exists() and not path.is_file():
         raise ValueError(f"Destination is not a regular file: {relative}")
@@ -47,6 +63,64 @@ def read_json(path: Path, default: dict) -> dict:
     if not isinstance(value, dict):
         raise ValueError(f"Expected JSON object: {path}")
     return value
+
+
+def agent_selection(value: object, *, unique: bool = False) -> list[str]:
+    if not isinstance(value, list) or not value or any(not isinstance(item, str) for item in value):
+        raise ValueError("Agents must be a nonempty list of supported strings")
+    if set(value) - AGENTS:
+        raise ValueError("Unknown agent selection")
+    if unique and len(value) != len(set(value)):
+        raise ValueError("State agents must be unique")
+    return sorted(set(value))
+
+
+def validate_settings(settings: dict) -> None:
+    for field in ("project_language", "chat_language", "sharing_mode", "conventions"):
+        if not isinstance(settings.get(field), str):
+            raise ValueError(f"Settings {field} must be a string")
+    if settings["project_language"] != "English":
+        raise ValueError("This distribution requires English project content")
+    if not re.fullmatch(r"[A-Za-z][A-Za-z -]{0,40}", settings["chat_language"]):
+        raise ValueError("Use an English chat language name")
+    if settings["sharing_mode"] not in {"private", "team"} or settings["conventions"] not in {"owner", "standard"}:
+        raise ValueError("Invalid sharing mode or conventions")
+    upstream = settings.get("upstream")
+    if upstream is not None:
+        if not isinstance(upstream, dict):
+            raise ValueError("Settings upstream must be an object or null")
+        for field in ("url", "ref", "source_directory"):
+            if field in upstream and not isinstance(upstream[field], str):
+                raise ValueError(f"Settings upstream.{field} must be a string")
+
+
+def validate_state(state: dict, target: Path) -> None:
+    if type(state.get("schema")) is not int or state["schema"] != 1:
+        raise ValueError("Unsupported installer state schema; expected schema 1")
+    if not isinstance(state.get("accepted_version"), str) or not state["accepted_version"].strip():
+        raise ValueError("State accepted_version must be a nonempty string")
+    agent_selection(state.get("agents"), unique=True)
+    records = state.get("files")
+    if not isinstance(records, dict):
+        raise ValueError("State files must be an object")
+    for relative, record in records.items():
+        if not isinstance(relative, str) or not isinstance(record, dict):
+            raise ValueError("State files must map relative paths to objects")
+        safe_path(target, relative)
+        for field in ("installed_hash", "source_hash"):
+            value = record.get(field)
+            if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
+                raise ValueError(f"Invalid state {field} for {relative}")
+        if "local_adaptation" in record and type(record["local_adaptation"]) is not bool:
+            raise ValueError(f"State local_adaptation must be boolean for {relative}")
+
+
+def adapter_owner(relative: str) -> str | None:
+    if relative in ENTRIES:
+        return ENTRIES[relative]
+    if relative.startswith(".claude/skills/"):
+        return "claude"
+    return next((agent for agent, (_, path) in OPTIONAL.items() if relative == path), None)
 
 
 def split_ignore(current: str) -> tuple[str, str]:
@@ -73,7 +147,7 @@ def module_ignores(target: Path) -> list[str]:
     rules = []
     excluded = {".git", "node_modules", "vendor", "ai-kit", ".agents", ".claude", ".venv"}
     for directory, dirs, files in os.walk(target, followlinks=False):
-        dirs[:] = [d for d in dirs if d not in excluded and not (Path(directory) / d).is_symlink()]
+        dirs[:] = [d for d in dirs if d not in excluded and not is_link(Path(directory) / d)]
         module = Path(directory)
         prefix = module.relative_to(target).as_posix()
         prefix = "" if prefix == "." else prefix + "/"
@@ -101,7 +175,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                language: str | None = None, conventions: str | None = None,
                agents: list[str] | None = None, accept_local: list[str] | None = None) -> dict:
     target = target.absolute()
-    if target.is_symlink() or (hasattr(target, "is_junction") and target.is_junction()):
+    if is_link(target):
         raise ValueError("Refusing a linked target root")
     target = target.resolve()
     if target == root.resolve() or root.resolve() in target.parents:
@@ -110,28 +184,27 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         raise ValueError("Target must be a directory")
     settings_path = safe_path(target, "ai-kit/settings.json")
     settings = read_json(settings_path, read_json(root / "template/ai-kit/settings.json", {}))
+    validate_settings(settings)
     state_path = safe_path(target, "ai-kit/.install-state.json")
     state = read_json(state_path, {})
+    if state_path.exists():
+        validate_state(state, target)
     mode = mode or settings.get("sharing_mode", "private")
     language = language or settings.get("chat_language", "Russian")
     conventions = conventions or settings.get("conventions", "owner")
-    agents = sorted(set(agents or state.get("agents", ["codex"])))
+    agents = agent_selection(agents if agents is not None else state.get("agents", ["codex"]))
+    if accept_local is not None and (not isinstance(accept_local, list) or
+                                     any(not isinstance(path, str) for path in accept_local)):
+        raise ValueError("Accept-local paths must be a list of strings")
     accept = set(accept_local or [])
-    if mode not in {"private", "team"} or conventions not in {"owner", "standard"}:
-        raise ValueError("Invalid sharing mode or conventions")
-    if not re.fullmatch(r"[A-Za-z][A-Za-z -]{0,40}", language):
-        raise ValueError("Use an English language name")
-    if set(agents) - AGENTS:
-        raise ValueError("Unknown agent selection")
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
-    if settings.get("project_language") != "English":
-        raise ValueError("Project language requires explicit rule adaptation; this distribution uses English")
+    validate_settings(settings)
     incoming: dict[str, bytes] = {}
     for src in sorted((root / "template").rglob("*")):
+        if is_link(src):
+            raise ValueError(f"Linked source path: {src}")
         if not src.is_file():
             continue
-        if src.is_symlink():
-            raise ValueError(f"Linked source file: {src}")
         relative = src.relative_to(root / "template").as_posix()
         if relative in ENTRIES and ENTRIES[relative] not in agents:
             continue
@@ -143,10 +216,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         for relative, data in list(incoming.items()):
             if relative.startswith(".agents/skills/"):
                 incoming[relative.replace(".agents/skills/", ".claude/skills/", 1)] = data
-    optional = {"copilot": ("copilot-instructions.md", ".github/copilot-instructions.md"),
-                "cursor": ("ai-kit.mdc", ".cursor/rules/ai-kit.mdc"),
-                "aider": ("CONVENTIONS.md", "CONVENTIONS.md")}
-    for agent, (src, dst) in optional.items():
+    for agent, (src, dst) in OPTIONAL.items():
         if agent in agents:
             incoming[dst] = (root / "integrations" / src).read_bytes()
     if accept - incoming.keys() or accept & (OWNED | {"ai-kit/settings.json"}):
@@ -155,6 +225,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     if not isinstance(records, dict):
         raise ValueError("Invalid installer state")
     actions, conflicts, preserved, accepted = {}, {}, [], {}
+    conflict_local_hashes = {}
     for relative, data in incoming.items():
         path = safe_path(target, relative)
         current = path.read_bytes() if path.exists() else None
@@ -187,6 +258,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             accepted[relative] = {"installed_hash": source_hash, "source_hash": source_hash}
         else:
             conflicts[relative] = data
+            conflict_local_hashes[relative] = digest(current)
     ignore_path = safe_path(target, ".gitignore")
     old_ignore = ignore_path.read_bytes() if ignore_path.exists() else None
     merged, outside = merge_ignore((old_ignore or b"").decode("utf-8-sig"),
@@ -198,17 +270,58 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     warnings = ["Existing ignore rules outside the managed block need project-specific visibility review."]
     if mode == "team" and legacy.intersection(line.strip() for line in outside.splitlines()):
         conflicts[".gitignore"] = merged.encode()
+        conflict_local_hashes[".gitignore"] = digest(old_ignore) if old_ignore is not None else None
         warnings.append("Remove or reconcile legacy private exclusions explicitly before applying team mode.")
     elif old_ignore != merged.encode():
         actions[".gitignore"] = {"data": merged.encode(), "old": old_ignore}
-    new_state = {"schema": 1, "accepted_version": (root / "VERSION").read_text().strip(),
-                 "agents": agents, "files": accepted}
+    retirements = []
+    for relative, record in records.items():
+        if relative in incoming or relative in OWNED:
+            continue
+        if safe_path(target, relative).exists():
+            # Keep old baseline information even when a path leaves the bundle.
+            accepted[relative] = record
+            owner = adapter_owner(relative)
+            if owner is not None and owner not in agents:
+                retirements.append(relative)
+            else:
+                warnings.append(f"Previously managed path retained without a current source: {relative}")
+    if retirements:
+        warnings.append("Agent selection replaces the recorded list, but tracked unselected adapters "
+                        "remain on disk and may still load. Review/retire the listed files or retain "
+                        "their agent selection; accepted files/state will not change.")
+    unselected = {path: agent for path, agent in ENTRIES.items()}
+    unselected.update({path: agent for agent, (_, path) in OPTIONAL.items()})
+    for relative, owner in unselected.items():
+        if owner not in agents and relative not in records and safe_path(target, relative).exists():
+            warnings.append(f"Untracked unselected {owner} entry may still load: {relative}")
+    if "claude" not in agents and (target / ".claude/skills").exists():
+        warnings.append("Unselected .claude/skills remains on disk; verify actual client loading "
+                        "and review custom/untracked skills before retirement.")
+    candidates = {}
+    for relative, data in conflicts.items():
+        source_hash = digest(data)
+        path = "ai-kit/.upstream-cache/candidates/" + source_hash + "/" + relative
+        candidate = safe_path(target, path)
+        manifest = path + ".metadata.json"
+        safe_path(target, manifest)
+        exists = candidate.exists()
+        matches = digest(candidate.read_bytes()) == source_hash if exists else None
+        candidates[relative] = {"path": path, "manifest": manifest, "source_hash": source_hash,
+                                "local_hash": conflict_local_hashes[relative],
+                                "exists": exists, "matches_source": matches}
+        if exists and not matches:
+            warnings.append(f"Existing candidate has local edits and will be preserved: {path}")
+    new_state = dict(state)
+    new_state.update(schema=1, accepted_version=(root / "VERSION").read_text().strip(),
+                     agents=agents, files=accepted)
     state_data = (json.dumps(new_state, indent=2, sort_keys=True) + "\n").encode()
     old_state = state_path.read_bytes() if state_path.exists() else None
     if old_state != state_data:
         actions["ai-kit/.install-state.json"] = {"data": state_data, "old": old_state}
     return {"target": target, "mode": mode, "version": new_state["accepted_version"],
-            "actions": actions, "conflicts": conflicts, "preserved": preserved, "warnings": warnings}
+            "actions": actions, "conflicts": conflicts, "candidates": candidates,
+            "adapter_conflicts": sorted(retirements), "preserved": preserved, "warnings": warnings}
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -223,11 +336,33 @@ def atomic_write(path: Path, data: bytes) -> None:
             temp.unlink()
 
 
+def write_once(path: Path, data: bytes) -> bool:
+    """Create exclusively; preserve every existing file, including an edited draft."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        stream = path.open("xb")
+    except FileExistsError:
+        return False
+    with stream:
+        stream.write(data)
+    return True
+
+
+def needs_review(plan: dict) -> bool:
+    return bool(plan["conflicts"] or plan["adapter_conflicts"])
+
+
 def apply_plan(plan: dict) -> bool:
     target: Path = plan["target"]
-    if plan["conflicts"]:
+    if needs_review(plan):
         for relative, data in plan["conflicts"].items():
-            atomic_write(safe_path(target, "ai-kit/.upstream-cache/candidates/" + relative), data)
+            info = plan["candidates"][relative]
+            write_once(safe_path(target, info["path"]), data)
+            manifest = {"relative_path": relative, "source_hash": info["source_hash"],
+                        "local_hash": info["local_hash"], "bundle_version": plan["version"],
+                        "created_at": datetime.now(timezone.utc).isoformat()}
+            write_once(safe_path(target, info["manifest"]),
+                       (json.dumps(manifest, indent=2, sort_keys=True) + "\n").encode())
         return False
     # Recheck every planned write before modifying any project file.
     for relative, action in plan["actions"].items():
@@ -285,10 +420,11 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
                           "conflicts": sorted(plan["conflicts"]), "preserved": sorted(plan["preserved"]),
+                          "candidates": plan["candidates"], "adapter_conflicts": plan["adapter_conflicts"],
                           "warnings": plan["warnings"]}, indent=2))
         if args.apply:
             apply_plan(plan)
-        return 2 if plan["conflicts"] else 0
+        return 2 if needs_review(plan) else 0
     except (OSError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
         print(f"Installation refused: {exc}", file=sys.stderr)
         return 1

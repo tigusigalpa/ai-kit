@@ -11,4 +11,3 @@ __pycache__/
 !.env.example
 /.secrets/
 /.test-results/
-/.idea/
