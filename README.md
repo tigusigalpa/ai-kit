@@ -1,5 +1,7 @@
 # AI-KIT
 
+![AI KIT](https://i.postimg.cc/BvrB6sKt/ai-kit-hero-banner.jpg)
+
 A new chat should be able to pick up your project without making you explain every decision again. AI-KIT keeps the instructions, verified project facts, and working practices that make that possible alongside your code.
 
 Adapt it to your stack and keep it current.
