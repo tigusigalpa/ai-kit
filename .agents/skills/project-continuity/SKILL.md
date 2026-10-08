@@ -13,6 +13,7 @@ Validate templates/links/registry and behavioral installation scenarios; record 
 Review explicit semantic acceptance and future-upgrade conflicts whenever installer baseline behavior changes.
 Check candidate draft preservation, state/settings validation, and adapter retirement conflicts when changing installation. Exercise installed Git visibility and portable linked-path refusal; distinguish synthetic fixtures from real application trials.
 Record actual OS/runtime and unavailable checks in the implementation record; keep source visibility checks separate from client activation.
+Resolve temporary fixture roots before deriving paths used by guards, assertions, or injected failures. Test equivalent path spellings; keep cleanup bound to original disposable directories. [Windows CI regression](../../../docs/WINDOWS_CI_FIX.md) records the relevant scenario.
 For reference upgrades, check the actual published tree and old paths left by overlays. Compatibility pointers link to canonical owners; never hide broken legacy links from the checker.
 When editing onboarding docs, verify examples against the actual CLI/defaults and preserve links to policy owners. Keep installation, native discovery, and measured execution claims distinct.
 Do not bootstrap the reference repository as an application or imply native/runtime checks passed from static validation.

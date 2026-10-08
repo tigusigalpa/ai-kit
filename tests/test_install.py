@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -19,7 +20,8 @@ class InstallerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="ai-kit-project-")
         self.addCleanup(self.temp.cleanup)
-        self.base = Path(self.temp.name)
+        # Windows TEMP can use an 8.3 alias; match the installer's resolved paths.
+        self.base = Path(self.temp.name).resolve()
         self.target = self.base / "project with spaces"
         self.source = self.base / "reference"
         shutil.copytree(install.ROOT, self.source, ignore=shutil.ignore_patterns("__pycache__", ".git"))
@@ -479,6 +481,35 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(install.module_ignores(self.target), [])
         self.assertEqual(sentinel.read_bytes(), b"Keep outside data\n")
         self.assertFalse((outside / "settings.json").exists())
+
+
+class NoncanonicalTempPathTests(unittest.TestCase):
+    """Run the two affected scenarios with another spelling of the temp root."""
+
+    plan = InstallerTests.plan
+    test_write_failure_rolls_back_completed_instruction_writes = (
+        InstallerTests.test_write_failure_rolls_back_completed_instruction_writes)
+    test_windows_junctions_refused_and_excluded_from_module_scan = (
+        InstallerTests.test_windows_junctions_refused_and_excluded_from_module_scan)
+
+    def setUp(self):
+        temporary_directory = tempfile.TemporaryDirectory
+
+        def noncanonical_directory(*args, **kwargs):
+            directory = temporary_directory(*args, **kwargs)
+            self.addCleanup(directory.cleanup)
+            actual = Path(directory.name).resolve()
+            route = temporary_directory(dir=actual.parent, prefix="ai-kit-alias-route-")
+            self.addCleanup(route.cleanup)
+            # This real '..' route has a different prefix, like an 8.3 alias.
+            # Cleanup stays bound to each original directory, never the alias.
+            return SimpleNamespace(name=str(Path(route.name) / ".." / actual.name),
+                                   cleanup=directory.cleanup)
+
+        replacement = patch.object(tempfile, "TemporaryDirectory", side_effect=noncanonical_directory)
+        replacement.start()
+        self.addCleanup(replacement.stop)
+        InstallerTests.setUp(self)
 
 
 if __name__ == "__main__":

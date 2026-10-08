@@ -3,7 +3,7 @@
 ## Scope and decisions
 
 Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings. See [audit disposition](MANUS_REVIEW.md).
-The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The patch source check on 2026-10-08 resolved published main to 73707036c1098d8c1c81ab2c51d723c3d521f6b8; this patch remains local and unpublished by the agent.
+The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
 | Recommendation | Implemented treatment |
@@ -56,6 +56,10 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 
 ## Verification
 
+### Windows CI fixture verification
+
+2026-10-08, Windows/Python 3.12.14: 47 tests executed, 44 passed, 3 skipped (symlink privilege and two junction variants). Equivalent-path reproductions exposed both failures before the fix; the corrected fixture restores rollback injection and reaches the junction permission check. See [source/job evidence and limits](WINDOWS_CI_FIX.md). Corrected hosted Windows results remain unverified.
+
 ### Manus patch verification
 
 Measured on 2026-10-08 for local bundle 0.2.2, on Windows with Python 3.12.14. Upstream read: 73707036c1098d8c1c81ab2c51d723c3d521f6b8; this is not a commit containing the patch.
@@ -93,7 +97,3 @@ Archive inventory/exact bytes and Python 3.10 syntax were verified. Successful h
 - All 8 installable skills plus the maintainer continuity skill passed the skill-creator metadata validator. Relative file/heading links, registry, JSON, English content hygiene, and always-loaded byte budgets passed the kit checker.
 - Docker evidence tests use a fake command adapter: inspection remains read-only, stopped-container references remain protected, exact bytes stay unknown, and a stopped daemon fails rather than producing a success report. No real Docker environment was exercised.
 - Instruction review checked conditional profile loading, unknown project facts, English artifacts/configured chat language, no publication authorization, Docker preflight, and preserved owner conventions. This is source review, not a live client behavior trial.
-
-The hosted workflow is prepared for Python 3.10/3.13 on Windows/Linux, with read-only repository permissions and immutable action revisions.
-
-No commit, push, remote repository write, real Docker deletion, native client activation, or live model switch is part of this implementation.

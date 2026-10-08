@@ -8,6 +8,7 @@
 - [Current maintainer facts](PROJECT_CONTEXT.md)
 - [Implementation decisions and recommendation disposition](docs/IMPLEMENTATION.md)
 - [Manus audit findings and patch disposition](docs/MANUS_REVIEW.md)
+- [Windows CI temporary-path regression](docs/WINDOWS_CI_FIX.md)
 - [Kit decision log](docs/DECISIONS.md)
 - [Project instruction template](template/AGENTS.md)
 - [Canonical Core](template/ai-kit/CORE.md)

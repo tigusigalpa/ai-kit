@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Corrected v0.2.2 installer test fixtures after the Windows/Python 3.13.15 CI log exposed short-versus-long temporary path comparisons. Fixture roots now resolve before child paths are derived; junction guards and rollback fault injection use the same path spelling as the installer.
+- Added permanent regression variants for rollback and junction scenarios using a real equivalent temporary path with a different prefix. Cleanup remains bound to the original owned directories; installer behavior and CI gates were preserved.
+- Recorded source verification and Windows/Linux job outcomes in docs/WINDOWS_CI_FIX.md. This fixture correction is local; no commit, push, tag, or release was made by the agent.
+- Reran the complete local suite for the fixture correction: 44 passed, 3 linked-path checks unavailable. Kit checks returned no errors/warnings; the repackaged source inventory/bytes and Python 3.10 syntax were verified. Corrected hosted Windows jobs remain unverified.
+
 - Prepared local patch 0.2.2 after independently reproducing three installer findings from the Manus audit of published v0.2.
 - Addressed conflict candidates by incoming-file SHA-256; preview reports paths/hashes and adjacent first-creation metadata. Exclusive creation preserves edited, concurrent, and legacy candidates.
 - Blocked agent-list replacement while tracked unselected adapters remain; preserved accepted files/state, reported exact retirement paths, and warned about untracked native instructions/skills. No automatic deletion was added.
