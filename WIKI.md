@@ -6,6 +6,7 @@
 - [Sharing modes](README.md#sharing)
 - [Application updates](README.md#update-an-application-project)
 - [Current maintainer facts](PROJECT_CONTEXT.md)
+- [Repository skill for other assistants](SKILL.md)
 - [Implementation decisions and recommendation disposition](docs/IMPLEMENTATION.md)
 - [Manus audit findings and patch disposition](docs/MANUS_REVIEW.md)
 - [Windows CI temporary-path regression](docs/WINDOWS_CI_FIX.md)

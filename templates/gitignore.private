@@ -1,36 +1,39 @@
-# Application private mode
+# Application private mode: AI-KIT files and AI client configuration stay local to this checkout
 /AGENTS.md
+/AGENTS.override.md
 /CLAUDE.md
+/CLAUDE.local.md
+/GEMINI.md
 /KIMI.md
 /MANUS.md
 /CONVENTIONS.md
 /PROJECT_CONTEXT.md
 /WIKI.md
-/ai-kit/
-/.agents/skills/
-/.agents/hooks/session-start.md
-/.agents/hooks/session-start.sh
-/.claude/
-/.cursor/rules/ai-kit.mdc
-/.cursor/rules/ai-kit-*.mdc
-/.github/instructions/ai-kit-*.instructions.md
-/.github/copilot-instructions.md
-/.windsurf/rules/
-/.clinerules/
-/.roo/rules/
-/GEMINI.md
 /docs/DECISIONS.md
 /docs/adr/0000-template.md
-/AGENTS.override.md
-/CLAUDE.local.md
-/ai-kit/.upstream-cache/
-/ai-kit/.metrics/
-/ai-kit/.install-state.json
-/ai-kit/.install-report.json
+/ai-kit/
 /.ai-kit-install.lock
-/.claude/settings.local.json
-/.claude/projects/
-/.claude/cache/
+/.agents/
+/.claude/
+/.codex/
+/.cursor/
+/.cursorrules
+/.gemini/
+/.windsurf/
+/.windsurfrules
+/.devin/
+/.clinerules
+/.roo/
+/.roorules
+/.roomodes
+/.aider.conf.yml
+/.github/copilot-instructions.md
+/.github/instructions/
+/.github/prompts/
+/.github/agents/
+# Extracted AI-KIT bundles; the hyphen keeps ai-kit/ visible on case-insensitive systems
+/AI-KIT-*/
+/ai-kit-*/
 # ---- Local secrets and credentials ----
 .env
 .env.*
@@ -39,6 +42,8 @@
 !.env.dist
 !.env.*.dist
 .envrc
+.netrc
+.pypirc
 auth.json
 /.secrets/
 /secrets/
@@ -61,7 +66,14 @@ Desktop.ini
 .idea/
 .vscode/
 .fleet/
+.zed/
+.nova/
 .history/
+
+# ---- AI client local history and caches ----
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v*/
 
 # ---- Local output directories ----
 /build/
@@ -74,6 +86,9 @@ Desktop.ini
 .phpunit.cache/
 .phpunit.result.cache
 .phpactor.json
+.php-cs-fixer.cache
+Homestead.json
+Homestead.yaml
 /coverage/
 /clover.xml
 /phpunit-coverage.xml
@@ -119,6 +134,7 @@ go-build
 /go/pkg/mod/
 *.exe
 *.exe~
+__debug_bin*
 *.test
 *.out
 *.prof

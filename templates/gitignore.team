@@ -9,6 +9,9 @@
 /.claude/settings.local.json
 /.claude/projects/
 /.claude/cache/
+# Extracted AI-KIT bundles; the hyphen keeps ai-kit/ visible on case-insensitive systems
+/AI-KIT-*/
+/ai-kit-*/
 # ---- Local secrets and credentials ----
 .env
 .env.*
@@ -17,6 +20,8 @@
 !.env.dist
 !.env.*.dist
 .envrc
+.netrc
+.pypirc
 auth.json
 /.secrets/
 /secrets/
@@ -39,7 +44,14 @@ Desktop.ini
 .idea/
 .vscode/
 .fleet/
+.zed/
+.nova/
 .history/
+
+# ---- AI client local history and caches ----
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache.v*/
 
 # ---- Local output directories ----
 /build/
@@ -52,6 +64,9 @@ Desktop.ini
 .phpunit.cache/
 .phpunit.result.cache
 .phpactor.json
+.php-cs-fixer.cache
+Homestead.json
+Homestead.yaml
 /coverage/
 /clover.xml
 /phpunit-coverage.xml
@@ -97,6 +112,7 @@ go-build
 /go/pkg/mod/
 *.exe
 *.exe~
+__debug_bin*
 *.test
 *.out
 *.prof

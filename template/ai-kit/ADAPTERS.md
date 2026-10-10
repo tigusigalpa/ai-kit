@@ -14,7 +14,7 @@
 | Roo | Optional .roo/rules/ai-kit.md |
 
 Existing adapters/settings are preserved or reported as conflicts. Copied Claude skills retain their three-level relative root paths; discovery must be checked in the actual client.
-Private mode excludes local adapters; team mode keeps shared instruction sources visible. Personal client settings remain excluded.
+Private mode excludes local adapters and AI client configuration folders (.agents, .claude, .codex, .cursor, .gemini, .windsurf, .devin, .roo, .clinerules, Copilot instructions, prompts, and agents); team mode keeps shared instruction sources visible. Personal client settings and AI client history remain excluded in both modes.
 Reference integrations/ guards are the reviewed source for the optional ask rules below; they are supplementary confirmation, not a universal command ban.
 
 ## Changing the agent selection

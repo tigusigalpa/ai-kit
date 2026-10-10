@@ -63,7 +63,7 @@ PYTHON_TOOL_FILES = ("pyproject.toml", "setup.cfg", "tox.ini", "requirements.txt
                      "test-requirements.txt")
 NODE_IGNORES = ("node_modules/", ".npm/", ".pnpm-store/", ".yarn/cache/", ".yarn/unplugged/",
                 ".yarn/install-state.gz", "npm-debug.log*", "yarn-debug.log*", "yarn-error.log*",
-                "pnpm-debug.log*")
+                "pnpm-debug.log*", ".next/", ".nuxt/", ".svelte-kit/", ".turbo/", ".parcel-cache/")
 PYTHON_IGNORES = (".venv/", "venv/", "__pypackages__/", "__pycache__/", "*.py[cod]", "*$py.class",
                   ".pytest_cache/", ".mypy_cache/", ".ruff_cache/", ".pyre/", ".pytype/",
                   ".hypothesis/", ".tox/", ".nox/", ".ipynb_checkpoints/", ".coverage", ".coverage.*",

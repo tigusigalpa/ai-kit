@@ -1,14 +1,43 @@
 # Reference repository: version instruction sources and project templates.
+# Application projects receive templates/gitignore.private or gitignore.team instead.
+
+# ---- Local AI-KIT and agent state ----
 /ai-kit/.upstream-cache/
 /ai-kit/.metrics/
 /.claude/
-/.cache/
-/.venv/
-__pycache__/
-*.py[cod]
-*.log
+# Extracted AI-KIT bundles; the hyphen keeps ai-kit/ itself visible on case-insensitive systems.
+/AI-KIT-*/
+/ai-kit-*/
+
+# ---- Local secrets ----
 .env
 .env.*
 !.env.example
 /.secrets/
+
+# ---- Python development caches ----
+/.cache/
+/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
 /.test-results/
+*.log
+
+# ---- IDE, editor, and OS files ----
+.idea/
+.vscode/
+.fleet/
+.zed/
+.nova/
+.history/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+Desktop.ini

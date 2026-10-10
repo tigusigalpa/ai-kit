@@ -9,7 +9,7 @@ Read [current facts](../../../PROJECT_CONTEXT.md) and [maintainer instructions](
 Keep the root context/history about this kit; keep template project facts uninitialized.
 For a procedure change, update current maintainer commands, this pointer contract, and relevant implementation docs in the same task.
 When verified facts or agreements change, synchronize this skill's scope/procedure/pointers and WIKI with the context; keep actual facts in context.
-Validate templates/links/registry, the agent registry (integrations/agents.json), and behavioral installation scenarios; record root CHANGELOG entries.
+Validate templates/links/registry, the agent registry (integrations/agents.json), and behavioral installation scenarios; record root CHANGELOG entries. Keep the root SKILL.md (the repository as a skill) consistent with the CLI, presets, extras, and policies.
 Review explicit semantic acceptance and future-upgrade conflicts whenever installer baseline behavior changes.
 Check candidate draft preservation, state/settings validation, and adapter retirement conflicts when changing installation. Exercise installed Git visibility and portable linked-path refusal; distinguish synthetic fixtures from real application trials.
 Exercise file-versus-directory native rule layouts on both probe and selected-write paths: simulate POSIX ENOTDIR on Windows, preserve existing file markers and rerun stability, and refuse blocked selected parents before writes. Do not hide permission failures or linked-path refusals during optional adapter probes; see [file-parent compatibility](../../../docs/ADAPTER_PATH_FIX.md).

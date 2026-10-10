@@ -19,7 +19,9 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def source_files(root: Path):
-    excluded = {".git", "__pycache__", ".upstream-cache", ".pytest_cache"}
+    # IDE and tool state is local to a checkout, never a kit source.
+    excluded = {".git", "__pycache__", ".upstream-cache", ".pytest_cache", ".mypy_cache", ".ruff_cache",
+                ".idea", ".vscode", ".fleet", ".zed", ".nova", ".history", ".claude"}
     for directory, dirs, files in os.walk(root, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded]
         if Path(directory) == root / "ai-kit":
@@ -111,16 +113,21 @@ def visibility(root: Path, git: str) -> list[str]:
                          ".agents/skills/ai-kit-bootstrap/SKILL.md", ".claude/rules/ai-kit-web.md",
                          ".cursor/rules/ai-kit-web.mdc", ".github/instructions/ai-kit-web.instructions.md",
                          ".windsurf/rules/ai-kit-web.md", ".clinerules/ai-kit-web.md",
-                         ".windsurf/rules/ai-kit.md", "docs/DECISIONS.md"):
+                         ".windsurf/rules/ai-kit.md", "docs/DECISIONS.md",
+                         ".codex/config.toml", ".cursor/mcp.json", ".gemini/settings.json", ".clinerules",
+                         ".github/prompts/review.prompt.md", ".aider.conf.yml"):
                 if ignored(path) != (mode == "private"):
                     errors.append(f"{mode}: wrong shared visibility: {path}")
             for path in (".env", ".claude/settings.local.json", "ai-kit/.upstream-cache/a",
                          "ai-kit/.metrics/tasks.jsonl", "ai-kit/.metrics/write.lock",
-                         "go-cache/a", "test.out", "__pycache__/a.pyc"):
+                         "go-cache/a", "test.out", "__pycache__/a.pyc", ".idea/workspace.xml",
+                         ".netrc", ".pypirc", ".aider.chat.history.md", ".aider.tags.cache.v4/a",
+                         "AI-KIT-0.6.5/README.md", "web/.next/cache/a", "__debug_bin1234"):
                 if not ignored(path):
                     errors.append(f"{mode}: private/generated data visible: {path}")
             for path in ("composer.lock", "go.mod", "go.sum", "uv.lock", ".env.example",
-                         "vendor/modules.txt", "src/SKILL.md", "bin/worker.py"):
+                         "vendor/modules.txt", "src/SKILL.md", "bin/worker.py", ".cursorignore",
+                         ".github/workflows/ci.yml", ".aiderignore"):
                 if ignored(path):
                     errors.append(f"{mode}: intended project source ignored: {path}")
     return errors
@@ -154,6 +161,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "template/ai-kit/stacks/FILAMENT.md", "template/.agents/skills/filament-work/SKILL.md",
                 "integrations/agents.json", "integrations/claude-settings.git-ask.json",
                 "integrations/claude-settings.data-ask.json", "templates/agent-secrets.ignore",
+                "SKILL.md",
                 "template/.agents/hooks/session-start.md", "template/.agents/hooks/session-start.sh",
                 "template/ai-kit/router/selection.json",
                 "template/ai-kit/router/providers/local.json",
@@ -182,7 +190,9 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         if p.name == "SKILL.md":
             try:
                 fields = metadata(text)
-                if fields["name"] != p.parent.name:
+                # The repository root is itself a skill; its folder name depends on the checkout.
+                expected = "ai-kit" if p.parent == root else p.parent.name
+                if fields["name"] != expected:
                     errors.append("Skill name/folder mismatch: " + str(p))
             except (ValueError, TypeError) as exc:
                 errors.append(f"{p}: {exc}")

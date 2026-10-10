@@ -226,7 +226,7 @@ Explicit `--mode` and `--with-*` flags (`--with-session-start`, `--with-guards`,
 | private | Ignored | Local instructions installed separately |
 | team | Visible | Teammates and agents working from fresh clones |
 
-Both modes exclude secrets, personal overrides, installer state, and caches. The installer owns one marked `.gitignore` block; your other rules survive, and lockfiles and manifests stay visible. Composer, Moodle, Node, and Python exclusions are scoped to detected modules, preserving deliberate Go vendoring. See [ignore adaptation](template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
+Both modes exclude secrets, personal overrides, installer state, caches, IDE folders, AI client history, and extracted AI-KIT bundles; private mode also keeps AI client configuration folders (`.cursor`, `.codex`, `.gemini`, `.windsurf`, `.roo`, Copilot prompts and agents) out of Git. The installer owns one marked `.gitignore` block; your other rules survive, and lockfiles and manifests stay visible. Composer, Moodle, Node, and Python exclusions are scoped to detected modules, preserving deliberate Go vendoring. See [ignore adaptation](template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
 
 ## Update an application project
 
@@ -241,6 +241,16 @@ Exit codes: 0 success, 1 refusal, 2 unresolved conflicts. The installer works of
 ## Honest boundaries
 
 AI-KIT writes instructions and configuration; it does not run your agents. Client formats follow each vendor's current documentation, but activation should be confirmed in your actual client. Permission rules and ignore files reduce risk without being a security boundary, and model routing is a recommendation unless your client exposes a switching control.
+
+## Teach any AI about AI-KIT
+
+The repository is itself a skill: [SKILL.md](SKILL.md) at its root packs everything an assistant needs to install, configure, upgrade, explain, or maintain AI-KIT. For Claude Code in every project, clone it into your skills directory and the installer comes along:
+
+~~~sh
+git clone https://github.com/tigusigalpa/ai-kit.git ~/.claude/skills/ai-kit
+~~~
+
+For any other assistant, give it the repository or paste SKILL.md into the chat.
 
 ## For maintainers
 
