@@ -176,7 +176,8 @@ class NativeConfigurationTests(unittest.TestCase):
         self.apply(agents=["claude"], preset="strict")
         golden = install.ROOT / "tests/fixtures/golden/claude-settings-local.json"
         actual = (self.target / ".claude/settings.local.json").read_bytes()
-        self.assertEqual(actual, golden.read_bytes(),
+        # Git autocrlf can check the fixture out with CRLF on Windows; compare content, not endings.
+        self.assertEqual(actual.replace(b"\r\n", b"\n"), golden.read_bytes().replace(b"\r\n", b"\n"),
                          "Generated .claude/settings.local.json drifted from the golden snapshot; "
                          "update the golden file if the change is intentional.")
 
