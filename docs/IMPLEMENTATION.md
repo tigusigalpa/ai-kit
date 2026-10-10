@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-The [changelog](../CHANGELOG.md) records kit evolution; [v0.6.4 verification](V0_6_4.md) covers the current additions and [v0.5.0 verification](V0_5_0.md) the previous ones. v0.7.0 adds the `aikit` CLI and a fact-drift check; v0.8.0 adds provider review, doctor --fix, CI self-install, and a golden snapshot; v0.9.0 adds metrics analysis and Gemini IDs. Earlier reproduced findings remain in the [audit disposition](MANUS_REVIEW.md).
+The [changelog](../CHANGELOG.md) records kit evolution; [v0.6.4 verification](V0_6_4.md) covers the current additions and [v0.5.0 verification](V0_5_0.md) the previous ones. v0.7.0 adds the `aikit` CLI and a fact-drift check; v0.8.0 adds provider review, doctor --fix, CI self-install, and a golden snapshot; v0.9.0 adds metrics analysis and Gemini IDs; v0.10.0 extends freshness evidence, client lifecycle, evaluation coverage, MCP posture, and wheel packaging. Earlier reproduced findings remain in the [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -41,6 +41,9 @@ Installation can explicitly select another chat language or standard conventions
 | Optional local measurement contract | [Metrics](../template/ai-kit/METRICS.md) |
 | Generated client settings, scoped module rules, presets | [Adapters](../template/ai-kit/ADAPTERS.md#optional-install-extras), [secret list](../templates/agent-secrets.ignore), installer |
 | Provider selection, agent registry, routing helper | [selection.json](../template/ai-kit/router/selection.json), [agents.json](../integrations/agents.json), [router.py](../scripts/router.py) |
+| Client evidence and conservative adapter retirement | [agent registry](../integrations/agents.json), [adapters helper](../scripts/adapters.py), [Adapters](../template/ai-kit/ADAPTERS.md) |
+| Project-fact evidence and pair-coverage evaluation | [context helper](../scripts/context.py), [evaluation helper](../scripts/evaluate.py), [Metrics](../template/ai-kit/METRICS.md) |
+| MCP trust boundary | [MCP posture](../template/ai-kit/MCP.md) and [Security baseline](../template/ai-kit/SECURITY.md) |
 | Installation/upstream reconciliation | [Bootstrap](../template/ai-kit/BOOTSTRAP.md), [upstream](../template/ai-kit/UPSTREAM.md), installer state |
 | Current project facts and navigation | Installed PROJECT_CONTEXT, WIKI, and ai-kit/project.json |
 | Context maintenance procedure | [Continuity skill](../template/.agents/skills/project-continuity/SKILL.md) |
@@ -56,10 +59,14 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 - Additional model/client mappings: unsupported provider IDs and runtime settings remain unknown; no speculative model names or fake activation.
 - Codex nested AGENTS.md and config.toml: Codex reads AGENTS.md only from the root to its working directory, and approval/sandbox settings are user decisions; Roo has no documented path-scoped rules.
 - Topics, homepage, hosted publication, tags/releases: these require remote changes; local work does not authorize them. The current repository description and MIT were independently confirmed; a homepage is unnecessary for the first usable bundle.
-- Portable wheel/PyPI packaging: the `aikit` console script works from a checkout or editable install; bundling the distribution dirs for a self-contained wheel and publication stay deferred (remote changes are not authorized locally).
+- Portable wheel/PyPI packaging: v0.10.0 adds wheel resources and isolated CI smoke jobs, but no local wheel build or hosted result is established yet; PyPI publication stays deferred (remote changes are not authorized locally).
 - Real-project trials and Linux execution: temporary project fixtures exercise preservation and mixed manifests. These do not replace trials on actual applications or hosted CI.
 
 ## Verification
+
+### v0.10.0 release preparation
+
+v0.10.0 adds schema-2 metric dispositions and corrected A/B identity, manifest-evidence snapshots and doctor drift reporting, client registry evidence plus conservative retirement, opaque evaluation pair coverage, MCP posture, and portable-wheel CI jobs. New regressions cover these paths, but the current agent shell has no accessible Python interpreter, so checker, unit, build, and wheel-smoke results are not established. Hosted CI and native client/MCP activation remain unverified until a reviewed revision runs there.
 
 ### Early distribution verification
 

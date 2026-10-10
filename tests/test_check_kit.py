@@ -109,6 +109,27 @@ class CheckerTests(unittest.TestCase):
         path.write_text(json.dumps(data) + "\n", encoding="utf-8")
         self.assertTrue(any("entry missing from template" in error for error in self.check()))
 
+    def test_agent_registry_invalid_documentation_metadata_is_reported(self):
+        path = self.root / "integrations/agents.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["agents"]["cursor"]["documentation"]["sources"] = []
+        path.write_text(json.dumps(data) + "\n", encoding="utf-8")
+        self.assertTrue(any("Invalid agent registry" in error for error in self.check()))
+
+    def test_agent_registry_missing_documentation_metadata_is_reported(self):
+        path = self.root / "integrations/agents.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        del data["agents"]["cursor"]["documentation"]
+        path.write_text(json.dumps(data) + "\n", encoding="utf-8")
+        self.assertTrue(any("Invalid agent registry" in error for error in self.check()))
+
+    def test_project_template_requires_an_empty_evidence_snapshot(self):
+        path = self.root / "template/ai-kit/project.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["evidence"]["modules"] = [{"path": "/", "manifests": {"go.mod": "hash"}}]
+        path.write_text(json.dumps(data) + "\n", encoding="utf-8")
+        self.assertTrue(any("must start empty" in error for error in self.check()))
+
     def test_pending_provider_is_warning_not_error(self):
         path = self.root / "template/ai-kit/router/providers/gemini.json"
         config = json.loads(path.read_text(encoding="utf-8"))

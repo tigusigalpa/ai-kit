@@ -130,6 +130,7 @@ def load_agent_registry(root: Path = ROOT) -> dict:
     detect: dict[str, list[str]] = {}
     scoped_rules: dict[str, dict[str, str]] = {}
     ignore_files: dict[str, str] = {}
+    metadata: dict[str, dict] = {}
     for name, spec in agents.items():
         if not re.fullmatch(r"[a-z][a-z0-9-]*", name):
             raise ValueError(f"Invalid agent name: {name}")
@@ -175,9 +176,31 @@ def load_agent_registry(root: Path = ROOT) -> dict:
             if not isinstance(ignore_file, str) or not re.fullmatch(r"\.[A-Za-z0-9._-]+", ignore_file):
                 raise ValueError(f"Invalid ignore_file for {name}")
             ignore_files[name] = ignore_file
+        documentation = spec.get("documentation")
+        if not isinstance(documentation, dict) or set(documentation) != {
+                "status", "verified_documentation_date", "sources", "activation"}:
+            raise ValueError(f"Invalid documentation metadata for {name}")
+        status = documentation["status"]
+        verified = documentation["verified_documentation_date"]
+        sources = documentation["sources"]
+        activation = documentation["activation"]
+        if status not in {"verified", "unverified"}:
+            raise ValueError(f"Invalid documentation status for {name}")
+        if verified is not None and (not isinstance(verified, str) or
+                                     not re.fullmatch(r"\d{4}-\d{2}-\d{2}", verified)):
+            raise ValueError(f"Invalid documentation date for {name}")
+        if not isinstance(sources, list) or any(not isinstance(source, str) or not source.startswith("https://")
+                                                for source in sources):
+            raise ValueError(f"Invalid documentation sources for {name}")
+        if activation not in {"verified", "unverified", "not-applicable"}:
+            raise ValueError(f"Invalid activation status for {name}")
+        if status == "verified" and (verified is None or not sources):
+            raise ValueError(f"Verified documentation needs date and sources for {name}")
+        metadata[name] = {"status": status, "verified_documentation_date": verified,
+                          "sources": sources, "activation": activation}
     return {"names": names, "entries": entries, "optional": optional,
             "skills_copies": skills_copies, "detect": detect, "scoped_rules": scoped_rules,
-            "ignore_files": ignore_files}
+            "ignore_files": ignore_files, "metadata": metadata}
 
 
 def detect_agents(target: Path, registry: dict) -> dict[str, list[str]]:
@@ -727,6 +750,23 @@ def detect_facts(target: Path) -> dict:
     return {"modules": [modules[key] for key in sorted(modules)]}
 
 
+def project_fact_evidence(target: Path, facts: dict) -> dict:
+    """Return stable, path-safe manifest digests for doctor freshness checks."""
+    modules = []
+    for module in facts["modules"]:
+        prefix = "" if module["path"] == "/" else module["path"].strip("/") + "/"
+        manifests = {}
+        for name in sorted(module["manifests"]):
+            path = safe_path(target, prefix + name)
+            if is_link(path):
+                raise ValueError("Refusing linked project manifest: " + prefix + name)
+            if path.is_file():
+                manifests[name] = digest(path.read_bytes())
+        modules.append({"path": module["path"], "manifests": manifests,
+                        "profiles": list(module["profiles"]), "commands": dict(module["commands"])})
+    return {"schema": 1, "modules": modules}
+
+
 def profiles_from_facts(facts: dict) -> dict[str, list[str]]:
     found: dict[str, set[str]] = {}
     for module in facts["modules"]:
@@ -767,7 +807,7 @@ def project_context_draft(data: bytes, facts: dict) -> bytes:
     return text.replace(placeholder, "\n".join(rows), 1).encode("utf-8")
 
 
-def project_json_draft(data: bytes, facts: dict) -> bytes:
+def project_json_draft(data: bytes, facts: dict, target: Path) -> bytes:
     """Fill the machine-readable project.json modules from detected manifests (unverified draft)."""
     if not facts["modules"]:
         return data
@@ -775,6 +815,7 @@ def project_json_draft(data: bytes, facts: dict) -> bytes:
     value["modules"] = [{"path": m["path"], "manifests": m["manifests"], "language": m["language"],
                          "version": m["version"], "profiles": m["profiles"], "commands": m["commands"]}
                         for m in facts["modules"]]
+    value["evidence"] = project_fact_evidence(target, facts)
     return (json.dumps(value, indent=2) + "\n").encode("utf-8")
 
 
@@ -900,7 +941,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                 if relative == "PROJECT_CONTEXT.md":
                     data = project_context_draft(data, facts)
                 elif relative == "ai-kit/project.json":
-                    data = project_json_draft(data, facts)
+                    data = project_json_draft(data, facts, target)
                 actions[relative] = {"data": data, "old": None}
             else:
                 preserved.append(relative)

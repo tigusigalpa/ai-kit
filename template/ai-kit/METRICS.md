@@ -8,7 +8,7 @@ Put a JSON record in a private location, preferably under `ai-kit/.metrics/` (ig
 
 ~~~json
 {
-  "schema": 1,
+  "schema": 2,
   "task_id": "pair-01-run-01",
   "experiment": "context-trial",
   "arm": "kit",
@@ -21,6 +21,7 @@ Put a JSON record in a private location, preferably under `ai-kit/.metrics/` (ig
     "provider": null,
     "model": null,
     "effort": null,
+    "disposition": "inconclusive",
     "duration_seconds": null,
     "input_tokens": null,
     "cached_input_tokens": null,
@@ -31,7 +32,7 @@ Put a JSON record in a private location, preferably under `ai-kit/.metrics/` (ig
 }
 ~~~
 
-Replace placeholders with observed facts. Include every attempt, failed call, tool/review loop, and recovery in the task's final accounting. An attempt may represent an aggregated phase only when its model/settings and measurements are consistent. Provider/model/effort, duration, token counts, and cost can be unknown (`null` or omitted); never turn missing telemetry into zero. Durations are elapsed seconds per attempt, not total experiment wall time when attempts overlap.
+Replace placeholders with observed facts. Include every attempt, failed call, tool/review loop, and recovery in the task's final accounting. An attempt may represent an aggregated phase only when its model/settings and measurements are consistent. In schema 2, each attempt has a `disposition` of `succeeded`, `failed`, or `inconclusive`; it distinguishes an unsuccessful cheap pass from a successful escalation without claiming causation. Existing schema 1 journals remain readable and simply have unknown attempt dispositions. Provider/model/effort, duration, token counts, and cost can be unknown (`null` or omitted); never turn missing telemetry into zero. Durations are elapsed seconds per attempt, not total experiment wall time when attempts overlap.
 
 `outcome` is `correct`, `incorrect`, or `incomplete` after applying the experiment's acceptance rubric. `checks` is `passed`, `failed`, or `not-run` for the required automated checks; a human-reviewed correct result may have no applicable automated checks. Skipped or unavailable checks are not a pass. `rework` and `escalations` count observed interventions, independently of the number of attempts.
 
@@ -44,6 +45,8 @@ python scripts/metrics.py record /path/to/project --from-json /private/path/task
 python scripts/metrics.py record /path/to/project --from-json /private/path/task.json --apply
 python scripts/metrics.py summary /path/to/project
 python scripts/metrics.py analyze /path/to/project
+python scripts/evaluate.py scaffold --output /private/path/tasks.json --experiment context-trial --task pair-01 --task pair-02
+python scripts/evaluate.py coverage /path/to/project --tasks /private/path/tasks.json
 ~~~
 
 Preview writes nothing. Apply writes the local `ai-kit/.metrics/tasks.jsonl` journal, refuses duplicate experiment/arm/task IDs and malformed existing data, and guards path boundaries and links. A cooperating-writer lock refuses concurrent writes; investigate an interrupted writer before manually removing its stale lock. The journal is local runtime data, not an installer-owned template. An upgrade must preserve it.
@@ -56,6 +59,10 @@ These are descriptive records, not evidence of causation or savings. Compare mat
 
 ## Analyze for routing
 
-`analyze` aggregates the journal per provider: attempts, reviewed tasks, correct tasks, success rate, known cost by currency, cost coverage, cost per correct result, and the models/efforts seen. A task is attributed to every provider used in its attempts, so a provider's success rate reflects the tasks it actually worked on.
+`analyze` aggregates the journal per provider: attempts, reviewed tasks, correct tasks, task success rate, known cost by currency, cost coverage, cost per correct result, and the models/efforts seen. Task identity is `(experiment, arm, task_id)`, so paired baseline/kit rows never collapse. Schema 2 also reports attempt-disposition coverage and decisive attempt success rate. A task is attributed to every provider used in its attempts, so neither measure establishes causation.
 
 Use the report to inform `ai-kit/router/selection.json`, never to rewrite it automatically. Prefer the provider with the best cost per correct result for the work role and the cheapest provider that still passes checks for the cheap role, then run a separate matched experiment before trusting the change. `analyze` writes nothing and performs no API calls or price lookup; unknown cost or outcome coverage stays unknown rather than becoming zero.
+
+## Pair coverage
+
+`evaluate.py scaffold` writes an opaque private task pack only with `--apply`; it contains an experiment ID and task IDs, not task text or private evidence. `evaluate.py coverage` compares that pack with the local journal and reports missing baseline/kit pairs, unexpected records, and reviewed outcomes. It does not score prompts, inspect patches, or infer a winner. Keep prompts, rubrics, and private notes outside the pack, then follow the [evaluation protocol](../../docs/EVALUATION.md) for the actual trial design.

@@ -16,6 +16,7 @@
 - [v0.5.0 verification and limits](docs/V0_5_0.md)
 - [Extras, presets, and generated client configuration](template/ai-kit/ADAPTERS.md#optional-install-extras)
 - [Optional local measurement contract](template/ai-kit/METRICS.md)
+- [MCP posture and indirect-instruction boundary](template/ai-kit/MCP.md)
 - [Filament profile](template/ai-kit/stacks/FILAMENT.md)
 - [Kit decision log](docs/DECISIONS.md)
 - [Project instruction template](template/AGENTS.md)

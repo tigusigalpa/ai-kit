@@ -81,6 +81,25 @@ class AccountingTests(unittest.TestCase):
         self.assertEqual(by_name["anthropic"]["success_rate"], 0.0)
         self.assertIsNone(by_name["anthropic"]["cost_per_correct"])
 
+    def test_analyze_keeps_baseline_and_kit_task_identities_distinct(self):
+        baseline = task(schema=2, arm="baseline")
+        baseline["attempts"][0]["disposition"] = "succeeded"
+        kit = task(schema=2, arm="kit", outcome="incorrect", checks="failed")
+        kit["attempts"][0]["disposition"] = "failed"
+        report = metrics.analyze([baseline, kit])
+        provider = report["providers"][0]
+        self.assertEqual((provider["tasks"], provider["correct_tasks"]), (2, 1))
+        self.assertEqual(provider["attempt_dispositions"],
+                         {"succeeded": 1, "failed": 1, "inconclusive": 0})
+        self.assertEqual(provider["attempt_success_rate"], 0.5)
+
+    def test_schema_two_requires_attempt_disposition(self):
+        value = task(schema=2)
+        with self.assertRaises(ValueError):
+            metrics.validate_record(value)
+        value["attempts"][0]["disposition"] = "inconclusive"
+        self.assertEqual(metrics.validate_record(value)["schema"], 2)
+
     def test_record_validation_refuses_bad_data_and_task_text(self):
         invalid = [task(schema=True), task(task_id="please fix this bug"), task(prompt="secret"),
                    task(outcome=[]), task(checks=[]), task(rework=True), task(escalations=-1),

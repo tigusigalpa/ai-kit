@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -10,10 +10,15 @@ requires-python = ">=3.10"
 dynamic = ["version"]
 
 [project.scripts]
-aikit = "aikit_cli:main"
+aikit = "aikit.aikit_cli:main"
 
 [tool.setuptools]
-py-modules = ["aikit_cli"]
+packages = ["aikit", "aikit.scripts"]
+package-dir = {aikit = ".", "aikit.scripts" = "scripts"}
+include-package-data = true
+
+[tool.setuptools.package-data]
+aikit = ["VERSION", "LICENSE", ".gitignore", "*.md", "*.json", "docs/**/*", "integrations/**/*", "template/**/*", "template/.agents/**/*", "templates/**/*", ".github/**/*", ".agents/**/*"]
 
 [tool.setuptools.dynamic]
-version = {attr = "aikit_cli.__version__"}
+version = {file = ["VERSION"]}

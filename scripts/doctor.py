@@ -166,6 +166,8 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
                 warnings.append("project.json and PROJECT_CONTEXT.md module maps differ (" + "; ".join(detail) + ")")
         except (OSError, UnicodeError) as exc:
             warnings.append(f"Cannot compare module maps: {exc}")
+    if project_value is not None:
+        freshness_warnings(target, project_value, warnings, info)
     warnings.extend(link_warnings(target))
     return report
 
@@ -190,6 +192,54 @@ def context_module_paths(text: str) -> set[str]:
         if cells and cells[0].startswith("/"):
             paths.add(cells[0])
     return paths
+
+
+def freshness_warnings(target: Path, project: dict, warnings: list[str], info: list[str]) -> None:
+    """Compare recorded module facts and manifest evidence with current filesystem facts."""
+    try:
+        facts = install.detect_facts(target)
+    except (OSError, ValueError) as exc:
+        warnings.append(f"Cannot detect current project facts: {exc}")
+        return
+    detected = {module["path"]: module for module in facts["modules"]}
+    recorded = {module["path"]: module for module in project.get("modules", [])
+                if isinstance(module.get("path"), str)}
+    for path in sorted(set(detected) - set(recorded)):
+        warnings.append("Detected module missing from project facts: " + path)
+    for path in sorted(set(recorded) - set(detected)):
+        if isinstance(recorded[path].get("manifests"), list) and recorded[path]["manifests"]:
+            warnings.append("Recorded module no longer has detected manifests: " + path)
+    for path in sorted(set(detected) & set(recorded)):
+        expected_profiles = recorded[path].get("profiles")
+        if isinstance(expected_profiles, list) and sorted(expected_profiles) != detected[path]["profiles"]:
+            warnings.append("Detected profiles differ from project facts at " + path)
+    evidence = project.get("evidence")
+    if evidence is None:
+        info.append("No project fact evidence snapshot; run aikit context snapshot TARGET --apply after bootstrap.")
+        return
+    if not isinstance(evidence, dict) or evidence.get("schema") != 1 or not isinstance(evidence.get("modules"), list):
+        warnings.append("Invalid project fact evidence; rerun aikit context snapshot TARGET --apply.")
+        return
+    try:
+        current = install.project_fact_evidence(target, facts)
+    except (OSError, ValueError) as exc:
+        warnings.append(f"Cannot refresh project fact evidence: {exc}")
+        return
+    stored = {item.get("path"): item for item in evidence["modules"] if isinstance(item, dict) and
+              isinstance(item.get("path"), str) and isinstance(item.get("manifests"), dict)}
+    observed = {item["path"]: item for item in current["modules"]}
+    for path in sorted(set(stored) | set(observed)):
+        if path not in stored:
+            warnings.append("New detected manifest evidence at " + path + "; update context after review.")
+        elif path not in observed:
+            warnings.append("Recorded manifest evidence no longer detected at " + path + "; update context after review.")
+        else:
+            if stored[path]["manifests"] != observed[path]["manifests"]:
+                warnings.append("Manifest evidence changed at " + path + "; review context facts and commands.")
+            if stored[path].get("profiles") != observed[path].get("profiles"):
+                warnings.append("Detected profiles changed at " + path + "; review context facts.")
+            if stored[path].get("commands") != observed[path].get("commands"):
+                warnings.append("Detected commands changed at " + path + "; review context facts and commands.")
 
 
 def link_warnings(target: Path) -> list[str]:

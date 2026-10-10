@@ -1,6 +1,10 @@
 {
   "schema": 1,
   "modules": [],
+  "evidence": {
+    "schema": 1,
+    "modules": []
+  },
   "operations": {
     "startup": null,
     "ci": null,

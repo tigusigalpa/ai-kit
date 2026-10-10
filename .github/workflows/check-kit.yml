@@ -26,3 +26,22 @@ jobs:
         run: python aikit_cli.py route "implement a feature"
       - name: Exercise installation, upgrade, and evidence behavior
         run: python -m unittest discover -s tests -v
+
+  wheel:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.10', '3.14']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7, verified 2026-10-08
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7, verified 2026-10-08
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Build a portable no-runtime-dependency wheel
+        run: python -m pip wheel . --no-deps --wheel-dir dist
+      - name: Smoke-install the wheel in an isolated environment
+        run: python tests/wheel_smoke.py dist

@@ -21,12 +21,12 @@ AI-KIT drops a complete working environment for AI coding agents into your repos
 | 🧩 | **Stack profiles** | Expert rules for Go, PHP, Laravel, Filament 5, Moodle, Python, frontend, and libraries, auto-detected per module |
 | 🐳 | **Kubernetes-ready containers** | Every new Dockerfile and service ships with probes, graceful shutdown, non-root security, and manifests |
 | 🧭 | **Adaptive model routing** | A 0-6 capability ladder that picks the right model role and reasoning effort for each task |
-| 🤖 | **11 AI clients** | Codex, Claude Code, Cursor, Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi, Manus |
+| 🤖 | **11 AI clients** | Codex, Claude Code, Cursor, Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi, Manus — with documentation evidence and lifecycle reporting |
 | 🎯 | **Native client configuration** | Your real test commands run without prompts; module rules load only where they apply |
 | 🛡️ | **Guardrails** | No commits without your request, confirmation before destructive commands, secret files off-limits |
 | 🔁 | **Engineering loop** | Plan → implement → test → review → document, with honest reporting of what was really checked |
 | ⚡ | **One-command workflows** | `/ai-kit-bootstrap`, `/ai-kit-review`, `/ai-kit-sync-context` |
-| 📦 | **Safe installer and upgrades** | Preview first, offline, backups, conflict candidates, your local edits preserved |
+| 📦 | **Safe installer and upgrades** | Preview first, offline, backups, conflict candidates, explicit unchanged-adapter retirement, your local edits preserved |
 
 ## Why AI-KIT
 
@@ -144,8 +144,8 @@ In Codex, use `$ai-kit-bootstrap` and the other skills the same way.
 
 - **Language split:** files and code in English, chat in your language (Russian by default).
 - **Private or team mode:** keep AI-KIT local, or share it with the whole team through Git.
-- **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, and stale provider data; `--fix` restores baseline files without touching local edits.
-- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, and cost from your own evidence for routing experiments; `metrics.py analyze` aggregates them per provider to inform `selection.json`, with no automatic telemetry.
+- **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, stale provider data, and manifest/context drift; `--fix` restores baseline files without touching local edits.
+- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, cost, and optional schema-2 attempt dispositions from your own evidence; `metrics.py analyze` aggregates them per provider to inform `selection.json`, with no automatic telemetry. The lightweight evaluator checks baseline/kit pair coverage without inspecting task text.
 
 ## Install
 
@@ -176,7 +176,7 @@ python scripts/install.py /path/to/my-app --preset solo --agent codex --agent cl
 
 Existing project documents and context are never overwritten; customized instructions become reviewable conflicts.
 
-Every command also runs through one CLI: `python aikit_cli.py install|doctor|route|configure|metrics|adr|changelog|check|docker …` (or `aikit …` after `pip install -e .`).
+Every command also runs through one CLI: `python aikit_cli.py install|doctor|context|adapters|route|configure|providers|metrics|evaluate|adr|changelog|check|docker …` (or `aikit …` after `pip install -e .`).
 
 ## Choose your defaults
 

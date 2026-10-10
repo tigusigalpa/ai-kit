@@ -18,6 +18,7 @@ JOURNAL = "ai-kit/.metrics/tasks.jsonl"
 LOCK = "ai-kit/.metrics/write.lock"
 IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,127}\Z")
 TOKEN_FIELDS = ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens")
+ATTEMPT_DISPOSITIONS = ("succeeded", "failed", "inconclusive")
 
 
 def _fields(value: object, allowed: set[str], label: str) -> dict:
@@ -35,8 +36,8 @@ def _identifier(value: object, label: str) -> str:
 def validate_record(value: object) -> dict:
     record = _fields(value, {"schema", "task_id", "experiment", "arm", "kit_version", "outcome",
                              "checks", "rework", "escalations", "attempts"}, "task record")
-    if type(record.get("schema")) is not int or record["schema"] != 1:
-        raise ValueError("Expected measurement schema 1")
+    if type(record.get("schema")) is not int or record["schema"] not in {1, 2}:
+        raise ValueError("Expected measurement schema 1 or 2")
     for field in ("task_id", "experiment", "arm", "kit_version"):
         _identifier(record.get(field), field)
     if not isinstance(record.get("outcome"), str) or record["outcome"] not in {"correct", "incorrect", "incomplete"}:
@@ -52,7 +53,10 @@ def validate_record(value: object) -> dict:
     if not isinstance(attempts, list) or not attempts:
         raise ValueError("Include all attempts, including failures and recovery")
     for attempt in attempts:
-        _fields(attempt, {"provider", "model", "effort", "duration_seconds", "cost", *TOKEN_FIELDS},
+        allowed = {"provider", "model", "effort", "duration_seconds", "cost", *TOKEN_FIELDS}
+        if record["schema"] == 2:
+            allowed.add("disposition")
+        _fields(attempt, allowed,
                 "attempt")
         for field in ("provider", "model", "effort"):
             if attempt.get(field) is not None:
@@ -85,6 +89,8 @@ def validate_record(value: object) -> dict:
                 raise ValueError("Cost currency must be a three-letter uppercase code")
             if not isinstance(cost.get("source"), str) or cost["source"] not in {"billing", "provider-usage", "estimate"}:
                 raise ValueError("Cost source must be billing, provider-usage, or estimate")
+        if record["schema"] == 2 and attempt.get("disposition") not in ATTEMPT_DISPOSITIONS:
+            raise ValueError("Schema 2 attempts need disposition: succeeded, failed, or inconclusive")
     # Normalize JSON values without carrying caller-owned mutable objects into a write plan.
     return json.loads(json.dumps(record, allow_nan=False))
 
@@ -198,11 +204,13 @@ def analyze(records: list[dict]) -> dict:
                 continue
             entry = providers.setdefault(provider, {"tasks": set(), "correct_tasks": set(),
                                                     "attempts": 0, "cost": defaultdict(Decimal),
-                                                    "cost_attempts": 0, "models": set(), "efforts": set()})
+                                                    "cost_attempts": 0, "models": set(), "efforts": set(),
+                                                    "dispositions": defaultdict(int), "known_dispositions": 0})
             entry["attempts"] += 1
-            entry["tasks"].add(record["task_id"])
+            identity = (record["experiment"], record["arm"], record["task_id"])
+            entry["tasks"].add(identity)
             if correct:
-                entry["correct_tasks"].add(record["task_id"])
+                entry["correct_tasks"].add(identity)
             if attempt.get("model") is not None:
                 entry["models"].add(attempt["model"])
             if attempt.get("effort") is not None:
@@ -211,6 +219,10 @@ def analyze(records: list[dict]) -> dict:
             if cost is not None:
                 entry["cost"][cost["currency"]] += Decimal(cost["amount"])
                 entry["cost_attempts"] += 1
+            disposition = attempt.get("disposition")
+            if disposition is not None:
+                entry["dispositions"][disposition] += 1
+                entry["known_dispositions"] += 1
     results = []
     for name in sorted(providers):
         entry = providers[name]
@@ -218,16 +230,23 @@ def analyze(records: list[dict]) -> dict:
         correct = len(entry["correct_tasks"])
         complete = entry["cost_attempts"] == entry["attempts"] and len(entry["cost"]) == 1
         total = next(iter(entry["cost"].values())) if complete else None
+        decisive = entry["dispositions"]["succeeded"] + entry["dispositions"]["failed"]
         results.append({"provider": name, "attempts": entry["attempts"], "tasks": tasks,
                         "correct_tasks": correct, "success_rate": correct / tasks if tasks else None,
                         "known_cost_by_currency": {key: str(value) for key, value in sorted(entry["cost"].items())},
                         "cost_coverage": {"known": entry["cost_attempts"], "total": entry["attempts"]},
                         "cost_per_correct": str(total / correct) if complete and correct else None,
+                        "attempt_dispositions": {key: entry["dispositions"][key] for key in ATTEMPT_DISPOSITIONS},
+                        "attempt_disposition_coverage": {"known": entry["known_dispositions"],
+                                                         "total": entry["attempts"]},
+                        "attempt_success_rate": (entry["dispositions"]["succeeded"] / decisive
+                                                 if decisive else None),
                         "models": sorted(entry["models"]), "efforts": sorted(entry["efforts"])})
     return {"providers": results,
-            "note": "Descriptive per-provider totals from reviewed records; a task is attributed to every "
-                    "provider used in its attempts. Compare matched tasks and reviewed correctness before "
-                    "changing selection.json; these are not evidence of causation."}
+            "note": "Descriptive per-provider totals from reviewed records; a task identity is experiment, arm, "
+                    "and task_id, and each provider used in its attempts receives that attribution. Schema 2 "
+                    "attempt dispositions describe execution, not causation. Compare matched tasks and reviewed "
+                    "correctness before changing selection.json."}
 
 
 def main(argv: list[str] | None = None) -> int:

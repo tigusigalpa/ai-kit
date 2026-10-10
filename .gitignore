@@ -36,6 +36,9 @@ __pycache__/
 .coverage
 htmlcov/
 /.test-results/
+dist/
+build/
+*.egg-info/
 *.log
 
 # ---- IDE, editor, and OS files ----

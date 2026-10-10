@@ -1,0 +1,8 @@
+include VERSION LICENSE AGENTS.md PROJECT_CONTEXT.md README.md WIKI.md CHANGELOG.md SECURITY.md SKILL.md BOOTSTRAP_PROMPT.md CONTRIBUTING.md
+include .gitignore
+recursive-include docs *
+recursive-include integrations *
+recursive-include template *
+recursive-include template/.agents *
+recursive-include templates *
+recursive-include .github *

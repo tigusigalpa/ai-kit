@@ -4,8 +4,8 @@
 
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
-- Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the routing helper; scripts/adr.py and scripts/changelog.py scaffold records; a Makefile wraps the commands.
-- Version source: [VERSION](VERSION). The local tree is prepared as v0.9.0. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
+- Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the routing helper; scripts/context.py snapshots manifest evidence; scripts/adapters.py audits/retires adapters; scripts/evaluate.py reports private A/B record coverage; scripts/adr.py and scripts/changelog.py scaffold records; a Makefile wraps the commands.
+- Version source: [VERSION](VERSION). The local tree is prepared for the v0.10.0 tag. Publishing/tagging has not been requested; the last verified published source was v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -22,24 +22,26 @@
 
 - Validation: python scripts/check_kit.py
 - Behavioral tests: python -m unittest discover -s tests -v
-- Unified CLI: python aikit_cli.py install|doctor|route|configure|metrics|adr|changelog|check|docker ... (pyproject.toml exposes `aikit` after pip install -e .); the standalone scripts and the Makefile remain equivalent.
+- Unified CLI: python aikit_cli.py install|doctor|context|adapters|route|configure|providers|metrics|evaluate|adr|changelog|check|docker ... (pyproject.toml exposes `aikit` after pip install -e .); the standalone scripts and the Makefile remain equivalent.
 - Install preview: python scripts/install.py TARGET
 - Apply installation: python scripts/install.py TARGET --apply (add --check to run the doctor afterward, --interactive for a guided prompt)
-- Installed-project health check: python scripts/doctor.py TARGET (add --fix to restore missing managed files/owned documents)
+- Installed-project health check: python scripts/doctor.py TARGET (add --fix to restore missing managed files/owned documents); it reports module/profile/manifest-evidence drift.
+- Project-fact snapshot: python scripts/context.py snapshot TARGET [--apply] (preview first; updates only project.json evidence).
+- Client report/retirement: python scripts/adapters.py report [--project TARGET]; python scripts/adapters.py retire TARGET --agent NAME [--apply] (removes only unchanged tracked adapter files after preview and backup).
 - Routing recommendation: python scripts/router.py route "task"
 - Routing configuration: python scripts/router.py configure TARGET --apply
-- Provider review: python scripts/router.py providers (lists tier, status, date, and sources)
+- Provider review: python scripts/router.py providers (also `aikit providers`; lists tier, status, date, and sources)
 - Routing evidence/overrides: route accepts --operation, repeatable --risk, --components, --level, --role, --effort, --provider, and --model. English/Russian rules explain recommendations; only declared model capabilities produce an effort control. The helper does not execute tasks or switch live models.
-- Optional measurement preview/apply: python scripts/metrics.py record TARGET --from-json PRIVATE_RECORD [--apply]; summary/analyze: python scripts/metrics.py summary|analyze TARGET (analyze aggregates per provider to inform selection.json, read-only). ai-kit/.metrics/ journals are ignored in private/team modes, validated, and preserved by upgrades.
+- Optional measurement preview/apply: python scripts/metrics.py record TARGET --from-json PRIVATE_RECORD [--apply]; summary/analyze: python scripts/metrics.py summary|analyze TARGET (analyze aggregates per provider by experiment/arm/task identity to inform selection.json, read-only). Schema 2 records per-attempt disposition; schema 1 journals remain readable. ai-kit/.metrics/ journals are ignored in private/team modes, validated, and preserved by upgrades.
 - Filament: known Composer dependencies/locks suggest the conditional FILAMENT profile per module. Bootstrap verifies use and installed versions; source and Claude-native skills point to the same profile.
-- Application evaluation: [protocol](docs/EVALUATION.md) separates fixed-model instruction trials, context/continuation checks, and routing. The owner chose to run real-project trials separately; no productivity/cost result is established.
+- Application evaluation: [protocol](docs/EVALUATION.md) separates fixed-model instruction trials, context/continuation checks, and routing. scripts/evaluate.py scaffolds opaque baseline/kit task IDs and reports journal pair coverage; it does not assess semantic correctness. The owner chose to run real-project trials separately; no productivity/cost result is established.
 - Decision record scaffold: python scripts/adr.py new "title" --root TARGET
 - Changelog entry: python scripts/changelog.py add "message" --root TARGET
 - Optional install extras: --with-session-start, --with-guards, --with-data-guards, --with-native-settings, --with-scoped-rules, --with-ci (persist in ai-kit/settings.json), or --preset minimal|solo|team|strict for the managed set (CI stays explicit). Claude wiring merges owned entries (managed_json in installer state) into .claude/settings.local.json in private mode and .claude/settings.json in team mode; guards are ask rules.
 - Generated client configuration derives from ai-kit/project.json (detection fallback): secrets from templates/agent-secrets.ignore plus stack additions, client ignore files and scoped rule formats declared per agent in integrations/agents.json. Workflow skills ai-kit-bootstrap/review/sync-context install with source and Claude copies.
 - Client detection: detect markers per agent in integrations/agents.json; preview reports detected_agents/suggested_agents without changing the selection.
 - Adapter file parents: an existing `.clinerules` file is detected and preserved when Cline is unselected. Selecting its directory adapter refuses the blocked parent during planning; see [file-parent compatibility](docs/ADAPTER_PATH_FIX.md).
-- Optional adapters: gemini, windsurf, cline, roo; machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json.
+- Optional adapters: gemini, windsurf, cline, roo; machine-readable client documentation/activation metadata lives in integrations/agents.json. Machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json. MCP posture is template/ai-kit/MCP.md; no MCP server is installed automatically.
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
 - Local verified environment: Windows, bundled Python 3.12.14. The user supplied a Linux/Python 3.13.16 hosted-check failure; successful hosted matrix execution remains unverified.
 - Earlier patch verification: v0.2.1 clean/mixed-layout checks returned no errors or warnings; its patched public snapshot passed 32 tests with 1 unavailable Windows symlink test.
@@ -55,6 +57,7 @@
 - v0.7.0 (2026-10-10, Windows/Python 3.14.6): 191 tests ran, 189 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Adds the unified `aikit` CLI and pyproject console script, macOS/Python 3.14 CI, the project.json/PROJECT_CONTEXT module-map drift check, and non-Latin chat language names; [unified CLI verification](docs/IMPLEMENTATION.md#unified-cli-and-fact-drift-verification). Hosted CI on the expanded matrix and a portable wheel remain unverified.
 - v0.8.0 (2026-10-10, Windows/Python 3.14.6): 197 tests ran, 195 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Adds `router.py providers`, `doctor.py --fix`, CI self-install for private mode, and a golden snapshot test; [provider review and doctor-fix verification](docs/IMPLEMENTATION.md#provider-review-and-doctor-fix-verification). Hosted CI, Gemini verification, and a portable wheel remain unverified.
 - v0.9.0 (2026-10-10, Windows/Python 3.14.6): 199 tests ran, 197 passed, two skipped; kit validation returned zero errors and zero warnings. Adds `metrics.py analyze` and verified Gemini model IDs; [verification](docs/IMPLEMENTATION.md#measurement-analysis-and-gemini-verification). Hosted CI and a portable wheel remain unverified.
+- v0.10.0 (2026-10-10): prepared locally for the `v0.10.0` tag. Adds schema-2 measurement dispositions and corrected A/B identity, context evidence/snapshot and doctor drift reporting, client documentation/retirement commands, opaque evaluation pair coverage, MCP posture, and wheel packaging/CI smoke jobs. The current agent shell has no accessible Python interpreter; local checker, tests, build, wheel smoke, and hosted CI are unverified.
 
 ## Agreements
 

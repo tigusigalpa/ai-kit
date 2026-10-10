@@ -13,10 +13,13 @@ sys.path.insert(0, str(ROOT / "scripts"))
 _COMMANDS = {
     "install": ("install", None),
     "doctor": ("doctor", None),
+    "context": ("context", None),
+    "adapters": ("adapters", None),
     "route": ("router", "route"),
     "configure": ("router", "configure"),
     "providers": ("router", "providers"),
     "metrics": ("metrics", None),
+    "evaluate": ("evaluate", None),
     "adr": ("adr", None),
     "changelog": ("changelog", None),
     "check": ("check_kit", None),

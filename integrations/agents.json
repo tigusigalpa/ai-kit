@@ -2,29 +2,65 @@
   "schema": 1,
   "agents": {
     "codex": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://learn.chatgpt.com/docs/agent-configuration/agents-md", "https://learn.chatgpt.com/docs/build-skills"],
+        "activation": "unverified"
+      },
       "entries": [],
       "detect": [".codex/"]
     },
     "claude": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://code.claude.com/docs/en/memory", "https://code.claude.com/docs/en/skills", "https://code.claude.com/docs/en/hooks"],
+        "activation": "unverified"
+      },
       "entries": ["CLAUDE.md"],
       "skills_copy": ".claude/skills/",
       "scoped_rules": {"directory": ".claude/rules/", "format": "claude-paths"},
       "detect": ["CLAUDE.md", "CLAUDE.local.md", ".claude/"]
     },
     "kimi": {
+      "documentation": {
+        "status": "unverified",
+        "verified_documentation_date": null,
+        "sources": [],
+        "activation": "unverified"
+      },
       "entries": ["KIMI.md"],
       "detect": ["KIMI.md"]
     },
     "manus": {
+      "documentation": {
+        "status": "unverified",
+        "verified_documentation_date": null,
+        "sources": [],
+        "activation": "unverified"
+      },
       "entries": ["MANUS.md"],
       "detect": ["MANUS.md"]
     },
     "gemini": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://geminicli.com/docs/get-started/configuration"],
+        "activation": "unverified"
+      },
       "entries": ["GEMINI.md"],
       "ignore_file": ".geminiignore",
       "detect": ["GEMINI.md", ".gemini/"]
     },
     "copilot": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions"],
+        "activation": "unverified"
+      },
       "optional": [
         {"source": "copilot-instructions.md", "destination": ".github/copilot-instructions.md"}
       ],
@@ -32,6 +68,12 @@
       "detect": [".github/copilot-instructions.md", ".github/instructions/"]
     },
     "cursor": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://cursor.com/docs/context/rules", "https://cursor.com/docs/reference/ignore-file"],
+        "activation": "unverified"
+      },
       "optional": [
         {"source": "ai-kit.mdc", "destination": ".cursor/rules/ai-kit.mdc"}
       ],
@@ -40,6 +82,12 @@
       "detect": [".cursor/", ".cursorrules", ".cursorignore"]
     },
     "aider": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://aider.chat/docs/usage/conventions.html", "https://aider.chat/docs/config/options.html"],
+        "activation": "unverified"
+      },
       "optional": [
         {"source": "CONVENTIONS.md", "destination": "CONVENTIONS.md"}
       ],
@@ -47,6 +95,12 @@
       "detect": [".aider.conf.yml", ".aiderignore"]
     },
     "windsurf": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://docs.devin.ai/desktop/cascade/memories"],
+        "activation": "unverified"
+      },
       "optional": [
         {"source": "ai-kit-windsurf.md", "destination": ".windsurf/rules/ai-kit.md"}
       ],
@@ -54,6 +108,12 @@
       "detect": [".windsurf/", ".windsurfrules"]
     },
     "cline": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://docs.cline.bot/customization/cline-rules"],
+        "activation": "unverified"
+      },
       "optional": [
         {"source": "ai-kit-cline.md", "destination": ".clinerules/ai-kit.md"}
       ],
@@ -61,6 +121,12 @@
       "detect": [".clinerules"]
     },
     "roo": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-10",
+        "sources": ["https://docs.roocode.com/features/custom-instructions"],
+        "activation": "unverified"
+      },
       "optional": [
         {"source": "ai-kit-roo.md", "destination": ".roo/rules/ai-kit.md"}
       ],

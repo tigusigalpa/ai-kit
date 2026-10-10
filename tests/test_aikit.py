@@ -35,6 +35,12 @@ class AikitCliTests(unittest.TestCase):
             self.assertEqual(aikit_cli.main(["providers"]), 0)
         self.assertIn('"provider": "gemini"', output.getvalue())
 
+    def test_adapters_dispatches_to_client_report(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(aikit_cli.main(["adapters", "report"]), 0)
+        self.assertIn('"client": "codex"', output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()

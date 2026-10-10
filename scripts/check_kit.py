@@ -155,9 +155,10 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     required = ["VERSION", "LICENSE", "AGENTS.md", "PROJECT_CONTEXT.md", "README.md",
                 "template/AGENTS.md", "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
-                "template/ai-kit/project.json",
+                "template/ai-kit/project.json", "template/ai-kit/MCP.md",
                 "scripts/install.py", "scripts/router.py", "scripts/adr.py", "scripts/changelog.py",
-                "scripts/metrics.py", "template/ai-kit/METRICS.md",
+                "scripts/metrics.py", "scripts/context.py", "scripts/adapters.py", "scripts/evaluate.py",
+                "scripts/__init__.py", "template/ai-kit/METRICS.md",
                 "template/ai-kit/stacks/FILAMENT.md", "template/.agents/skills/filament-work/SKILL.md",
                 "integrations/agents.json", "integrations/claude-settings.git-ask.json",
                 "integrations/claude-settings.data-ask.json", "templates/agent-secrets.ignore",
@@ -167,7 +168,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "template/ai-kit/router/providers/local.json",
                 "template/ai-kit/router/providers/gemini.json",
                 "templates/gitignore.private", "templates/gitignore.team",
-                "aikit_cli.py", "pyproject.toml",
+                "aikit_cli.py", "__init__.py", "MANIFEST.in", "pyproject.toml", "tests/wheel_smoke.py",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md"]
     for relative in required:
         if not (root / relative).is_file():
@@ -175,10 +176,10 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     pyproject = root / "pyproject.toml"
     if pyproject.is_file():
         text = pyproject.read_text(encoding="utf-8")
-        if 'aikit = "aikit_cli:main"' not in text:
+        if 'aikit = "aikit.aikit_cli:main"' not in text:
             errors.append("pyproject.toml must declare the aikit console script")
-        if "version = {attr = \"aikit_cli.__version__\"}" not in text:
-            errors.append("pyproject.toml must derive its version from VERSION via aikit_cli.__version__")
+        if "version = {file = [\"VERSION\"]}" not in text:
+            errors.append("pyproject.toml must derive its version from VERSION")
     elif not (root / "aikit_cli.py").is_file():
         errors.append("Missing unified CLI entry point")
     for p in source_files(root):
@@ -251,7 +252,10 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
             value = json.loads(project_json.read_text(encoding="utf-8"))
             if type(value.get("schema")) is not int or value["schema"] != 1:
                 raise ValueError("schema must be 1")
-            if value.get("modules") != [] or not isinstance(value.get("operations"), dict):
+            evidence = value.get("evidence")
+            if (value.get("modules") != [] or not isinstance(value.get("operations"), dict) or
+                    not isinstance(evidence, dict) or evidence.get("schema") != 1 or
+                    evidence.get("modules") != []):
                 errors.append("Project template project.json must start empty of module facts")
         except (ValueError, json.JSONDecodeError) as exc:
             errors.append("Invalid project template project.json: " + str(exc))

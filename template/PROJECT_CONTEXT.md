@@ -26,6 +26,7 @@ For a monorepo add one row per verified module; account for cross-module contrac
 - Installation settings: [settings](ai-kit/settings.json). Accepted bundle/baseline and pending candidates are in local installer state under ai-kit/; verify them before claiming completion.
 - Upstream check/applied SHA, source layout, last verification, pending updates: not established. Use [refresh procedure](ai-kit/UPSTREAM.md).
 - Provider, available model IDs/controls, pricing/capability source/date, actual switching mechanism: not established. Verify only when needed.
+- MCP servers, owners, approved capabilities/data scopes, credential-location classes, and review triggers: not established. Use [MCP posture](ai-kit/MCP.md) before enabling one.
 - Explicit local overrides and their evidence: not established; use [Core](ai-kit/CORE.md) and the applicable conventions profile as defaults.
 - Decisions and history: [decision log](docs/DECISIONS.md), docs/adr/, and [CHANGELOG](CHANGELOG.md).
 

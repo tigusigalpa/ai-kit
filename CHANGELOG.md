@@ -1,10 +1,21 @@
 # AI-KIT changelog
 
+## v0.10.0 (2026-10-10)
+
+- Fixed `metrics.py analyze` task attribution: the identity is now `(experiment, arm, task_id)`, so baseline and kit rows with the same task ID no longer collapse. Added backward-readable measurement schema 2 with required per-attempt `succeeded`/`failed`/`inconclusive` disposition, coverage, and decisive-attempt rate; schema 1 journals remain valid with unknown disposition.
+- Added manifest evidence snapshots in `ai-kit/project.json`, `aikit context snapshot TARGET [--apply]`, and doctor warnings for new/removed modules, profile drift, and changed manifest evidence. The snapshot is preview-first and changes only evidence after explicit apply.
+- Added client documentation metadata in `integrations/agents.json`, `aikit adapters report`, and conservative `aikit adapters retire TARGET --agent NAME [--apply]`. Retirement backs up and removes only unchanged tracked adapter files, then deselects that client; local edits, untracked files, native directories, settings fragments, and ignore blocks remain untouched.
+- Added the private `aikit evaluate scaffold|coverage` harness for opaque baseline/kit task packs and measurement-pair coverage. It reports missing pairs and unexpected records but does not inspect prompts or infer semantic correctness.
+- Added MCP posture and an indirect-instruction boundary: untrusted repository/remote content cannot authorize commands, integrations, credentials, or permission changes; MCP servers remain opt-in, least-privilege, and project-recorded.
+- Packaged the `aikit` console command with bundled templates/resources for a portable wheel and added a six-cell Windows/macOS/Linux, Python 3.10/3.14 CI smoke-install job. The hosted job has not run on this revision.
+- Verification is pending: the current agent shell has no accessible Python interpreter, so local checker, unit, build, and wheel smoke results are not established. New regressions cover metrics, context evidence, adapters, evaluator, checker, and CLI behavior; run the documented commands before tagging `v0.10.0`.
+
 ## v0.9.0 (2026-10-10)
 
 - Added `metrics.py analyze`, a per-provider aggregation (attempts, reviewed tasks, success rate, cost coverage, cost per correct result, models/efforts) that closes the loop between local measurements and routing: use it to inform `ai-kit/router/selection.json`, never to rewrite it automatically. It writes nothing and performs no API calls or price lookup.
 - Verified the Gemini provider: active cheap/work/escalation model IDs were read from the current [Gemini API models](template/ai-kit/router/providers/gemini.md) documentation and recorded in [gemini.json](template/ai-kit/router/providers/gemini.json). Reasoning goes through Gemini's thinking control, so effort stays unknown until its exact levels are confirmed against the thinking documentation.
 - Kit validation now returns zero errors and zero warnings (the previous pending-Gemini note is resolved); Gemini route/configure now resolve real model IDs.
+- Synchronized the unified-CLI documentation with the released `providers` proxy and added provider-review/analyze coverage to the maintenance continuity procedure.
 - Verification: 199 tests ran, 197 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and zero warnings.
 
 ## v0.8.0 (2026-10-10)
