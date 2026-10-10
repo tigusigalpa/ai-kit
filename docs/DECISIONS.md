@@ -5,6 +5,7 @@
 | Adaptive routing baseline | [ADR 0001](adr/0001-adaptive-model-routing.md) |
 | Template separation, conservative upgrade, policy ownership | [ADR 0002](adr/0002-template-separation.md) |
 | Data-driven agent registry and offline router helper | [ADR 0003](adr/0003-agent-registry-and-router.md) |
+| Interactive onboarding and machine-readable project facts | [ADR 0004](adr/0004-onboarding-and-project-facts.md) |
 | MIT selected by the owner on 2026-10-08 | [License](../LICENSE) |
 | Preserve candidate drafts and require review before adapter retirement | [Manus patch decisions](MANUS_REVIEW.md#decisions) |
 

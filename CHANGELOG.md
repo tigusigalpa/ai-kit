@@ -1,13 +1,21 @@
 # AI-KIT changelog
 
+## v0.4.6 (2026-10-10)
+
+- Added one-step onboarding: `--interactive` prompts for mode, language, conventions, agents, and extras; `--check` runs the doctor after `--apply`.
+- Added [ai-kit/project.json](template/ai-kit/project.json): the installer detects per-module manifests, language, version, and suggested test/lint/build commands and drafts `PROJECT_CONTEXT.md` and `project.json`, marked suggested until bootstrap confirms them.
+- Added `scripts/adr.py new` and `scripts/changelog.py add` helpers plus a [Makefile](Makefile) front-door (`make install`, `make doctor`, `make check`, `make test`, `make router`, `make adr`, `make changelog`).
+- Extended the checker and doctor for `project.json` and the helper scripts.
+- Reran the full local suite: 109 tests, 108 passed, 1 skipped; kit validation returned no errors. PyPI publication stays deferred (remote changes are not authorized).
+
 ## v0.4.5 (2026-10-10)
 
-- Added a data-driven agent registry ([integrations/agents.json](integrations/agents.json)) replacing the installer's hardcoded client/entry constants; the installer, checker, and doctor now share one source for agent names, gated template entries, optional integration files, and Claude skill copies. Adding a client is a data change rather than installer code.
-- Added [scripts/router.py](scripts/router.py), an offline helper: `route "task"` returns a deterministic capability recommendation (level/role/effort plus a resolved provider/model), and `configure PROJECT --apply` writes `ai-kit/router/resolved.json` and, for a selected Aider agent, a native `.aider.conf.yml` model routing file. Classification is a transparent keyword rule, not a confidence score; no credentials or switching runtime are installed.
-- Added [selection.json](template/ai-kit/router/selection.json) to record which providers a project actually uses, with per-role provider/model/effort overrides and self-hosted model IDs.
-- Added provider tiers: a [local provider](template/ai-kit/router/providers/local.json) for Ollama/self-hosted models (user-supplied IDs) and a [pending Gemini scaffold](template/ai-kit/router/providers/gemini.json) that links the existing Gemini adapter to the router without fabricating model IDs. The provider schema now supports `tier`, `user_supplied_models`, and `verification_status`.
-- Extended the checker and doctor for the registry, the new provider schema, and selection/resolved validation; pending and user-supplied providers surface as info rather than stale-date warnings.
-- Reran the full local suite: 92 tests, 91 passed, 1 skipped (Windows symlink privilege); kit validation returned no errors. Gemini router IDs remain pending verification; no live API calls, client activations, or hosted CI ran.
+- Added a data-driven agent registry ([integrations/agents.json](integrations/agents.json)) replacing hardcoded client/entry constants; installer, checker, and doctor now share one source for agent wiring.
+- Added [scripts/router.py](scripts/router.py): `route "task"` returns a deterministic capability recommendation, and `configure PROJECT --apply` writes `ai-kit/router/resolved.json` plus a native Aider model file. Classification is a transparent rule; no credentials or switching runtime.
+- Added [selection.json](template/ai-kit/router/selection.json) for provider choice with per-role overrides and self-hosted model IDs.
+- Added provider tiers: a [local provider](template/ai-kit/router/providers/local.json) (user-supplied Ollama IDs) and a [pending Gemini scaffold](template/ai-kit/router/providers/gemini.json) (no fabricated IDs). Schema adds `tier`, `user_supplied_models`, `verification_status`.
+- Extended the checker and doctor for the registry, provider schema, and selection/resolved validation.
+- Reran the full local suite: 92 tests, 91 passed, 1 skipped; kit validation returned no errors. Gemini IDs remain pending; no live API or hosted CI.
 
 ## v0.3.8 (2026-10-10)
 

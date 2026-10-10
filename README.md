@@ -52,12 +52,11 @@ Add --apply to the same command:
 python scripts/install.py /home/you/projects/my-app --apply
 ~~~
 
-Missing files are created; existing project README, context, WIKI, changelog, and decision documents survive.
-Customized instructions can conflict; use [the update procedure](#update-an-application-project) to merge them.
+Missing files are created; existing project documents and context survive. Customized instructions can conflict; use [the update procedure](#update-an-application-project) to merge them. Add `--interactive` for a guided prompt or `--check` to run the doctor right after applying.
 
 ### 3. Start the first session
 
-Give the agent [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) and access to the bundle and repository. It fills the templates with actual purpose, versions, module paths, commands, and open questions, so the next session knows how to run the project and check a change. Without file access, attach templates and repository evidence, then apply the proposed files yourself.
+Give the agent [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) and access to the bundle and repository. It fills the templates with actual purpose, versions, module paths, commands, and open questions. Without file access, attach the templates and evidence and apply the files yourself.
 
 ## Choose your defaults
 

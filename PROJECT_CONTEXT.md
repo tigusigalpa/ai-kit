@@ -4,8 +4,8 @@
 
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
-- Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the offline routing helper.
-- Version source: [VERSION](VERSION). The local tree is prepared as v0.4.5; the last published source was v0.2.2. No release or tag refs were returned at the latest read.
+- Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the routing helper; scripts/adr.py and scripts/changelog.py scaffold records; a Makefile wraps the commands.
+- Version source: [VERSION](VERSION). The local tree is prepared as v0.4.6; the last published source was v0.2.2. No release or tag refs were returned at the latest read.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -23,10 +23,12 @@
 - Validation: python scripts/check_kit.py
 - Behavioral tests: python -m unittest discover -s tests -v
 - Install preview: python scripts/install.py TARGET
-- Apply installation: python scripts/install.py TARGET --apply
+- Apply installation: python scripts/install.py TARGET --apply (add --check to run the doctor afterward, --interactive for a guided prompt)
 - Installed-project health check: python scripts/doctor.py TARGET
 - Routing recommendation: python scripts/router.py route "task"
 - Routing configuration: python scripts/router.py configure TARGET --apply
+- Decision record scaffold: python scripts/adr.py new "title" --root TARGET
+- Changelog entry: python scripts/changelog.py add "message" --root TARGET
 - Optional install extras: --with-session-start, --with-guards, --with-ci (persist in ai-kit/settings.json).
 - Optional adapters: gemini, windsurf, cline, roo; machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json.
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
@@ -35,6 +37,7 @@
 - Earlier v0.2.2 evidence: clean and patched-public-tree suites each executed 45 tests, 43 passed and 2 linked-path checks were unavailable. An actual v0.2.1 installation upgraded successfully and remained stable on rerun; [Manus patch verification](docs/IMPLEMENTATION.md#manus-patch-verification).
 - Current fixture correction: 47 local tests executed, 44 passed, 3 linked-path variants unavailable. Kit validation and repackaged archive inventory/bytes/Python 3.10 syntax passed; [Windows CI fixture verification](docs/IMPLEMENTATION.md#windows-ci-fixture-verification). Hosted corrected Windows results remain unverified.
 - v0.4.5 (2026-10-10): 92 tests ran, 91 passed, 1 Windows symlink skip; kit validation returned no errors (one pending-Gemini warning). Covers the agent registry, router route/configure, and local/pending provider tiers; [router verification](docs/IMPLEMENTATION.md#router-and-agent-registry-verification). Gemini router IDs and hosted CI remain unverified.
+- v0.4.6 (2026-10-10): 109 tests ran, 108 passed, 1 Windows symlink skip; kit validation returned no errors (one pending-Gemini warning). Covers interactive/check onboarding, project-fact detection and project.json drafting, and the adr/changelog helpers; [onboarding verification](docs/IMPLEMENTATION.md#onboarding-and-project-facts-verification). Hosted CI and PyPI publication remain unverified.
 
 ## Agreements
 

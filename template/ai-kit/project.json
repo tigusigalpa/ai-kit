@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "modules": [],
+  "operations": {
+    "startup": null,
+    "ci": null,
+    "deploy": null,
+    "migrations": null
+  }
+}

@@ -125,6 +125,17 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
                 raise ValueError("Resolved roles must be an object")
         except (ValueError, json.JSONDecodeError) as exc:
             warnings.append(f"Invalid generated router config: {exc}")
+    project_json_path = target / "ai-kit" / "project.json"
+    if project_json_path.is_file():
+        try:
+            value = json.loads(project_json_path.read_text(encoding="utf-8"))
+            if type(value.get("schema")) is not int or value["schema"] != 1:
+                raise ValueError("Unsupported project schema; expected schema 1")
+            modules = value.get("modules")
+            if not isinstance(modules, list) or any(not isinstance(m, dict) for m in modules):
+                raise ValueError("Project modules must be a list of objects")
+        except (ValueError, json.JSONDecodeError) as exc:
+            warnings.append(f"Invalid project.json: {exc}")
     warnings.extend(link_warnings(target))
     return report
 

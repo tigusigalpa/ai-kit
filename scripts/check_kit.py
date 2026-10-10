@@ -141,7 +141,9 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     required = ["VERSION", "LICENSE", "AGENTS.md", "PROJECT_CONTEXT.md", "README.md",
                 "template/AGENTS.md", "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
-                "scripts/install.py", "scripts/router.py", "integrations/agents.json",
+                "template/ai-kit/project.json",
+                "scripts/install.py", "scripts/router.py", "scripts/adr.py", "scripts/changelog.py",
+                "integrations/agents.json",
                 "template/ai-kit/router/selection.json",
                 "template/ai-kit/router/providers/local.json",
                 "template/ai-kit/router/providers/gemini.json",
@@ -211,6 +213,16 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         if (root / relative).exists() and re.search(r"2026-\d\d-\d\d|5dd530b9|voice conversation",
                                                    (root / relative).read_text()):
             errors.append("Kit-maintenance history leaked into project template: " + relative)
+    project_json = root / "template/ai-kit/project.json"
+    if project_json.is_file():
+        try:
+            value = json.loads(project_json.read_text(encoding="utf-8"))
+            if type(value.get("schema")) is not int or value["schema"] != 1:
+                raise ValueError("schema must be 1")
+            if value.get("modules") != [] or not isinstance(value.get("operations"), dict):
+                errors.append("Project template project.json must start empty of module facts")
+        except (ValueError, json.JSONDecodeError) as exc:
+            errors.append("Invalid project template project.json: " + str(exc))
     providers_dir = root / "template" / "ai-kit" / "router" / "providers"
     model_ids: list[str] = []
     if providers_dir.is_dir():

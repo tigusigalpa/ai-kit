@@ -190,8 +190,9 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(plan["detected_profiles"], {"FRONTEND": [""], "GO": [""]})
         self.apply()
         context = (self.target / "PROJECT_CONTEXT.md").read_text(encoding="utf-8")
-        self.assertIn("| / | installer-detected manifests | not established | "
-                      "FRONTEND, GO (suggested, confirm at bootstrap) | not established |", context)
+        self.assertIn("| / | go.mod, package.json (installer-detected) | Go (suggested) | "
+                      "FRONTEND, GO (suggested, confirm at bootstrap) | "
+                      "build: go build ./...; lint: go vet ./...; test: go test ./... |", context)
 
     def test_detected_profiles_are_scoped_to_module_prefixes(self):
         self.write("api/go.mod", b"module example.test/api\n")

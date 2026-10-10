@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 START = "# BEGIN AI-KIT MANAGED"
 END = "# END AI-KIT MANAGED"
 OWNED = {"README.md", "PROJECT_CONTEXT.md", "WIKI.md", "CHANGELOG.md", "docs/DECISIONS.md",
-         "docs/adr/0000-template.md"}
+         "docs/adr/0000-template.md", "ai-kit/project.json"}
 AGENT_REGISTRY_PATH = "integrations/agents.json"
 PROFILE_MANIFESTS = {
     "GO": ("go.mod",),
@@ -230,46 +230,176 @@ def module_ignores(target: Path) -> list[str]:
     return sorted(set(rules))
 
 
-def detect_profiles(target: Path) -> dict[str, list[str]]:
-    """Map stack profiles to module prefixes evidenced by manifests (unverified draft)."""
-    found: dict[str, set[str]] = {}
+def _manifest_json(path: Path) -> dict | None:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError, UnicodeError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _go_version(path: Path) -> str | None:
+    try:
+        for line in path.read_text(encoding="utf-8").splitlines():
+            match = re.match(r"\s*go\s+(\d+\.\d+(?:\.\d+)?)\s*$", line)
+            if match:
+                return match.group(1)
+    except (OSError, UnicodeError):
+        pass
+    return None
+
+
+def _python_requires(path: Path) -> str | None:
+    try:
+        match = re.search(r'requires-python\s*=\s*"([^"]+)"', path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError):
+        return None
+    return match.group(1) if match else None
+
+
+def _package_facts(pkg: dict) -> dict:
+    version = None
+    engines = pkg.get("engines")
+    if isinstance(engines, dict) and isinstance(engines.get("node"), str):
+        version = engines["node"]
+    manager = "npm"
+    declared = pkg.get("packageManager")
+    if isinstance(declared, str) and declared.split("@", 1)[0] in {"npm", "pnpm", "yarn", "bun"}:
+        manager = declared.split("@", 1)[0]
+    scripts = pkg.get("scripts") if isinstance(pkg.get("scripts"), dict) else {}
+    commands = {}
+    if "test" in scripts:
+        commands["test"] = f"{manager} test"
+    if "build" in scripts:
+        commands["build"] = f"{manager} run build"
+    if "lint" in scripts:
+        commands["lint"] = f"{manager} run lint"
+    return {"language": "Node", "version": version, "commands": commands}
+
+
+def _composer_facts(composer: dict, *, laravel: bool) -> dict:
+    require = composer.get("require") if isinstance(composer.get("require"), dict) else {}
+    version = require.get("php") if isinstance(require.get("php"), str) else None
+    if laravel and isinstance(require.get("laravel/framework"), str):
+        version = require["laravel/framework"]
+    scripts = composer.get("scripts") if isinstance(composer.get("scripts"), dict) else {}
+    commands = {}
+    if "test" in scripts:
+        commands["test"] = "composer test"
+    if laravel:
+        commands["test"] = "php artisan test"
+    return {"language": "PHP", "version": version, "commands": commands}
+
+
+def detect_facts(target: Path) -> dict:
+    """Detect per-module manifests, language, version, and suggested commands (unverified draft)."""
+    modules: dict[str, dict] = {}
     excluded = {".git", "node_modules", "vendor", "ai-kit", ".agents", ".claude", ".venv"}
     for directory, dirs, files in os.walk(target, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded and not is_link(Path(directory) / d)]
         module = Path(directory)
         prefix = module.relative_to(target).as_posix()
         prefix = "" if prefix == "." else prefix + "/"
-        for profile, manifests in PROFILE_MANIFESTS.items():
-            if any(name in files for name in manifests):
-                found.setdefault(profile, set()).add(prefix)
+        facts: dict = {"path": "/" + prefix if prefix else "/", "manifests": [],
+                       "language": None, "version": None, "profiles": [], "commands": {}}
+        if "go.mod" in files:
+            facts["manifests"].append("go.mod")
+            facts["profiles"].append("GO")
+            facts["language"] = "Go"
+            facts["version"] = _go_version(module / "go.mod")
+            facts["commands"].update({"test": "go test ./...", "build": "go build ./...",
+                                      "lint": "go vet ./..."})
+        py_manifest = next((name for name in PROFILE_MANIFESTS["PYTHON"] if name in files), None)
+        if py_manifest:
+            facts["manifests"].append(py_manifest)
+            facts["profiles"].append("PYTHON")
+            if facts["language"] is None:
+                facts["language"] = "Python"
+            if facts["version"] is None:
+                facts["version"] = _python_requires(module / py_manifest)
+            facts["commands"].update({"test": "pytest", "lint": "ruff check ."})
+        if "package.json" in files:
+            facts["manifests"].append("package.json")
+            facts["profiles"].append("FRONTEND")
+            package = _package_facts(_manifest_json(module / "package.json") or {})
+            if facts["language"] is None:
+                facts["language"] = package["language"]
+            if facts["version"] is None:
+                facts["version"] = package["version"]
+            facts["commands"].update(package["commands"])
         if "composer.json" in files:
-            found.setdefault("PHP", set()).add(prefix)
-            if (module / "artisan").is_file():
-                found.setdefault("LARAVEL", set()).add(prefix)
+            facts["manifests"].append("composer.json")
+            facts["profiles"].append("PHP")
+            laravel = (module / "artisan").is_file()
+            if laravel:
+                facts["profiles"].append("LARAVEL")
+            composer = _composer_facts(_manifest_json(module / "composer.json") or {}, laravel=laravel)
+            if facts["language"] is None:
+                facts["language"] = composer["language"]
+            if facts["version"] is None:
+                facts["version"] = composer["version"]
+            facts["commands"].update(composer["commands"])
         if "config-dist.php" in files and (module / "lib/moodlelib.php").is_file():
-            found.setdefault("MOODLE", set()).add(prefix)
+            facts["manifests"].append("config-dist.php")
+            facts["profiles"].append("MOODLE")
+            if facts["language"] is None:
+                facts["language"] = "PHP"
+            facts["commands"].setdefault("test", "vendor/bin/phpunit")
+        if facts["manifests"]:
+            facts["profiles"] = sorted(set(facts["profiles"]))
+            modules[prefix] = facts
+    return {"modules": [modules[key] for key in sorted(modules)]}
+
+
+def profiles_from_facts(facts: dict) -> dict[str, list[str]]:
+    found: dict[str, set[str]] = {}
+    for module in facts["modules"]:
+        prefix = "" if module["path"] == "/" else module["path"][1:]
+        for profile in module["profiles"]:
+            found.setdefault(profile, set()).add(prefix)
     return {profile: sorted(prefixes) for profile, prefixes in sorted(found.items())}
 
 
-def project_context_draft(data: bytes, detected: dict[str, list[str]]) -> bytes:
+def detect_profiles(target: Path) -> dict[str, list[str]]:
+    """Map stack profiles to module prefixes evidenced by manifests (unverified draft)."""
+    return profiles_from_facts(detect_facts(target))
+
+
+def project_context_draft(data: bytes, facts: dict) -> bytes:
     """Turn installer-detected manifests into draft module-map rows for a fresh context."""
-    by_prefix: dict[str, set[str]] = {}
-    for profile, prefixes in detected.items():
-        for prefix in prefixes:
-            by_prefix.setdefault(prefix, set()).add(profile)
-    if not by_prefix:
+    modules = facts["modules"]
+    if not modules:
         return data
     text = data.decode("utf-8")
     placeholder = "| Not established | Not established | Not established | None confirmed | Not established |"
     if placeholder not in text:
         return data
     rows = []
-    for prefix in sorted(by_prefix):
-        label = "/" + prefix.rstrip("/") if prefix else "/"
-        profiles = ", ".join(sorted(by_prefix[prefix]))
-        rows.append(f"| {label} | installer-detected manifests | not established | "
-                    f"{profiles} (suggested, confirm at bootstrap) | not established |")
+    for module in modules:
+        manifests = ", ".join(module["manifests"]) + " (installer-detected)"
+        language = module["language"] or "not established"
+        if module["version"]:
+            language += " " + module["version"]
+        language += " (suggested)"
+        profiles = ", ".join(module["profiles"]) + " (suggested, confirm at bootstrap)"
+        commands = module["commands"]
+        if commands:
+            command_text = "; ".join(f"{key}: {value}" for key, value in sorted(commands.items()))
+        else:
+            command_text = "not established"
+        rows.append(f"| {module['path']} | {manifests} | {language} | {profiles} | {command_text} |")
     return text.replace(placeholder, "\n".join(rows), 1).encode("utf-8")
+
+
+def project_json_draft(data: bytes, facts: dict) -> bytes:
+    """Fill the machine-readable project.json modules from detected manifests (unverified draft)."""
+    if not facts["modules"]:
+        return data
+    value = json.loads(data.decode("utf-8"))
+    value["modules"] = [{"path": m["path"], "manifests": m["manifests"], "language": m["language"],
+                         "version": m["version"], "profiles": m["profiles"], "commands": m["commands"]}
+                        for m in facts["modules"]]
+    return (json.dumps(value, indent=2) + "\n").encode("utf-8")
 
 
 def merge_ignore(current: str, policy: str, extra: list[str]) -> tuple[str, str]:
@@ -324,7 +454,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             settings[key] = True
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
     validate_settings(settings)
-    detected = detect_profiles(target)
+    facts = detect_facts(target)
+    detected = profiles_from_facts(facts)
     incoming: dict[str, bytes] = {}
     for src in sorted((root / "template").rglob("*")):
         if is_link(src):
@@ -382,7 +513,9 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if relative in OWNED:
             if current is None:
                 if relative == "PROJECT_CONTEXT.md":
-                    data = project_context_draft(data, detected)
+                    data = project_context_draft(data, facts)
+                elif relative == "ai-kit/project.json":
+                    data = project_json_draft(data, facts)
                 actions[relative] = {"data": data, "old": None}
             else:
                 preserved.append(relative)
@@ -558,6 +691,30 @@ def apply_plan(plan: dict) -> bool:
     return True
 
 
+def interactive_selections(read=input, *, agents_available: set[str], facts: dict) -> dict | None:
+    """Prompt for selections; returns None when the user declines to continue."""
+    print("AI-KIT interactive installer")
+    for module in facts["modules"]:
+        print(f"  Detected: {module['path']} ({', '.join(module['profiles']) or 'no profile'})"
+              f" from {', '.join(module['manifests'])}")
+    mode = (read("Sharing mode [private/team] (private): ").strip() or "private").lower()
+    language = read("Chat language (Russian): ").strip() or "Russian"
+    conventions = (read("Conventions [owner/standard] (owner): ").strip() or "owner").lower()
+    agent_text = read(f"Agents, comma-separated ({', '.join(sorted(agents_available))}) [codex]: ").strip()
+    agents = [a.strip() for a in agent_text.split(",") if a.strip()] or ["codex"]
+    extra_text = read("Extras, comma-separated [session-start,guards,ci] (none): ").strip()
+    extras = [e.strip() for e in extra_text.split(",") if e.strip()]
+    print("\nSummary:")
+    print(f"  mode={mode}, language={language}, conventions={conventions}")
+    print(f"  agents={', '.join(agents)}, extras={', '.join(extras) or 'none'}")
+    confirm = read("Proceed? [y/N]: ").strip().lower()
+    if confirm not in {"y", "yes"}:
+        print("Aborted.")
+        return None
+    return {"mode": mode, "language": language, "conventions": conventions,
+            "agents": agents, "extras": extras}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("target", type=Path)
@@ -568,6 +725,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--chat-language")
     parser.add_argument("--conventions", choices=["owner", "standard"])
     parser.add_argument("--agent", choices=sorted(load_agent_registry()["names"]), action="append")
+    parser.add_argument("--interactive", action="store_true",
+                        help="Prompt for sharing mode, language, conventions, agents, and extras")
+    parser.add_argument("--check", action="store_true",
+                        help="Run the project doctor after a successful --apply")
     parser.add_argument("--accept-local", action="append", default=[],
                         help="Record an explicitly reviewed semantic merge of a managed path")
     parser.add_argument("--with-session-start", action="store_true",
@@ -580,9 +741,20 @@ def main(argv: list[str] | None = None) -> int:
     extras = [name for name, flag in (("session-start", args.with_session_start),
                                       ("guards", args.with_guards),
                                       ("ci", args.with_ci)) if flag]
+    mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
+    if args.interactive:
+        selections = interactive_selections(agents_available=load_agent_registry()["names"],
+                                            facts=detect_facts(args.target.absolute().resolve()))
+        if selections is None:
+            return 0
+        mode = mode or selections["mode"]
+        language = language or selections["language"]
+        conventions = conventions or selections["conventions"]
+        agents = agents or selections["agents"]
+        extras = sorted(set(extras) | set(selections["extras"]))
     try:
-        plan = build_plan(args.target, mode=args.mode, language=args.chat_language,
-                          conventions=args.conventions, agents=args.agent, accept_local=args.accept_local,
+        plan = build_plan(args.target, mode=mode, language=language,
+                          conventions=conventions, agents=agents, accept_local=args.accept_local,
                           extras=extras)
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
@@ -591,7 +763,12 @@ def main(argv: list[str] | None = None) -> int:
                           "detected_profiles": plan["detected_profiles"], "extras": plan["extras"],
                           "warnings": plan["warnings"]}, indent=2))
         if args.apply:
-            apply_plan(plan)
+            applied = apply_plan(plan)
+            if applied and args.check:
+                import doctor
+                report = doctor.examine(plan["target"], root=ROOT)
+                print(json.dumps({"doctor": report}, indent=2))
+                return 1 if report["errors"] else 0
         return 2 if needs_review(plan) else 0
     except (OSError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
         print(f"Installation refused: {exc}", file=sys.stderr)
