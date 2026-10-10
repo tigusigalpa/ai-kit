@@ -5,7 +5,7 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the routing helper; scripts/adr.py and scripts/changelog.py scaffold records; a Makefile wraps the commands.
-- Version source: [VERSION](VERSION). The local tree is prepared as v0.6.4. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
+- Version source: [VERSION](VERSION). The local tree is prepared as v0.6.5. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -49,6 +49,7 @@
 - Earlier adapter-only verification (2026-10-10, Windows/Python 3.12.14): 133 tests ran, 129 passed, four skipped (symlink, two junction variants, POSIX sh hook). Portable POSIX-error regressions and Python 3.10 grammar checks passed; [verification record](docs/ADAPTER_PATH_FIX.md). Native Linux and corrected hosted CI remain unverified.
 - v0.5.0 (2026-10-10, Windows/Python 3.12.14): 161 tests ran, 157 passed, four environment-dependent skips; 48 post-review router/manifest/metrics checks and a separate doctor check passed. Kit validation returned zero errors and one pending-Gemini warning; all scripts/tests passed Python 3.10 grammar. Synthetic profile upgrade preserves facts/selection/private journals and source/native skills, with stable rerun; [release verification](docs/V0_5_0.md). Real application trials, native Linux/hosted CI, Filament application execution, and live model/client controls remain unverified.
 - v0.6.4 (2026-10-10, Windows/Python 3.14.6): 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning; Python 3.10 grammar passed. Covers native settings, scoped rules, data guards, presets, and workflow skills; a real v0.5.0 installation upgraded with --preset solo without conflicts and moved private entries to settings.local.json; [release verification](docs/V0_6_4.md). Client formats come from primary docs read 2026-10-10; activation in the actual clients, native Linux, and hosted CI remain unverified.
+- v0.6.5 (2026-10-10, Windows/Python 3.14.6): 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning. Adds the root SKILL.md (repository as a skill), the README feature showcase, and the ignore-rule revision with private/team visibility checks; .idea is ignored and untracked in the reference repository.
 
 ## Agreements
 

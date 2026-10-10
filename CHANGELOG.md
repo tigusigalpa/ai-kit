@@ -1,10 +1,11 @@
 # AI-KIT changelog
 
-## Unreleased
+## v0.6.5 (2026-10-10)
 
 - Added a root [SKILL.md](SKILL.md) that makes the repository itself a skill: cloned into a skills directory it carries the installer and teaches any assistant to install, configure, upgrade, explain, and maintain the kit; the checker requires it and validates its frontmatter.
 - Revised ignore rules. The reference repository now ignores IDE, editor, and OS files; `.idea/` was removed from the Git index (local files kept). Application policies gain the useful `.gitignore_real` rules: private mode keeps AI client configuration folders out of Git, and both modes ignore extracted AI-KIT bundles, `.netrc`, `.pypirc`, Aider history, PHP-CS-Fixer and Homestead files, Zed/Nova folders, and Delve binaries. Node modules also ignore Next, Nuxt, SvelteKit, Turbo, and Parcel output. Rules that would hide project source (global `vendor/`, `SKILL.md`, `/bin/`, `/config.php`) stay scoped or excluded. The bundle pattern uses a hyphen because `/AI-KIT*/` matched `ai-kit/` itself on case-insensitive systems and would hide AI-KIT files in team mode.
 - Rewrote the root README as a feature showcase: a features-at-a-glance table, a feature tour (project memory, stack profiles for Go/PHP/Laravel/Filament 5/Moodle/Python, the Kubernetes-ready container contract, adaptive model routing, 11 AI clients, native configuration, guardrails, workflows), a three-step quick start, and an honest-boundaries section. Claims were checked against the canonical template documents. The root README budget rises to 20000 bytes; other documents keep 12000.
+- Verification: 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning, including the new private/team visibility checks. Client activation and hosted CI remain unverified.
 
 ## v0.6.4 (2026-10-10)
 
