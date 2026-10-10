@@ -186,6 +186,50 @@ def summarize(records: list[dict]) -> dict:
                     "unknown. Compare matched tasks and reviewed correctness before claiming savings."}
 
 
+def analyze(records: list[dict]) -> dict:
+    """Aggregate reviewed tasks per provider to inform routing without writing anything."""
+    providers: dict[str, dict] = {}
+    for record in records:
+        record = validate_record(record)
+        correct = record["outcome"] == "correct"
+        for attempt in record["attempts"]:
+            provider = attempt.get("provider")
+            if provider is None:
+                continue
+            entry = providers.setdefault(provider, {"tasks": set(), "correct_tasks": set(),
+                                                    "attempts": 0, "cost": defaultdict(Decimal),
+                                                    "cost_attempts": 0, "models": set(), "efforts": set()})
+            entry["attempts"] += 1
+            entry["tasks"].add(record["task_id"])
+            if correct:
+                entry["correct_tasks"].add(record["task_id"])
+            if attempt.get("model") is not None:
+                entry["models"].add(attempt["model"])
+            if attempt.get("effort") is not None:
+                entry["efforts"].add(attempt["effort"])
+            cost = attempt.get("cost")
+            if cost is not None:
+                entry["cost"][cost["currency"]] += Decimal(cost["amount"])
+                entry["cost_attempts"] += 1
+    results = []
+    for name in sorted(providers):
+        entry = providers[name]
+        tasks = len(entry["tasks"])
+        correct = len(entry["correct_tasks"])
+        complete = entry["cost_attempts"] == entry["attempts"] and len(entry["cost"]) == 1
+        total = next(iter(entry["cost"].values())) if complete else None
+        results.append({"provider": name, "attempts": entry["attempts"], "tasks": tasks,
+                        "correct_tasks": correct, "success_rate": correct / tasks if tasks else None,
+                        "known_cost_by_currency": {key: str(value) for key, value in sorted(entry["cost"].items())},
+                        "cost_coverage": {"known": entry["cost_attempts"], "total": entry["attempts"]},
+                        "cost_per_correct": str(total / correct) if complete and correct else None,
+                        "models": sorted(entry["models"]), "efforts": sorted(entry["efforts"])})
+    return {"providers": results,
+            "note": "Descriptive per-provider totals from reviewed records; a task is attributed to every "
+                    "provider used in its attempts. Compare matched tasks and reviewed correctness before "
+                    "changing selection.json; these are not evidence of causation."}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -195,11 +239,15 @@ def main(argv: list[str] | None = None) -> int:
     record_parser.add_argument("--apply", action="store_true")
     summary_parser = sub.add_parser("summary", help="Summarize the local journal without writing")
     summary_parser.add_argument("project", type=Path)
+    analyze_parser = sub.add_parser("analyze", help="Aggregate per provider to inform routing, without writing")
+    analyze_parser.add_argument("project", type=Path)
     args = parser.parse_args(argv)
     try:
         if args.command == "record":
             record = json.loads(args.from_json.read_text(encoding="utf-8"))
             result = record_task(args.project, record, apply=args.apply)
+        elif args.command == "analyze":
+            result = analyze(read_records(args.project))
         else:
             result = summarize(read_records(args.project))
         print(json.dumps(result, indent=2, allow_nan=False))

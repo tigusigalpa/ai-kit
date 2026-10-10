@@ -5,7 +5,7 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the routing helper; scripts/adr.py and scripts/changelog.py scaffold records; a Makefile wraps the commands.
-- Version source: [VERSION](VERSION). The local tree is prepared as v0.8.0. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
+- Version source: [VERSION](VERSION). The local tree is prepared as v0.9.0. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -30,7 +30,7 @@
 - Routing configuration: python scripts/router.py configure TARGET --apply
 - Provider review: python scripts/router.py providers (lists tier, status, date, and sources)
 - Routing evidence/overrides: route accepts --operation, repeatable --risk, --components, --level, --role, --effort, --provider, and --model. English/Russian rules explain recommendations; only declared model capabilities produce an effort control. The helper does not execute tasks or switch live models.
-- Optional measurement preview/apply: python scripts/metrics.py record TARGET --from-json PRIVATE_RECORD [--apply]; summary: python scripts/metrics.py summary TARGET. ai-kit/.metrics/ journals are ignored in private/team modes, validated, and preserved by upgrades.
+- Optional measurement preview/apply: python scripts/metrics.py record TARGET --from-json PRIVATE_RECORD [--apply]; summary/analyze: python scripts/metrics.py summary|analyze TARGET (analyze aggregates per provider to inform selection.json, read-only). ai-kit/.metrics/ journals are ignored in private/team modes, validated, and preserved by upgrades.
 - Filament: known Composer dependencies/locks suggest the conditional FILAMENT profile per module. Bootstrap verifies use and installed versions; source and Claude-native skills point to the same profile.
 - Application evaluation: [protocol](docs/EVALUATION.md) separates fixed-model instruction trials, context/continuation checks, and routing. The owner chose to run real-project trials separately; no productivity/cost result is established.
 - Decision record scaffold: python scripts/adr.py new "title" --root TARGET
@@ -54,6 +54,7 @@
 - v0.6.5 (2026-10-10, Windows/Python 3.14.6): 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning. Adds the root SKILL.md (repository as a skill), the README feature showcase, and the ignore-rule revision with private/team visibility checks; .idea is ignored and untracked in the reference repository.
 - v0.7.0 (2026-10-10, Windows/Python 3.14.6): 191 tests ran, 189 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Adds the unified `aikit` CLI and pyproject console script, macOS/Python 3.14 CI, the project.json/PROJECT_CONTEXT module-map drift check, and non-Latin chat language names; [unified CLI verification](docs/IMPLEMENTATION.md#unified-cli-and-fact-drift-verification). Hosted CI on the expanded matrix and a portable wheel remain unverified.
 - v0.8.0 (2026-10-10, Windows/Python 3.14.6): 197 tests ran, 195 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Adds `router.py providers`, `doctor.py --fix`, CI self-install for private mode, and a golden snapshot test; [provider review and doctor-fix verification](docs/IMPLEMENTATION.md#provider-review-and-doctor-fix-verification). Hosted CI, Gemini verification, and a portable wheel remain unverified.
+- v0.9.0 (2026-10-10, Windows/Python 3.14.6): 199 tests ran, 197 passed, two skipped; kit validation returned zero errors and zero warnings. Adds `metrics.py analyze` and verified Gemini model IDs; [verification](docs/IMPLEMENTATION.md#measurement-analysis-and-gemini-verification). Hosted CI and a portable wheel remain unverified.
 
 ## Agreements
 

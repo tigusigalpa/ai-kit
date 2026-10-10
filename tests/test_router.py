@@ -131,6 +131,13 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(result["provider"], "openai")
         self.assertEqual(result["model"], "gpt-6.1-sol")
 
+    def test_route_resolves_verified_gemini_model(self):
+        result = router.route_result("implement the feature", selection(default_provider="gemini"),
+                                     providers())
+        self.assertEqual(result["provider"], "gemini")
+        self.assertEqual(result["model"], "gemini-3.8-flash")
+        self.assertIsNone(result["effort"])
+
     def test_route_resolves_local_model(self):
         selection_data = selection(roles={"work": "local"},
                                    local_models={"work": "llama3.3:70b"})
@@ -139,10 +146,13 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(result["model"], "llama3.3:70b")
 
     def test_route_skips_pending_provider(self):
-        result = router.route_result("implement the feature", selection(default_provider="gemini"),
-                                     providers())
+        provs = providers()
+        provs["experimental"] = {"tier": "cloud", "verification_status": "pending",
+                                 "roles": {"cheap": {}, "work": {}, "escalation": {}}}
+        result = router.route_result("implement the feature", selection(default_provider="experimental"),
+                                     provs)
         self.assertIsNone(result["model"])
-        self.assertEqual(result["provider"], "gemini")
+        self.assertEqual(result["provider"], "experimental")
 
     def test_route_explicit_overrides(self):
         result = router.route_result("anything", selection(default_provider="openai"), providers(),
@@ -176,7 +186,7 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(set(by_name), {"openai", "anthropic", "kimi", "local", "gemini"})
         self.assertEqual(by_name["openai"]["status"], "verified")
         self.assertEqual(by_name["local"]["status"], "local")
-        self.assertEqual(by_name["gemini"]["status"], "pending")
+        self.assertEqual(by_name["gemini"]["status"], "verified")
         self.assertTrue(by_name["openai"]["sources"])
 
     def test_providers_cli_prints_report(self):

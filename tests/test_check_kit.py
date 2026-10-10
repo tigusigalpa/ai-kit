@@ -112,6 +112,7 @@ class CheckerTests(unittest.TestCase):
     def test_pending_provider_is_warning_not_error(self):
         path = self.root / "template/ai-kit/router/providers/gemini.json"
         config = json.loads(path.read_text(encoding="utf-8"))
+        config.pop("verified_documentation_date", None)
         config["verification_status"] = "pending"
         path.write_text(json.dumps(config) + "\n", encoding="utf-8")
         with patch.object(check_kit, "visibility", return_value=[]):

@@ -73,7 +73,7 @@ Presets set every extra they manage on or off; explicit flags win, and the previ
 
 - `python scripts/router.py route "task"` classifies English or Russian task text and explains signals; overrides include `--operation`, `--risk`, `--level`, `--role`, `--effort`, `--provider`, and `--model`.
 - `python scripts/router.py configure TARGET --apply` writes `ai-kit/router/resolved.json` and, for Aider, `.aider.conf.yml`.
-- Providers available to the project are recorded in `ai-kit/router/selection.json`: OpenAI, Anthropic, Kimi, local or Ollama models, and Gemini pending verification.
+- Providers available to the project are recorded in `ai-kit/router/selection.json`: OpenAI, Anthropic, Kimi, Gemini, and local or Ollama models. `python scripts/router.py providers` lists status and sources; `python scripts/metrics.py analyze TARGET` aggregates the local journal per provider to inform that selection.
 
 ## Unified CLI
 

@@ -93,7 +93,7 @@ Pay for intelligence only where it matters. The [routing policy](template/ai-kit
 | 3-5 | Hard debugging, concurrency, distributed or sensitive correctness | work / high to max |
 | 6 | Diagnosed capability shortfall | escalation |
 
-Provider configurations map the roles to OpenAI, Anthropic, and Kimi models, to your own local or Ollama models, and to a Gemini scaffold pending verification. The offline helper understands task descriptions in English and Russian and explains its choice:
+Provider configurations map the roles to OpenAI, Anthropic, Kimi, and Gemini models, and to your own local or Ollama models. The offline helper understands task descriptions in English and Russian and explains its choice:
 
 ~~~sh
 python scripts/router.py route "debug a race condition in the queue worker"
@@ -145,7 +145,7 @@ In Codex, use `$ai-kit-bootstrap` and the other skills the same way.
 - **Language split:** files and code in English, chat in your language (Russian by default).
 - **Private or team mode:** keep AI-KIT local, or share it with the whole team through Git.
 - **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, and stale provider data; `--fix` restores baseline files without touching local edits.
-- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, and cost from your own evidence for routing experiments, with no automatic telemetry.
+- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, and cost from your own evidence for routing experiments; `metrics.py analyze` aggregates them per provider to inform `selection.json`, with no automatic telemetry.
 
 ## Install
 

@@ -66,6 +66,21 @@ class AccountingTests(unittest.TestCase):
         results = metrics.summarize([task(), task(arm="baseline"), task(experiment="other")])["groups"]
         self.assertEqual(len(results), 3)
 
+    def test_analyze_aggregates_per_provider(self):
+        openai = task()
+        openai["attempts"][0].update({"provider": "openai", "model": "gpt-6.1-sol"})
+        anthropic = task("pair-02", outcome="incorrect", checks="failed")
+        anthropic["attempts"][0].update({"provider": "anthropic", "model": "claude-opus-5-5"})
+        report = metrics.analyze([openai, anthropic])
+        by_name = {item["provider"]: item for item in report["providers"]}
+        self.assertEqual(set(by_name), {"openai", "anthropic"})
+        self.assertEqual(by_name["openai"]["correct_tasks"], 1)
+        self.assertEqual(by_name["openai"]["success_rate"], 1.0)
+        self.assertEqual(by_name["openai"]["cost_per_correct"], "0.10")
+        self.assertEqual(by_name["anthropic"]["correct_tasks"], 0)
+        self.assertEqual(by_name["anthropic"]["success_rate"], 0.0)
+        self.assertIsNone(by_name["anthropic"]["cost_per_correct"])
+
     def test_record_validation_refuses_bad_data_and_task_text(self):
         invalid = [task(schema=True), task(task_id="please fix this bug"), task(prompt="secret"),
                    task(outcome=[]), task(checks=[]), task(rework=True), task(escalations=-1),

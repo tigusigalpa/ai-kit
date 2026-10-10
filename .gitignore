@@ -7,10 +7,14 @@
 /.claude/
 /.codex/
 /.windsurf/
+/.codeium/
 /.devin/
 /.cursor/
 /.kimi/
 /.manus/
+/.deepseek/
+/.qoder/
+/.grok/
 # Extracted AI-KIT bundles; the hyphen keeps ai-kit/ itself visible on case-insensitive systems.
 /AI-KIT-*/
 /ai-kit-*/

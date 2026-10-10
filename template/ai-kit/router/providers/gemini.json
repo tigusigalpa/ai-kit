@@ -1,10 +1,11 @@
 {
   "tier": "cloud",
-  "verification_status": "pending",
+  "verified_documentation_date": "2026-10-10",
+  "reasoning_mode": "thinking",
   "roles": {
-    "cheap": {"model": null},
-    "work": {"model": null},
-    "escalation": {"model": null}
+    "cheap": {"model": "gemini-3.5-flash-lite"},
+    "work": {"model": "gemini-3.8-flash"},
+    "escalation": {"model": "gemini-3.1-pro-preview"}
   },
   "sources": [
     "https://ai.google.dev/gemini-api/docs/models"

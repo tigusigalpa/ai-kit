@@ -1,5 +1,12 @@
 # AI-KIT changelog
 
+## v0.9.0 (2026-10-10)
+
+- Added `metrics.py analyze`, a per-provider aggregation (attempts, reviewed tasks, success rate, cost coverage, cost per correct result, models/efforts) that closes the loop between local measurements and routing: use it to inform `ai-kit/router/selection.json`, never to rewrite it automatically. It writes nothing and performs no API calls or price lookup.
+- Verified the Gemini provider: active cheap/work/escalation model IDs were read from the current [Gemini API models](template/ai-kit/router/providers/gemini.md) documentation and recorded in [gemini.json](template/ai-kit/router/providers/gemini.json). Reasoning goes through Gemini's thinking control, so effort stays unknown until its exact levels are confirmed against the thinking documentation.
+- Kit validation now returns zero errors and zero warnings (the previous pending-Gemini note is resolved); Gemini route/configure now resolve real model IDs.
+- Verification: 199 tests ran, 197 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and zero warnings.
+
 ## v0.8.0 (2026-10-10)
 
 - Added `router.py providers` (and `aikit providers`) to list each provider's tier, verification status, date, and primary-doc sources, so pending or stale model mappings are visible for review instead of buried in JSON. Gemini stays pending until a maintainer verifies IDs against current primary documentation.

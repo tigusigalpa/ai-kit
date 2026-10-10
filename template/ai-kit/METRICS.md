@@ -43,6 +43,7 @@ From the reference checkout:
 python scripts/metrics.py record /path/to/project --from-json /private/path/task.json
 python scripts/metrics.py record /path/to/project --from-json /private/path/task.json --apply
 python scripts/metrics.py summary /path/to/project
+python scripts/metrics.py analyze /path/to/project
 ~~~
 
 Preview writes nothing. Apply writes the local `ai-kit/.metrics/tasks.jsonl` journal, refuses duplicate experiment/arm/task IDs and malformed existing data, and guards path boundaries and links. A cooperating-writer lock refuses concurrent writes; investigate an interrupted writer before manually removing its stale lock. The journal is local runtime data, not an installer-owned template. An upgrade must preserve it.
@@ -52,3 +53,9 @@ Preview writes nothing. Apply writes the local `ai-kit/.metrics/tasks.jsonl` jou
 Summary groups records by experiment and arm. It reports reviewed success, attempts, rework/escalations, elapsed attempt time, token coverage, known costs by currency, and estimated-cost coverage. Cost per correct result divides **all** task costs, including unsuccessful work, by correct results. It remains unknown unless every attempt has a cost in one currency and at least one result is correct. Known subtotals with incomplete coverage are not total spend.
 
 These are descriptive records, not evidence of causation or savings. Compare matched tasks with a fixed model/settings, fresh sessions, the same acceptance checks, and balanced run order. Evaluate routing changes in a separate experiment. Include failed and inconclusive trials; do not infer cache benefit, model switching, or native client activation from a generated configuration.
+
+## Analyze for routing
+
+`analyze` aggregates the journal per provider: attempts, reviewed tasks, correct tasks, success rate, known cost by currency, cost coverage, cost per correct result, and the models/efforts seen. A task is attributed to every provider used in its attempts, so a provider's success rate reflects the tasks it actually worked on.
+
+Use the report to inform `ai-kit/router/selection.json`, never to rewrite it automatically. Prefer the provider with the best cost per correct result for the work role and the cheapest provider that still passes checks for the cheap role, then run a separate matched experiment before trusting the change. `analyze` writes nothing and performs no API calls or price lookup; unknown cost or outcome coverage stays unknown rather than becoming zero.

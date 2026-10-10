@@ -11,6 +11,7 @@
 | Generated client configuration, scoped module rules, presets, and workflow skills | [ADR 0007](adr/0007-generated-client-configuration-and-presets.md) |
 | Unified CLI, fact-drift detection, non-Latin chat languages | [ADR 0008](adr/0008-unified-cli-and-fact-drift.md) |
 | Provider review listing, doctor --fix, CI self-install, golden snapshot | [ADR 0009](adr/0009-provider-review-doctor-fix-and-ci-self-install.md) |
+| Measurement analysis for routing and Gemini verification | [ADR 0010](adr/0010-metrics-analysis-and-gemini-verification.md) |
 | MIT selected by the owner on 2026-10-08 | [License](../LICENSE) |
 | Preserve candidate drafts and require review before adapter retirement | [Manus patch decisions](MANUS_REVIEW.md#decisions) |
 
