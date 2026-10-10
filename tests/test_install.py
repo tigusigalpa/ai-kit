@@ -213,6 +213,53 @@ class InstallerTests(unittest.TestCase):
         self.apply()
         self.assertEqual((self.target / "PROJECT_CONTEXT.md").read_bytes(), b"Existing verified context\n")
 
+    def test_session_start_extra_installs_hook_and_claude_wiring(self):
+        plan = self.plan(agents=["codex", "claude"], extras=["session-start"])
+        self.assertEqual(plan["extras"], ["session-start"])
+        self.assertIn(".agents/hooks/session-start.md", plan["actions"])
+        self.assertIn(".claude/settings.json", plan["actions"])
+        self.apply(agents=["codex", "claude"], extras=["session-start"])
+        self.assertIn("SessionStart", (self.target / ".claude/settings.json").read_text())
+        settings = json.loads((self.target / "ai-kit/settings.json").read_text())
+        self.assertIs(settings["session_start"], True)
+
+    def test_guards_extra_merges_deny_rules_and_persists(self):
+        self.apply(agents=["claude"], extras=["guards"])
+        claude_settings = json.loads((self.target / ".claude/settings.json").read_text())
+        self.assertIn("Bash(git push *)", claude_settings["permissions"]["deny"])
+        plan = self.plan()
+        self.assertEqual(plan["extras"], ["guards"])
+        self.assertFalse(plan["actions"])
+
+    def test_session_start_and_guards_merge_into_one_settings_file(self):
+        self.apply(agents=["claude"], extras=["session-start", "guards"])
+        claude_settings = json.loads((self.target / ".claude/settings.json").read_text())
+        self.assertIn("hooks", claude_settings)
+        self.assertIn("permissions", claude_settings)
+
+    def test_guards_without_claude_warns_and_skips_wiring(self):
+        plan = self.plan(extras=["guards"])
+        self.assertNotIn(".claude/settings.json", plan["actions"])
+        self.assertTrue(any("requires the claude agent selection" in warning for warning in plan["warnings"]))
+
+    def test_ci_extra_installs_workflow_and_warns_in_private_mode(self):
+        plan = self.plan(extras=["ci"])
+        self.assertIn(".github/workflows/ai-kit.yml", plan["actions"])
+        self.assertTrue(any("team mode is the intended companion" in warning for warning in plan["warnings"]))
+        self.apply(extras=["ci"])
+        self.assertIn("AI-KIT project check", (self.target / ".github/workflows/ai-kit.yml").read_text())
+
+    def test_unknown_extra_is_refused(self):
+        with self.assertRaises(ValueError):
+            self.plan(extras=["unknown"])
+
+    def test_non_boolean_settings_extra_is_refused(self):
+        settings = {"project_language": "English", "chat_language": "Russian",
+                    "sharing_mode": "private", "conventions": "owner", "ci": "yes"}
+        self.write("ai-kit/settings.json", (json.dumps(settings) + "\n").encode())
+        with self.assertRaises(ValueError):
+            self.plan()
+
     def test_claude_and_optional_entries_have_native_paths(self):
         self.apply(agents=["codex", "claude", "copilot", "cursor", "aider"])
         self.assertIn("@AGENTS.md", (self.target / "CLAUDE.md").read_text())

@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds installer-suggested stack profiles, the installed-project doctor, and manifest-scoped Node/Python ignore rules. See [audit disposition](MANUS_REVIEW.md).
+Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds installer-suggested stack profiles, the installed-project doctor, and manifest-scoped Node/Python ignore rules; v0.3.6 adds the opt-in session-start, guards, and project CI extras. See [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -59,6 +59,10 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 ### Detection and doctor verification
 
 2026-10-10, Windows/Python 3.14.6: 62 tests ran, 61 passed, 1 skipped (Windows symlink privilege); kit validation was clean, including recomposed policy visibility; Python 3.10 grammar was verified for all scripts. Regressions cover scoped Node/Python ignores, profile detection with the fresh-context draft, and doctor report scenarios. Hosted CI and real application trials remain unverified.
+
+### Extras verification
+
+2026-10-10, Windows/Python 3.14.6: 69 tests ran, 68 passed, 1 skipped (Windows symlink privilege); kit validation was clean; Python 3.10 grammar was verified. New regressions cover extras installation, deny/hook merging into one client settings file, persistence across reruns, missing-claude warnings, private-mode CI guidance, and refusal of unknown or mistyped extras. Hook execution, deny enforcement, and workflow behavior in hosted runners remain unverified in real clients.
 
 ### Windows CI fixture verification
 

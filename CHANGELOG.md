@@ -1,5 +1,11 @@
 # AI-KIT changelog
 
+## v0.3.6 (2026-10-10)
+
+- Added opt-in install extras selected with --with-session-start, --with-guards, and --with-ci; accepted choices persist in ai-kit/settings.json. Session start installs .agents/hooks/session-start.md and, for claude, .claude/settings.json SessionStart wiring; guards merges the reference deny-Git permissions into the same client settings file; the ci extra installs a self-contained .github/workflows/ai-kit.yml health check intended for team mode.
+- Documented extras in ADAPTERS/BOOTSTRAP/README with activation boundaries: hook output, deny enforcement, and workflow behavior require verification in the actual client and hosted runner; MCP servers are declared manually per project and none is installed by default.
+- Reran the full local suite: 69 tests, 68 passed, 1 unavailable Windows symlink check; kit validation returned no errors or warnings; Python 3.10 grammar was verified for all scripts. Hosted CI and real application trials remain unverified.
+
 ## v0.3.3 (2026-10-10)
 
 - Added installer-suggested stack profiles: the plan detects GO, PYTHON, FRONTEND, PHP, LARAVEL, and MOODLE evidence from module manifests, reports it in the preview, and drafts module-map rows in a fresh PROJECT_CONTEXT.md marked unverified until bootstrap confirms them. Existing context documents remain preserved untouched.

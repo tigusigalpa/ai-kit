@@ -1,0 +1,54 @@
+name: AI-KIT project check
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  ai-kit:
+    runs-on: ubuntu-latest
+    steps:
+      # Pin these actions to a reviewed SHA for stronger supply-chain control.
+      - uses: actions/checkout@v4
+      - name: Check installed AI-KIT health
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path.cwd()
+          failures = []
+
+          state_path = root / "ai-kit" / ".install-state.json"
+          if not state_path.is_file():
+              failures.append("missing ai-kit/.install-state.json")
+              state = {"files": {}}
+          else:
+              try:
+                  state = json.loads(state_path.read_text(encoding="utf-8"))
+              except ValueError as exc:
+                  failures.append(f"invalid installer state: {exc}")
+                  state = {"files": {}}
+
+          for relative in sorted(state.get("files", {})):
+              if not (root / relative).is_file():
+                  failures.append(f"missing managed file: {relative}")
+
+          agents = root / "AGENTS.md"
+          if not agents.is_file():
+              failures.append("missing AGENTS.md")
+          elif len(agents.read_bytes()) > 2500:
+              failures.append("AGENTS.md exceeds the 2500-byte always-loaded budget")
+
+          for relative in ("PROJECT_CONTEXT.md", "WIKI.md", "CHANGELOG.md", "docs/DECISIONS.md"):
+              if not (root / relative).is_file():
+                  failures.append(f"missing owned document: {relative}")
+
+          if failures:
+              print("AI-KIT project check failed:")
+              for failure in failures:
+                  print(" -", failure)
+              raise SystemExit(1)
+          print("AI-KIT project check passed")
+          PY

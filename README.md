@@ -142,7 +142,7 @@ Explicit selections replace recorded choices; tracked adapters left on disk bloc
 | Cursor | .cursor/rules/ai-kit.mdc |
 | Aider | CONVENTIONS.md; load with --read CONVENTIONS.md |
 
-Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md).
+Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md). Opt-in extras: --with-session-start, --with-guards, --with-ci.
 
 ## Sharing
 

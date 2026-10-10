@@ -27,6 +27,10 @@ PROFILE_MANIFESTS = {
     "PYTHON": ("pyproject.toml", "requirements.txt", "setup.py", "setup.cfg"),
     "FRONTEND": ("package.json",),
 }
+EXTRAS = {"session-start", "guards", "ci"}
+EXTRA_TEMPLATE = {"session-start": ".agents/hooks/session-start.md"}
+EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
+EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "ci": "ci"}
 NODE_IGNORES = ("node_modules/", ".npm/", ".pnpm-store/", ".yarn/cache/", ".yarn/unplugged/",
                 ".yarn/install-state.gz", "npm-debug.log*", "yarn-debug.log*", "yarn-error.log*",
                 "pnpm-debug.log*")
@@ -99,6 +103,9 @@ def validate_settings(settings: dict) -> None:
         raise ValueError("Use an English chat language name")
     if settings["sharing_mode"] not in {"private", "team"} or settings["conventions"] not in {"owner", "standard"}:
         raise ValueError("Invalid sharing mode or conventions")
+    for field in EXTRA_SETTINGS_KEYS.values():
+        if field in settings and not isinstance(settings[field], bool):
+            raise ValueError(f"Settings {field} must be a boolean")
     upstream = settings.get("upstream")
     if upstream is not None:
         if not isinstance(upstream, dict):
@@ -235,7 +242,8 @@ def merge_ignore(current: str, policy: str, extra: list[str]) -> tuple[str, str]
 
 def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                language: str | None = None, conventions: str | None = None,
-               agents: list[str] | None = None, accept_local: list[str] | None = None) -> dict:
+               agents: list[str] | None = None, accept_local: list[str] | None = None,
+               extras: list[str] | None = None) -> dict:
     target = target.absolute()
     if is_link(target):
         raise ValueError("Refusing a linked target root")
@@ -259,6 +267,15 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                                      any(not isinstance(path, str) for path in accept_local)):
         raise ValueError("Accept-local paths must be a list of strings")
     accept = set(accept_local or [])
+    enabled_extras = set(extras or [])
+    if enabled_extras - EXTRAS:
+        raise ValueError("Unknown install extras: " + ", ".join(sorted(enabled_extras - EXTRAS)))
+    for name, key in EXTRA_SETTINGS_KEYS.items():
+        if name not in enabled_extras and settings.get(key) is True:
+            enabled_extras.add(name)
+    for name, key in EXTRA_SETTINGS_KEYS.items():
+        if name in enabled_extras:
+            settings[key] = True
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
     validate_settings(settings)
     detected = detect_profiles(target)
@@ -271,6 +288,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         relative = src.relative_to(root / "template").as_posix()
         if relative in ENTRIES and ENTRIES[relative] not in agents:
             continue
+        if relative in EXTRA_TEMPLATE.values():
+            continue
         incoming[relative] = src.read_bytes()
     incoming["ai-kit/settings.json"] = (json.dumps(settings, indent=2) + "\n").encode()
     incoming["ai-kit/VERSION"] = (root / "VERSION").read_bytes()
@@ -282,6 +301,22 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     for agent, (src, dst) in OPTIONAL.items():
         if agent in agents:
             incoming[dst] = (root / "integrations" / src).read_bytes()
+    for name in sorted(enabled_extras):
+        if name in EXTRA_TEMPLATE:
+            relative = EXTRA_TEMPLATE[name]
+            incoming[relative] = (root / "template" / relative).read_bytes()
+        elif name in EXTRA_INTEGRATIONS:
+            src, dst = EXTRA_INTEGRATIONS[name]
+            incoming[dst] = (root / "integrations" / src).read_bytes()
+    claude_settings: dict = {}
+    if "guards" in enabled_extras:
+        deny = read_json(root / "integrations" / "claude-settings.deny-git.json", {})
+        claude_settings.setdefault("permissions", {}).update(deny.get("permissions", {}))
+    if "session-start" in enabled_extras:
+        claude_settings["hooks"] = {"SessionStart": [{"hooks": [{"type": "command",
+                                                                  "command": "cat .agents/hooks/session-start.md"}]}]}
+    if "claude" in agents and claude_settings:
+        incoming[".claude/settings.json"] = (json.dumps(claude_settings, indent=2) + "\n").encode()
     if accept - incoming.keys() or accept & (OWNED | {"ai-kit/settings.json"}):
         raise ValueError("Accept-local paths must name selected managed instructions")
     records = state.get("files", {})
@@ -333,6 +368,12 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     legacy = {"AGENTS.md", "/AGENTS.md", "/ai-kit/", "ai-kit/", "/.agents/", "/.agents/skills/",
               "PROJECT_CONTEXT.md", "/PROJECT_CONTEXT.md", "/.claude/", "SKILL.md"}
     warnings = ["Existing ignore rules outside the managed block need project-specific visibility review."]
+    if "ci" in enabled_extras and mode == "private":
+        warnings.append("The CI check reads installer state that private sharing mode excludes from Git; "
+                        "team mode is the intended companion.")
+    if "claude" not in agents and ({"guards", "session-start"} & enabled_extras):
+        warnings.append("guards/session-start client wiring requires the claude agent selection; "
+                        "only the shared files were installed.")
     if mode == "team" and legacy.intersection(line.strip() for line in outside.splitlines()):
         conflicts[".gitignore"] = merged.encode()
         conflict_local_hashes[".gitignore"] = digest(old_ignore) if old_ignore is not None else None
@@ -387,7 +428,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     return {"target": target, "mode": mode, "version": new_state["accepted_version"],
             "actions": actions, "conflicts": conflicts, "candidates": candidates,
             "adapter_conflicts": sorted(retirements), "preserved": preserved,
-            "detected_profiles": detected, "warnings": warnings}
+            "detected_profiles": detected, "extras": sorted(enabled_extras), "warnings": warnings}
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -479,16 +520,26 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--agent", choices=sorted(AGENTS), action="append")
     parser.add_argument("--accept-local", action="append", default=[],
                         help="Record an explicitly reviewed semantic merge of a managed path")
+    parser.add_argument("--with-session-start", action="store_true",
+                        help="Install the session-start hook file and client wiring")
+    parser.add_argument("--with-guards", action="store_true",
+                        help="Install client deny rules for Git write operations")
+    parser.add_argument("--with-ci", action="store_true",
+                        help="Install the self-contained AI-KIT project check workflow")
     args = parser.parse_args(argv)
+    extras = [name for name, flag in (("session-start", args.with_session_start),
+                                      ("guards", args.with_guards),
+                                      ("ci", args.with_ci)) if flag]
     try:
         plan = build_plan(args.target, mode=args.mode, language=args.chat_language,
-                          conventions=args.conventions, agents=args.agent, accept_local=args.accept_local)
+                          conventions=args.conventions, agents=args.agent, accept_local=args.accept_local,
+                          extras=extras)
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
                           "conflicts": sorted(plan["conflicts"]), "preserved": sorted(plan["preserved"]),
                           "candidates": plan["candidates"], "adapter_conflicts": plan["adapter_conflicts"],
-                          "detected_profiles": plan["detected_profiles"], "warnings": plan["warnings"]},
-                         indent=2))
+                          "detected_profiles": plan["detected_profiles"], "extras": plan["extras"],
+                          "warnings": plan["warnings"]}, indent=2))
         if args.apply:
             apply_plan(plan)
         return 2 if needs_review(plan) else 0
