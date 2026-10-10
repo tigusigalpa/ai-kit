@@ -37,11 +37,11 @@ def collect(project: str, *, docker: str = "docker", run=command, builder: str |
     return report
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--project", required=True)
     parser.add_argument("--builder")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if not shutil.which("docker"):
         parser.exit(1, "Docker client unavailable; install/configure the actual project runtime first.\n")
     try:

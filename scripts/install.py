@@ -213,8 +213,9 @@ def validate_settings(settings: dict) -> None:
             raise ValueError(f"Settings {field} must be a string")
     if settings["project_language"] != "English":
         raise ValueError("This distribution requires English project content")
-    if not re.fullmatch(r"[A-Za-z][A-Za-z -]{0,40}", settings["chat_language"]):
-        raise ValueError("Use an English chat language name")
+    chat_language = settings["chat_language"]
+    if not chat_language.strip() or len(chat_language) > 60 or any(ord(ch) < 32 for ch in chat_language):
+        raise ValueError("Chat language must be a nonempty name up to 60 characters without control characters")
     if settings["sharing_mode"] not in {"private", "team"} or settings["conventions"] not in {"owner", "standard"}:
         raise ValueError("Invalid sharing mode or conventions")
     for field in EXTRA_SETTINGS_KEYS.values():

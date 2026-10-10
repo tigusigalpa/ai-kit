@@ -11,8 +11,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python: ['3.10', '3.13']
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python: ['3.10', '3.13', '3.14']
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7, verified 2026-10-08
         with:
@@ -22,5 +22,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Validate files and Git visibility
         run: python scripts/check_kit.py
+      - name: Exercise the unified CLI
+        run: python aikit_cli.py route "implement a feature"
       - name: Exercise installation, upgrade, and evidence behavior
         run: python -m unittest discover -s tests -v

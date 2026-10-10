@@ -167,10 +167,20 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "template/ai-kit/router/providers/local.json",
                 "template/ai-kit/router/providers/gemini.json",
                 "templates/gitignore.private", "templates/gitignore.team",
+                "aikit_cli.py", "pyproject.toml",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md"]
     for relative in required:
         if not (root / relative).is_file():
             errors.append("Missing: " + relative)
+    pyproject = root / "pyproject.toml"
+    if pyproject.is_file():
+        text = pyproject.read_text(encoding="utf-8")
+        if 'aikit = "aikit_cli:main"' not in text:
+            errors.append("pyproject.toml must declare the aikit console script")
+        if "version = {attr = \"aikit_cli.__version__\"}" not in text:
+            errors.append("pyproject.toml must derive its version from VERSION via aikit_cli.__version__")
+    elif not (root / "aikit_cli.py").is_file():
+        errors.append("Missing unified CLI entry point")
     for p in source_files(root):
         if p.is_symlink():
             errors.append("Linked source: " + str(p))
@@ -318,11 +328,11 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=ROOT)
     parser.add_argument("--git")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     errors, warnings = check(args.root, git=args.git)
     print(json.dumps({"errors": errors, "warnings": warnings}, indent=2))
     return int(bool(errors))

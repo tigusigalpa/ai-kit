@@ -45,6 +45,17 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(report["warnings"], [])
         self.assertEqual(report["installed_version"], self.initial_version)
 
+    def test_module_map_drift_is_reported(self):
+        self.write("go.mod", b"module example.test/app\n\ngo 1.21\n")
+        self.apply()
+        report = self.examine()
+        self.assertFalse(any("module maps differ" in warning for warning in report["warnings"]))
+        project = json.loads((self.target / "ai-kit/project.json").read_text(encoding="utf-8"))
+        project["modules"][0]["path"] = "/api/"
+        (self.target / "ai-kit/project.json").write_text(json.dumps(project) + "\n", encoding="utf-8")
+        report = self.examine()
+        self.assertTrue(any("module maps differ" in warning for warning in report["warnings"]))
+
     def test_user_edits_to_client_settings_are_not_reported(self):
         self.apply(agents=["claude"], extras=["guards", "session-start"])
         path = self.target / ".claude/settings.local.json"

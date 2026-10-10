@@ -689,6 +689,17 @@ class InstallerTests(unittest.TestCase):
         self.assertNotIn("Traceback", errors.getvalue())
         self.assertFalse((self.target / "AGENTS.md").exists())
 
+    def test_chat_language_accepts_non_latin_names(self):
+        settings = json.loads((self.source / "template/ai-kit/settings.json").read_text())
+        settings["chat_language"] = "\u0423\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430"
+        install.validate_settings(settings)
+        settings["chat_language"] = "\u4e2d\u6587"
+        install.validate_settings(settings)
+        for bad in ("   ", "x" * 61, "line\nbreak"):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                settings["chat_language"] = bad
+                install.validate_settings(settings)
+
     def test_settings_type_validation_is_controlled(self):
         valid = json.loads((self.source / "template/ai-kit/settings.json").read_text())
         for field, value in [("project_language", 1), ("chat_language", []), ("sharing_mode", {}),

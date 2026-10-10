@@ -75,6 +75,10 @@ Presets set every extra they manage on or off; explicit flags win, and the previ
 - `python scripts/router.py configure TARGET --apply` writes `ai-kit/router/resolved.json` and, for Aider, `.aider.conf.yml`.
 - Providers available to the project are recorded in `ai-kit/router/selection.json`: OpenAI, Anthropic, Kimi, local or Ollama models, and Gemini pending verification.
 
+## Unified CLI
+
+A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|route|configure|metrics|adr|changelog|check|docker ...`. A `pyproject.toml` console script exposes it after `pip install -e .`; the standalone `python scripts/*.py` commands and the Makefile remain equivalent.
+
 ## Maintaining AI-KIT itself
 
 1. Read the repository's `PROJECT_CONTEXT.md` and `AGENTS.md`; keep template rules in their canonical owner (see policy ownership in `docs/IMPLEMENTATION.md`).

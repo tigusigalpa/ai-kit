@@ -141,18 +141,55 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
         except (ValueError, json.JSONDecodeError) as exc:
             warnings.append(f"Invalid generated router config: {exc}")
     project_json_path = target / "ai-kit" / "project.json"
+    project_value = None
     if project_json_path.is_file():
         try:
-            value = json.loads(project_json_path.read_text(encoding="utf-8"))
-            if type(value.get("schema")) is not int or value["schema"] != 1:
+            project_value = json.loads(project_json_path.read_text(encoding="utf-8"))
+            if type(project_value.get("schema")) is not int or project_value["schema"] != 1:
                 raise ValueError("Unsupported project schema; expected schema 1")
-            modules = value.get("modules")
+            modules = project_value.get("modules")
             if not isinstance(modules, list) or any(not isinstance(m, dict) for m in modules):
                 raise ValueError("Project modules must be a list of objects")
         except (ValueError, json.JSONDecodeError) as exc:
             warnings.append(f"Invalid project.json: {exc}")
+    context_path = target / "PROJECT_CONTEXT.md"
+    if project_value is not None and context_path.is_file():
+        try:
+            json_paths = project_module_paths(project_value)
+            context_paths = context_module_paths(context_path.read_text(encoding="utf-8"))
+            if json_paths != context_paths:
+                detail = []
+                if context_paths - json_paths:
+                    detail.append("only in context: " + ", ".join(sorted(context_paths - json_paths)))
+                if json_paths - context_paths:
+                    detail.append("only in project.json: " + ", ".join(sorted(json_paths - context_paths)))
+                warnings.append("project.json and PROJECT_CONTEXT.md module maps differ (" + "; ".join(detail) + ")")
+        except (OSError, UnicodeError) as exc:
+            warnings.append(f"Cannot compare module maps: {exc}")
     warnings.extend(link_warnings(target))
     return report
+
+
+def project_module_paths(value: dict) -> set[str]:
+    """Module paths recorded in ai-kit/project.json."""
+    paths = set()
+    for module in value.get("modules", []):
+        if isinstance(module, dict) and isinstance(module.get("path"), str):
+            paths.add(module["path"])
+    return paths
+
+
+def context_module_paths(text: str) -> set[str]:
+    """Module paths in the PROJECT_CONTEXT.md module-map table (canonical /-prefixed rows)."""
+    paths = set()
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("| /"):
+            continue
+        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        if cells and cells[0].startswith("/"):
+            paths.add(cells[0])
+    return paths
 
 
 def link_warnings(target: Path) -> list[str]:

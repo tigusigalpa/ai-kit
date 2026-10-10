@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-kit"
+description = "Offline installer and portable instructions that give AI coding agents project memory, stack rules, guardrails, and adaptive model routing."
+readme = "README.md"
+requires-python = ">=3.10"
+dynamic = ["version"]
+
+[project.scripts]
+aikit = "aikit_cli:main"
+
+[tool.setuptools]
+py-modules = ["aikit_cli"]
+
+[tool.setuptools.dynamic]
+version = {attr = "aikit_cli.__version__"}

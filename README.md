@@ -176,6 +176,8 @@ python scripts/install.py /path/to/my-app --preset solo --agent codex --agent cl
 
 Existing project documents and context are never overwritten; customized instructions become reviewable conflicts.
 
+Every command also runs through one CLI: `python aikit_cli.py install|doctor|route|configure|metrics|adr|changelog|check|docker …` (or `aikit …` after `pip install -e .`).
+
 ## Choose your defaults
 
 Project choices live in `ai-kit/settings.json`; defaults are in [the settings template](template/ai-kit/settings.json).

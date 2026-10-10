@@ -5,6 +5,12 @@
 /ai-kit/.upstream-cache/
 /ai-kit/.metrics/
 /.claude/
+/.codex/
+/.windsurf/
+/.devin/
+/.cursor/
+/.kimi/
+/.manus/
 # Extracted AI-KIT bundles; the hyphen keeps ai-kit/ itself visible on case-insensitive systems.
 /AI-KIT-*/
 /ai-kit-*/
