@@ -99,7 +99,7 @@ Provider configurations map the roles to OpenAI, Anthropic, and Kimi models, to 
 python scripts/router.py route "debug a race condition in the queue worker"
 ~~~
 
-`router.py configure` writes the resolved role mapping and a native Aider model file. The kit never fakes a model switch: when a client offers no switching control, you get a recommendation.
+`router.py configure` writes the resolved role mapping and a native Aider model file; `router.py providers` lists each provider's tier, status, and sources. The kit never fakes a model switch: when a client offers no switching control, you get a recommendation.
 
 ### 🤖 Works with your AI clients
 
@@ -144,7 +144,7 @@ In Codex, use `$ai-kit-bootstrap` and the other skills the same way.
 
 - **Language split:** files and code in English, chat in your language (Russian by default).
 - **Private or team mode:** keep AI-KIT local, or share it with the whole team through Git.
-- **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, and stale provider data.
+- **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, and stale provider data; `--fix` restores baseline files without touching local edits.
 - **Optional measurements:** `scripts/metrics.py` records attempts, tokens, and cost from your own evidence for routing experiments, with no automatic telemetry.
 
 ## Install

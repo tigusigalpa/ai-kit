@@ -1,0 +1,58 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(git commit)",
+      "Bash(git commit *)",
+      "Bash(git push)",
+      "Bash(git push *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean *)",
+      "Bash(docker system prune*)",
+      "Bash(docker volume rm *)",
+      "Bash(docker volume prune*)",
+      "Bash(php artisan migrate*)",
+      "Bash(php artisan db:wipe*)",
+      "Bash(php artisan db:seed*)"
+    ],
+    "allow": [
+      "Bash(go test ./... *)",
+      "Bash(go vet ./... *)",
+      "Bash(go build ./... *)",
+      "Bash(php artisan test *)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Read(.env.*)",
+      "Read(!.env.example)",
+      "Read(!.env.*.example)",
+      "Read(!.env.dist)",
+      "Read(!.env.*.dist)",
+      "Read(.envrc)",
+      "Read(.netrc)",
+      "Read(*.pem)",
+      "Read(*.p12)",
+      "Read(*.pfx)",
+      "Read(*.private.key)",
+      "Read(id_rsa*)",
+      "Read(id_ed25519*)",
+      "Read(/secrets/**)",
+      "Read(/.secrets/**)",
+      "Read(auth.json)",
+      "Read(/web/storage/*.key)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "tr -d '\\r' < \"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\" | sh"
+          }
+        ]
+      }
+    ]
+  }
+}

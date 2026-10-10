@@ -56,7 +56,7 @@ Presets set every extra they manage on or off; explicit flags win, and the previ
 - After reviewing and merging a candidate: preview, then apply, with `--accept-local PATH`.
 - Deselecting a client whose tracked files remain yields `adapter_conflicts`: keep the client or retire its listed files manually.
 - AI-KIT owns only its own entries in Claude Code settings (`managed_json` in installer state): `.claude/settings.local.json` in private mode, `.claude/settings.json` in team mode. Generated module rules are managed files that follow `ai-kit/project.json`; client ignore files and `.gitignore` get one marked block each.
-- Health report: `python scripts/doctor.py TARGET`.
+- Health report: `python scripts/doctor.py TARGET`; `--fix` restores missing managed files and owned documents (local edits stay untouched).
 
 ## Rules an agent follows in an installed project
 
@@ -77,7 +77,7 @@ Presets set every extra they manage on or off; explicit flags win, and the previ
 
 ## Unified CLI
 
-A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|route|configure|metrics|adr|changelog|check|docker ...`. A `pyproject.toml` console script exposes it after `pip install -e .`; the standalone `python scripts/*.py` commands and the Makefile remain equivalent.
+A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|route|configure|providers|metrics|adr|changelog|check|docker ...`. A `pyproject.toml` console script exposes it after `pip install -e .`; the standalone `python scripts/*.py` commands and the Makefile remain equivalent.
 
 ## Maintaining AI-KIT itself
 

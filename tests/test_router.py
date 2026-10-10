@@ -170,6 +170,21 @@ class RouteTests(unittest.TestCase):
             self.assertEqual(router.main(["route", "implement the feature"]), 0)
         self.assertIn('"level": 2', output.getvalue())
 
+    def test_providers_lists_status_and_sources(self):
+        report = router.providers_report(providers())
+        by_name = {item["provider"]: item for item in report["providers"]}
+        self.assertEqual(set(by_name), {"openai", "anthropic", "kimi", "local", "gemini"})
+        self.assertEqual(by_name["openai"]["status"], "verified")
+        self.assertEqual(by_name["local"]["status"], "local")
+        self.assertEqual(by_name["gemini"]["status"], "pending")
+        self.assertTrue(by_name["openai"]["sources"])
+
+    def test_providers_cli_prints_report(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(router.main(["providers"]), 0)
+        self.assertIn('"provider": "gemini"', output.getvalue())
+
     def test_cli_structured_flags_and_invalid_effort(self):
         output = io.StringIO()
         with contextlib.redirect_stdout(output):

@@ -1,5 +1,13 @@
 # AI-KIT changelog
 
+## v0.8.0 (2026-10-10)
+
+- Added `router.py providers` (and `aikit providers`) to list each provider's tier, verification status, date, and primary-doc sources, so pending or stale model mappings are visible for review instead of buried in JSON. Gemini stays pending until a maintainer verifies IDs against current primary documentation.
+- Added `doctor.py --fix`, which re-runs the installer to restore missing managed files and missing owned documents; local edits and conflicts are preserved and reported (exit 2), never overwritten.
+- The CI extra now installs AI-KIT itself from a reviewed revision when installer state is absent, so private-mode projects get CI validation instead of a "missing state" failure. Pin the clone to a tag or SHA before relying on it.
+- Added a golden snapshot test that pins the exact generated `.claude/settings.local.json` (strict preset, Laravel+Go fixture) to catch silent drift in the native-settings/guards/data-guards merge.
+- Verification: 197 tests ran, 195 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Hosted CI and the portable wheel remain unverified.
+
 ## v0.7.0 (2026-10-10)
 
 - Added a unified `aikit` command line ([aikit_cli.py](aikit_cli.py)) that dispatches `install`, `doctor`, `route`, `configure`, `metrics`, `adr`, `changelog`, `check`, and `docker` to their scripts, plus a [pyproject.toml](pyproject.toml) console script (`pip install -e .` exposes `aikit`). The version is derived from VERSION; a portable wheel still needs the package-data packaging step, which stays deferred.

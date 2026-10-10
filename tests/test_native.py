@@ -171,6 +171,15 @@ class NativeConfigurationTests(unittest.TestCase):
         self.assertEqual(report["errors"], [])
         self.assertEqual(report["warnings"], [])
 
+    def test_generated_claude_settings_match_golden_snapshot(self):
+        self.laravel_and_go()
+        self.apply(agents=["claude"], preset="strict")
+        golden = install.ROOT / "tests/fixtures/golden/claude-settings-local.json"
+        actual = (self.target / ".claude/settings.local.json").read_bytes()
+        self.assertEqual(actual, golden.read_bytes(),
+                         "Generated .claude/settings.local.json drifted from the golden snapshot; "
+                         "update the golden file if the change is intentional.")
+
     # Scoped rules (item 7)
 
     def test_scoped_rules_use_each_client_native_format(self):

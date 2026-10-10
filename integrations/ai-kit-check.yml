@@ -11,6 +11,18 @@ jobs:
     steps:
       # Pin these actions to a reviewed SHA for stronger supply-chain control.
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+      - name: Install AI-KIT when not already installed (private mode)
+        run: |
+          if [ -f ai-kit/.install-state.json ]; then
+            echo "AI-KIT already installed; validating the committed installation."
+          else
+            # Pin this clone to a reviewed revision (tag or SHA) before relying on the workflow.
+            git clone --depth 1 https://github.com/tigusigalpa/ai-kit.git /tmp/ai-kit-ref
+            python /tmp/ai-kit-ref/scripts/install.py . --apply
+          fi
       - name: Check installed AI-KIT health
         run: |
           python3 - <<'PY'

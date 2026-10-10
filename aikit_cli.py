@@ -15,6 +15,7 @@ _COMMANDS = {
     "doctor": ("doctor", None),
     "route": ("router", "route"),
     "configure": ("router", "configure"),
+    "providers": ("router", "providers"),
     "metrics": ("metrics", None),
     "adr": ("adr", None),
     "changelog": ("changelog", None),

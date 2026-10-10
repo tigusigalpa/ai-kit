@@ -308,6 +308,23 @@ def apply_configure(plan: dict) -> bool:
     return True
 
 
+def providers_report(providers: dict[str, dict]) -> dict:
+    """Summarize provider status, verification dates, and sources for review."""
+    items = []
+    for name in sorted(providers):
+        config = providers[name]
+        if config.get("user_supplied_models"):
+            status = "local"
+        elif config.get("verification_status") == "pending":
+            status = "pending"
+        else:
+            status = "verified"
+        items.append({"provider": name, "tier": config.get("tier", "cloud"), "status": status,
+                      "verified_documentation_date": config.get("verified_documentation_date"),
+                      "sources": config.get("sources", [])})
+    return {"providers": items}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -326,6 +343,9 @@ def main(argv: list[str] | None = None) -> int:
     configure_parser = sub.add_parser("configure", help="Generate resolved routing config for an installed project")
     configure_parser.add_argument("project", type=Path)
     configure_parser.add_argument("--apply", action="store_true")
+    providers_parser = sub.add_parser("providers", help="List providers with status and verification sources")
+    providers_parser.add_argument("--project", type=Path)
+    providers_parser.add_argument("--root", type=Path, default=ROOT)
     args = parser.parse_args(argv)
     try:
         if args.command == "route":
@@ -334,6 +354,10 @@ def main(argv: list[str] | None = None) -> int:
                                           role=args.role, effort=args.effort, provider=args.provider,
                                           model=args.model, operation=args.operation,
                                           risks=tuple(args.risk), components=args.components), indent=2))
+            return 0
+        if args.command == "providers":
+            _, providers = _selection_and_providers(args.project, args.root)
+            print(json.dumps(providers_report(providers), indent=2))
             return 0
         plan = configure_plan(args.project)
         print(json.dumps({"target": plan["target"], "preview": not args.apply,

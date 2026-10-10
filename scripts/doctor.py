@@ -229,7 +229,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("target", type=Path)
     parser.add_argument("--root", type=Path, default=install.ROOT,
                         help="Reference distribution used for the bundle version comparison")
+    parser.add_argument("--fix", action="store_true",
+                        help="Re-run the installer to restore missing/baseline files; local edits are preserved")
     args = parser.parse_args(argv)
+    if args.fix:
+        try:
+            plan = install.build_plan(args.target, root=args.root)
+            applied = install.apply_plan(plan)
+            report = examine(args.target, root=args.root)
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            print(f"Fix refused: {exc}", file=sys.stderr)
+            return 1
+        print(json.dumps({"fix": {"writes": sorted(plan["actions"]),
+                                  "conflicts": sorted(plan["conflicts"]), "applied": applied},
+                          "report": report}, indent=2))
+        return 2 if (plan["conflicts"] or report["errors"]) else 0
     try:
         report = examine(args.target, root=args.root)
     except OSError as exc:

@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-The [changelog](../CHANGELOG.md) records kit evolution; [v0.6.4 verification](V0_6_4.md) covers the current additions and [v0.5.0 verification](V0_5_0.md) the previous ones. v0.7.0 adds the `aikit` CLI and a fact-drift check. Earlier reproduced findings remain in the [audit disposition](MANUS_REVIEW.md).
+The [changelog](../CHANGELOG.md) records kit evolution; [v0.6.4 verification](V0_6_4.md) covers the current additions and [v0.5.0 verification](V0_5_0.md) the previous ones. v0.7.0 adds the `aikit` CLI and a fact-drift check; v0.8.0 adds provider review, doctor --fix, CI self-install, and a golden snapshot. Earlier reproduced findings remain in the [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -80,6 +80,10 @@ Pre-v0.4.7 detection, adapter/provider, and extras verification (62/73/69-test r
 ### Unified CLI and fact-drift verification
 
 2026-10-10, Windows/Python 3.14.6: 191 tests ran, 189 passed, two skipped; kit validation returned zero errors. Covers the `aikit` dispatcher, the module-map drift warning, and non-Latin chat language names. Hosted CI and a portable wheel remain unverified.
+
+### Provider review and doctor-fix verification
+
+2026-10-10, Windows/Python 3.14.6: 197 tests ran, 195 passed, two skipped; kit validation returned zero errors. Covers `router.py providers` status/sources, `doctor.py --fix` restore/no-op behavior, CI self-install wiring, and the golden `.claude/settings.local.json` snapshot. Hosted CI, Gemini verification, and a portable wheel remain unverified.
 
 ### Windows CI fixture verification
 

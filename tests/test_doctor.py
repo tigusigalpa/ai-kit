@@ -127,6 +127,22 @@ class DoctorTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(doctor.main([str(self.target), "--root", str(self.source)]), 0)
 
+    def test_fix_restores_missing_managed_file(self):
+        self.apply()
+        (self.target / "ai-kit/CORE.md").unlink()
+        self.assertTrue(any("Missing managed file: ai-kit/CORE.md" in error
+                            for error in self.examine()["errors"]))
+        with contextlib.redirect_stdout(io.StringIO()):
+            code = doctor.main([str(self.target), "--root", str(self.source), "--fix"])
+        self.assertEqual(code, 0)
+        self.assertTrue((self.target / "ai-kit/CORE.md").is_file())
+        self.assertEqual(self.examine()["errors"], [])
+
+    def test_fix_is_a_noop_for_a_healthy_installation(self):
+        self.apply()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(doctor.main([str(self.target), "--root", str(self.source), "--fix"]), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

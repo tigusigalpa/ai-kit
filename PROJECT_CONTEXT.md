@@ -5,7 +5,7 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the routing helper; scripts/adr.py and scripts/changelog.py scaffold records; a Makefile wraps the commands.
-- Version source: [VERSION](VERSION). The local tree is prepared as v0.7.0. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
+- Version source: [VERSION](VERSION). The local tree is prepared as v0.8.0. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -25,9 +25,10 @@
 - Unified CLI: python aikit_cli.py install|doctor|route|configure|metrics|adr|changelog|check|docker ... (pyproject.toml exposes `aikit` after pip install -e .); the standalone scripts and the Makefile remain equivalent.
 - Install preview: python scripts/install.py TARGET
 - Apply installation: python scripts/install.py TARGET --apply (add --check to run the doctor afterward, --interactive for a guided prompt)
-- Installed-project health check: python scripts/doctor.py TARGET
+- Installed-project health check: python scripts/doctor.py TARGET (add --fix to restore missing managed files/owned documents)
 - Routing recommendation: python scripts/router.py route "task"
 - Routing configuration: python scripts/router.py configure TARGET --apply
+- Provider review: python scripts/router.py providers (lists tier, status, date, and sources)
 - Routing evidence/overrides: route accepts --operation, repeatable --risk, --components, --level, --role, --effort, --provider, and --model. English/Russian rules explain recommendations; only declared model capabilities produce an effort control. The helper does not execute tasks or switch live models.
 - Optional measurement preview/apply: python scripts/metrics.py record TARGET --from-json PRIVATE_RECORD [--apply]; summary: python scripts/metrics.py summary TARGET. ai-kit/.metrics/ journals are ignored in private/team modes, validated, and preserved by upgrades.
 - Filament: known Composer dependencies/locks suggest the conditional FILAMENT profile per module. Bootstrap verifies use and installed versions; source and Claude-native skills point to the same profile.
@@ -52,6 +53,7 @@
 - v0.6.4 (2026-10-10, Windows/Python 3.14.6): 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning; Python 3.10 grammar passed. Covers native settings, scoped rules, data guards, presets, and workflow skills; a real v0.5.0 installation upgraded with --preset solo without conflicts and moved private entries to settings.local.json; [release verification](docs/V0_6_4.md). Client formats come from primary docs read 2026-10-10; activation in the actual clients, native Linux, and hosted CI remain unverified.
 - v0.6.5 (2026-10-10, Windows/Python 3.14.6): 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning. Adds the root SKILL.md (repository as a skill), the README feature showcase, and the ignore-rule revision with private/team visibility checks; .idea is ignored and untracked in the reference repository.
 - v0.7.0 (2026-10-10, Windows/Python 3.14.6): 191 tests ran, 189 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Adds the unified `aikit` CLI and pyproject console script, macOS/Python 3.14 CI, the project.json/PROJECT_CONTEXT module-map drift check, and non-Latin chat language names; [unified CLI verification](docs/IMPLEMENTATION.md#unified-cli-and-fact-drift-verification). Hosted CI on the expanded matrix and a portable wheel remain unverified.
+- v0.8.0 (2026-10-10, Windows/Python 3.14.6): 197 tests ran, 195 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Adds `router.py providers`, `doctor.py --fix`, CI self-install for private mode, and a golden snapshot test; [provider review and doctor-fix verification](docs/IMPLEMENTATION.md#provider-review-and-doctor-fix-verification). Hosted CI, Gemini verification, and a portable wheel remain unverified.
 
 ## Agreements
 

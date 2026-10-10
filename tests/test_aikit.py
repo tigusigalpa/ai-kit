@@ -29,6 +29,12 @@ class AikitCliTests(unittest.TestCase):
         self.assertEqual(aikit_cli.__version__, (Path(__file__).resolve().parents[1] / "VERSION")
                          .read_text(encoding="utf-8").strip())
 
+    def test_providers_dispatches_to_router(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            self.assertEqual(aikit_cli.main(["providers"]), 0)
+        self.assertIn('"provider": "gemini"', output.getvalue())
+
 
 if __name__ == "__main__":
     unittest.main()
