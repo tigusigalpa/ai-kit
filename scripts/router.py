@@ -12,19 +12,33 @@ import install
 
 ROOT = Path(__file__).resolve().parents[1]
 ROLES = ("cheap", "work", "escalation")
-LEVEL_MAP = {0: ("cheap", "low"), 1: ("cheap", "low"), 2: ("work", "medium"),
-             3: ("work", "high"), 4: ("work", "xhigh"), 5: ("escalation", "high"),
-             6: ("escalation", "max")}
-_KEYWORDS = {
-    5: ("prove theorem", "formal proof", "novel algorithm", "research", "frontier", "invent"),
-    4: ("distributed", "consensus", "consistency", "replication", "sensitive data", "security audit",
-        "compliance", "conflicting"),
-    3: ("debug", "concurrency", "race", "deadlock", "architecture", "memory leak", "performance", "optimize"),
-    0: ("classify", "categorize", "extract", "label", "tag", "trivial", "parse"),
-    1: ("rename", "bump", "boilerplate", "lint", "typo", "format code", "simple", "mechanical"),
+LEVEL_MAP = {0: ("cheap", "none"), 1: ("cheap", "low"), 2: ("work", "medium"),
+             3: ("work", "high"), 4: ("work", "xhigh"), 5: ("work", "max"),
+             6: ("escalation", None)}
+OPERATIONS = {"extract": 0, "mechanical": 1, "implement": 2, "debug": 3,
+              "architecture": 3, "research": 5}
+RISKS = {"security": 4, "payments": 4, "distributed": 4, "conflicting-evidence": 4}
+# Word boundaries prevent "trace" from matching "race"; stems cover Russian inflections.
+_OPERATIONS = {
+    "research": r"formal proof|prove (?:a |the )?(?:theorem|novel algorithm)|novel algorithm|"
+                r"(?:\u0434\u043e\u043a\u0430\u0437|\u0434\u043e\u043a\u0430\u0436)\w* \u0442\u0435\u043e\u0440\u0435\u043c\w*|\u0444\u043e\u0440\u043c\u0430\u043b\u044c\u043d\w* \u0434\u043e\u043a\u0430\u0437\u0430\u0442\u0435\u043b\u044c\u0441\u0442\u0432\w*|\u043d\u043e\u0432\w* \u0430\u043b\u0433\u043e\u0440\u0438\u0442\u043c\w*",
+    "debug": r"debug\w*|concurrency|race(?: condition)?|deadlock\w*|memory leak|performance|optimiz\w*|"
+             r"\u043e\u0442\u043b\u0430\u0434\w*|\u0434\u0435\u0434\u043b\u043e\u043a\w*|\u0432\u0437\u0430\u0438\u043c\u043d\w* \u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u043a\w*|\u0433\u043e\u043d\u043a\w*|\u043a\u043e\u043d\u043a\u0443\u0440\u0435\u043d\u0442\u043d\w*|\u0443\u0442\u0435\u0447\u043a\w* \u043f\u0430\u043c\u044f\u0442\u0438|\u043e\u043f\u0442\u0438\u043c\u0438\u0437\w*",
+    "architecture": r"architectur\w*|\u0430\u0440\u0445\u0438\u0442\u0435\u043a\u0442\u0443\u0440\w*",
+    "mechanical": r"rename\w*|bump|boilerplate|lint|typo\w*|format code|mechanical|"
+                  r"\u043f\u0435\u0440\u0435\u0438\u043c\u0435\u043d\w*|\u043e\u043f\u0435\u0447\u0430\u0442\u043a\w*|\u043f\u043e\u0434\u043d\u0438\u043c\w* \u0432\u0435\u0440\u0441\u0438\w*|\u0444\u043e\u0440\u043c\u0430\u0442\u0438\u0440\u043e\u0432\u0430\u043d\w* \u043a\u043e\u0434\w*",
+    "implement": r"implement\w*|build|add|create|fix|process|\u0440\u0435\u0430\u043b\u0438\u0437\w*|\u0434\u043e\u0431\u0430\u0432\w*|\u0441\u043e\u0437\u0434\u0430\w*|\u0438\u0441\u043f\u0440\u0430\u0432\w*|\u043e\u0431\u0440\u0430\u0431\u043e\u0442\w*",
+    "extract": r"classify|categorize|extract|label|tag|parse|\u043a\u043b\u0430\u0441\u0441\u0438\u0444\u0438\u0446\w*|\u0438\u0437\u0432\u043b\u0435\w*|\u0440\u0430\u0437\u043c\u0435\u0442\w*|\u0440\u0430\u0441\u043f\u0430\u0440\u0441\w*",
 }
-NOTE = ("Rule-based keyword recommendation; verify current model availability and your account "
-        "tier before relying.")
+_RISKS = {
+    "security": r"security|sensitive data|authentication|authorization|compliance|"
+                r"\u0431\u0435\u0437\u043e\u043f\u0430\u0441\u043d\u043e\u0441\u0442\w*|\u043f\u0435\u0440\u0441\u043e\u043d\u0430\u043b\u044c\u043d\w* \u0434\u0430\u043d\u043d\w*|\u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\w*|\u0430\u0443\u0442\u0435\u043d\u0442\u0438\u0444\u0438\u043a\u0430\u0446\w*",
+    "payments": r"payment\w*|billing|money transfer|\u043f\u043b\u0430\u0442\u0435\u0436\w*|\u043f\u043b\u0430\u0442\u0451\u0436\w*|\u043e\u043f\u043b\u0430\u0442\w*|\u043f\u0435\u0440\u0435\u0432\u043e\u0434\w* \u0434\u0435\u043d\u0435\u0433",
+    "distributed": r"distributed|consensus|replication|\u0440\u0430\u0441\u043f\u0440\u0435\u0434\u0435\u043b[\u0435\u0451]\u043d\w*|\u043a\u043e\u043d\u0441\u0435\u043d\u0441\u0443\u0441\w*|\u0440\u0435\u043f\u043b\u0438\u043a\u0430\u0446\w*",
+    "conflicting-evidence": r"conflicting (?:evidence|requirements)|\u043f\u0440\u043e\u0442\u0438\u0432\u043e\u0440\u0435\u0447\u0438\u0432\w* (?:\u0434\u0430\u043d\u043d\w*|\u0442\u0440\u0435\u0431\u043e\u0432\u0430\u043d\w*)",
+}
+NOTE = ("Offline recommendation, not execution. Rules can miss context; verify risk, "
+        "model availability, and client support. Level 6 requires a diagnosed capability shortfall.")
 
 
 def load_providers(providers_dir: Path) -> dict[str, dict]:
@@ -76,32 +90,67 @@ def load_selection(path: Path) -> dict:
     return selection
 
 
+def classify_task(text: str, *, operation: str | None = None, risks: tuple[str, ...] = (),
+                  components: int | None = None) -> dict:
+    if operation is not None and operation not in OPERATIONS:
+        raise ValueError("Unknown operation: " + operation)
+    if any(risk not in RISKS for risk in risks):
+        raise ValueError("Unknown risk")
+    if components is not None and (type(components) is not int or components < 1):
+        raise ValueError("Components must be a positive integer")
+    # File names and code identifiers are weak evidence of the requested operation.
+    prose = re.sub(r"`[^`]*`|\S+\.[a-z][a-z0-9]{0,9}\b", " ", text.lower())
+    signals = []
+    if operation is None:
+        operation = next((name for name, pattern in _OPERATIONS.items()
+                          if re.search(r"\b(?:" + pattern + r")\b", prose)), "implement")
+        signals.append("text operation: " + operation)
+    else:
+        signals.append("explicit operation: " + operation)
+    level = OPERATIONS[operation]
+    detected = {name for name, pattern in _RISKS.items()
+                if re.search(r"\b(?:" + pattern + r")\b", prose)}
+    for risk in sorted(detected | set(risks)):
+        level = max(level, RISKS[risk])
+        signals.append(("explicit risk: " if risk in risks else "text risk: ") + risk)
+    if components is not None and components >= 3:
+        level = max(level, 3)
+        signals.append("three or more affected components")
+    return {"level": level, "signals": signals}
+
+
 def classify_level(text: str) -> int:
-    lowered = text.lower()
-    for level in (5, 4, 3, 0, 1):
-        if any(keyword in lowered for keyword in _KEYWORDS[level]):
-            return level
-    return 2
+    return classify_task(text)["level"]
+
+
+def _role_selection(role: str, selection: dict) -> dict:
+    spec = selection.get("roles", {}).get(role)
+    return {"provider": spec} if isinstance(spec, str) else (spec or {})
+
+
+def _supported_efforts(config: dict, model: str | None) -> list[str]:
+    # Capability declarations belong to known model IDs, not arbitrary overrides or local models.
+    if model is not None:
+        for name, spec in config.get("roles", {}).items():
+            if spec.get("model") == model:
+                return config.get("supported_efforts", {}).get(name, [])
+    return []
 
 
 def resolve_role(role: str, selection: dict, providers: dict[str, dict]) -> dict:
-    spec = selection.get("roles", {}).get(role)
-    if spec is None:
-        spec = {}
-    elif isinstance(spec, str):
-        spec = {"provider": spec}
+    spec = _role_selection(role, selection)
     provider_id = spec.get("provider") or selection.get("default_provider")
     if provider_id is None:
         return {"role": role, "provider": None, "model": None, "effort": None,
                 "reasoning_mode": "standard", "service_tier": "standard", "tier": None,
-                "resolved": False}
+                "supported_efforts": [], "resolved": False}
     if provider_id not in providers:
         raise ValueError(f"Unknown provider in selection: {provider_id}")
     config = providers[provider_id]
     if config.get("verification_status") == "pending":
         return {"role": role, "provider": provider_id, "model": None, "effort": None,
                 "reasoning_mode": None, "service_tier": None, "tier": config.get("tier"),
-                "resolved": False}
+                "supported_efforts": [], "resolved": False}
     role_spec = config.get("roles", {}).get(role, {})
     if not isinstance(role_spec, dict):
         role_spec = {}
@@ -110,11 +159,17 @@ def resolve_role(role: str, selection: dict, providers: dict[str, dict]) -> dict
         model = selection.get("local_models", {}).get(role)
     if model is None:
         model = role_spec.get("model")
-    effort = spec.get("effort") or role_spec.get("effort")
+    supported = _supported_efforts(config, model)
+    effort = spec.get("effort")
+    if effort is not None and effort not in supported:
+        raise ValueError(f"Effort {effort} is not declared for provider/model {provider_id}/{model}")
+    if effort is None and role_spec.get("effort") in supported:
+        effort = role_spec["effort"]
     return {"role": role, "provider": provider_id, "model": model, "effort": effort,
             "reasoning_mode": config.get("reasoning_mode", "standard"),
             "service_tier": config.get("service_tier_policy", "standard"),
-            "tier": config.get("tier", "cloud"), "resolved": model is not None}
+            "tier": config.get("tier", "cloud"), "supported_efforts": supported,
+            "resolved": model is not None}
 
 
 def classify(text: str) -> dict:
@@ -124,21 +179,58 @@ def classify(text: str) -> dict:
 
 
 def route_result(text: str, selection: dict, providers: dict[str, dict], *,
-                 level: int | None = None, role: str | None = None, effort: str | None = None) -> dict:
+                 level: int | None = None, role: str | None = None, effort: str | None = None,
+                 operation: str | None = None, risks: tuple[str, ...] = (),
+                 components: int | None = None, provider: str | None = None,
+                 model: str | None = None) -> dict:
+    validate_selection(selection)
+    classified = classify_task(text, operation=operation, risks=risks, components=components)
+    explicit_level = level is not None
     if level is None:
-        level = classify_level(text)
+        level = classified["level"]
     elif type(level) is not int or not 0 <= level <= 6:
         raise ValueError("Level must be an integer 0-6")
+    if explicit_level:
+        classified["signals"].append(f"explicit level: {level}")
     default_role, default_effort = LEVEL_MAP.get(level, ("work", "medium"))
     role = role or default_role
-    effort = effort or default_effort
     if role not in ROLES:
         raise ValueError("Role must be one of: " + ", ".join(ROLES))
+    if provider is not None or model is not None or effort is not None:
+        override = dict(_role_selection(role, selection))
+        previous_provider = override.get("provider") or selection.get("default_provider")
+        if provider is not None and provider != previous_provider:
+            # A provider switch must not carry the old provider's model ID into the new catalogue.
+            override.pop("model", None)
+        selection = {**selection, "roles": {**selection["roles"], role: {
+            **override,
+            **({"provider": provider} if provider is not None else {}),
+            **({"model": model} if model is not None else {}),
+            **({"effort": effort} if effort is not None else {})}}}
     resolved = resolve_role(role, selection, providers)
-    return {"level": level, "role": role, "effort": effort,
+    configured = _role_selection(role, selection).get("effort")
+    requested = effort if effort is not None else configured
+    recommended = requested if requested is not None else default_effort
+    supported = resolved["supported_efforts"]
+    adjustments = []
+    if requested is not None and requested not in supported and resolved["resolved"]:
+        raise ValueError(f"Effort {requested} is not declared for the selected model")
+    if resolved["resolved"] and recommended in supported:
+        chosen_effort = recommended
+    else:
+        chosen_effort = resolved["effort"]
+        if recommended is not None:
+            adjustments.append("Recommended effort is unavailable; using the declared model default "
+                               "or no effort control when capabilities are unknown.")
+    return {"level": level, "role": role, "effort": chosen_effort,
+            "recommended_effort": recommended, "resolved": resolved["resolved"],
             "provider": resolved["provider"], "model": resolved["model"],
             "reasoning_mode": resolved["reasoning_mode"], "service_tier": resolved["service_tier"],
-            "tier": resolved["tier"], "note": NOTE}
+            "tier": resolved["tier"], "signals": classified["signals"],
+            "level_source": "explicit" if explicit_level else "classified",
+            "effort_source": "explicit" if effort is not None else
+                             ("selection" if configured is not None else "ladder"),
+            "adjustments": adjustments, "note": NOTE}
 
 
 def _selection_and_providers(project: Path | None, root: Path) -> tuple[dict, dict[str, dict]]:
@@ -224,6 +316,11 @@ def main(argv: list[str] | None = None) -> int:
     route_parser.add_argument("--level", type=int)
     route_parser.add_argument("--role", choices=list(ROLES))
     route_parser.add_argument("--effort")
+    route_parser.add_argument("--provider", help="Provider override for this recommendation only")
+    route_parser.add_argument("--model", help="Model ID override; capabilities must be declared")
+    route_parser.add_argument("--operation", choices=list(OPERATIONS))
+    route_parser.add_argument("--risk", choices=list(RISKS), action="append", default=[])
+    route_parser.add_argument("--components", type=int, help="Number of affected interacting components")
     route_parser.add_argument("--project", type=Path)
     route_parser.add_argument("--root", type=Path, default=ROOT)
     configure_parser = sub.add_parser("configure", help="Generate resolved routing config for an installed project")
@@ -234,7 +331,9 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "route":
             selection, providers = _selection_and_providers(args.project, args.root)
             print(json.dumps(route_result(args.task, selection, providers, level=args.level,
-                                          role=args.role, effort=args.effort), indent=2))
+                                          role=args.role, effort=args.effort, provider=args.provider,
+                                          model=args.model, operation=args.operation,
+                                          risks=tuple(args.risk), components=args.components), indent=2))
             return 0
         plan = configure_plan(args.project)
         print(json.dumps({"target": plan["target"], "preview": not args.apply,

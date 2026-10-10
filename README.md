@@ -1,5 +1,7 @@
 # AI-KIT
 
+![AI KIT](https://i.postimg.cc/BvrB6sKt/ai-kit-hero-banner.jpg)
+
 A new chat should be able to pick up your project without making you explain every decision again. AI-KIT keeps the instructions, verified project facts, and working practices that make that possible alongside your code.
 
 Adapt it to your stack and keep it current.
@@ -207,18 +209,17 @@ python scripts/docker_test_usage.py --project my-app-tests
 
 The container guide owns size, ownership, and cleanup protections.
 
-[Routing policy](template/ai-kit/router/POLICY.md) guides capability/effort choices; defaults live in [the provider configuration](template/ai-kit/router/providers/openai.json).
-Model switching depends on supported runtime controls.
+See the [routing controls](template/ai-kit/router/POLICY.md), [Filament profile](template/ai-kit/stacks/FILAMENT.md), and [optional evaluation](docs/EVALUATION.md). Live model switching requires runtime support.
 
 ## Repository layout
 
-The reference repository maintains the kit. Application installation uses template/.
+Applications install from template/; the root maintains AI-KIT.
 
 | Path | Purpose |
 | --- | --- |
 | template/ | Clean project instructions, context, skills, and docs |
 | templates/ | Private/team application ignore policies |
-| scripts/ | Installer, project doctor, checker, and Docker helper |
+| scripts/ | Installation, checks, routing, measurements, and record helpers |
 | integrations/ | Optional client entries and guard examples |
 | docs/ | Kit decisions, evidence, and archived history |
 | ai-kit/ | Pointers for old reference paths |

@@ -4,6 +4,7 @@ Current facts: [PROJECT_CONTEXT](PROJECT_CONTEXT.md) and [project.json](ai-kit/p
 Maintenance: [continuity skill](.agents/skills/project-continuity/SKILL.md), [bootstrap](ai-kit/BOOTSTRAP.md), and [upstream](ai-kit/UPSTREAM.md).
 Checks: [engineering](ai-kit/ENGINEERING.md), [security](ai-kit/SECURITY.md), and [containers](ai-kit/CONTAINERS.md) when applicable.
 Adapters: [integration notes](ai-kit/ADAPTERS.md). Full routing: [optional router](ai-kit/router/POLICY.md) with [provider selection](ai-kit/router/selection.json).
+Evaluation only when requested: [local measurement contract](ai-kit/METRICS.md).
 
 ## Available profiles
 
@@ -11,6 +12,7 @@ These are references, not confirmed project facts. After bootstrap group active 
 
 - [PHP](ai-kit/stacks/PHP.md)
 - [Laravel](ai-kit/stacks/LARAVEL.md)
+- [Filament](ai-kit/stacks/FILAMENT.md)
 - [Go](ai-kit/stacks/GO.md)
 - [Python](ai-kit/stacks/PYTHON.md)
 - [Moodle](ai-kit/stacks/MOODLE.md)

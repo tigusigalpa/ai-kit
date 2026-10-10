@@ -16,6 +16,61 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import install
 
 
+class PathSafetyTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory(prefix="ai-kit-path-")
+        self.addCleanup(self.temp.cleanup)
+        self.target = Path(self.temp.name).resolve()
+
+    def test_link_probe_treats_non_directory_ancestor_as_absent(self):
+        with patch.object(Path, "lstat", side_effect=NotADirectoryError("file ancestor")):
+            self.assertFalse(install.is_link(self.target / "marker/rule.md"))
+
+    def test_nested_detection_markers_under_a_file_are_absent(self):
+        (self.target / ".github").write_bytes(b"Existing file\n")
+        original_lstat = Path.lstat
+
+        def posix_lstat(path, *args, **kwargs):
+            if self.target / ".github" in path.parents:
+                raise NotADirectoryError("The .github ancestor is a regular file")
+            return original_lstat(path, *args, **kwargs)
+
+        with patch.object(Path, "lstat", posix_lstat):
+            self.assertEqual(install.detect_agents(self.target, install.load_agent_registry()), {})
+
+    def test_selected_adapter_refuses_a_file_parent_before_writing(self):
+        marker = self.target / ".clinerules"
+        marker.write_bytes(b"Existing Cline rules\n")
+        with self.assertRaises(NotADirectoryError):
+            install.build_plan(self.target, agents=["codex", "cline"])
+        errors = io.StringIO()
+        with contextlib.redirect_stderr(errors):
+            self.assertEqual(install.main([str(self.target), "--agent", "codex", "--agent", "cline",
+                                           "--apply"]), 1)
+        self.assertIn("Installation parent is not a directory", errors.getvalue())
+        self.assertNotIn("Traceback", errors.getvalue())
+        self.assertEqual(marker.read_bytes(), b"Existing Cline rules\n")
+        self.assertEqual(list(self.target.iterdir()), [marker])
+
+    def test_link_probe_does_not_hide_permission_errors(self):
+        with patch.object(Path, "lstat", side_effect=PermissionError("Access denied")):
+            with self.assertRaises(PermissionError):
+                install.is_link(self.target / "marker")
+
+    def test_unselected_adapter_does_not_hide_a_linked_parent(self):
+        marker = self.target / ".clinerules"
+        marker.write_bytes(b"Existing Cline rules\n")
+        original_is_link = install.is_link
+
+        def linked_parent(path):
+            return path == marker or original_is_link(path)
+
+        with patch.object(install, "is_link", linked_parent):
+            with self.assertRaisesRegex(ValueError, "Refusing linked installation path"):
+                install.build_plan(self.target)
+        self.assertEqual(list(self.target.iterdir()), [marker])
+
+
 class InstallerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory(prefix="ai-kit-project-")
@@ -349,15 +404,30 @@ class InstallerTests(unittest.TestCase):
         self.write("CLAUDE.md", b"Existing Claude notes\n")
         self.write(".cursor/rules/team.mdc", b"rule\n")
         self.write(".clinerules", b"rules\n")
-        plan = self.plan()
+        original_lstat = Path.lstat
+
+        def posix_lstat(path, *args, **kwargs):
+            if path == self.target / ".clinerules/ai-kit.md":
+                raise NotADirectoryError("The .clinerules ancestor is a regular file")
+            return original_lstat(path, *args, **kwargs)
+
+        # Windows can report a missing path here instead of POSIX ENOTDIR.
+        with patch.object(Path, "lstat", posix_lstat):
+            plan = self.plan()
+            explicit = self.plan(agents=["codex"])
         self.assertEqual(plan["detected_agents"], {"claude": ["CLAUDE.md"], "cline": [".clinerules"],
                                                    "cursor": [".cursor/"]})
         self.assertEqual(plan["suggested_agents"], ["claude", "cline", "codex", "cursor"])
         self.assertNotIn("CLAUDE.md", plan["actions"])
         self.assertTrue(any("--agent claude --agent cline --agent codex --agent cursor" in w
                             for w in plan["warnings"]))
-        explicit = self.plan(agents=["codex"])
         self.assertFalse(any("Detected client files" in w for w in explicit["warnings"]))
+        self.assertFalse((self.target / "ai-kit").exists())
+        self.assertTrue(install.apply_plan(plan))
+        self.assertEqual((self.target / ".clinerules").read_bytes(), b"rules\n")
+        self.assertEqual((self.target / "CLAUDE.md").read_bytes(), b"Existing Claude notes\n")
+        with patch.object(Path, "lstat", posix_lstat):
+            self.assertFalse(self.plan()["actions"])
 
     def test_registry_refuses_unsafe_detect_markers(self):
         registry_path = self.source / install.AGENT_REGISTRY_PATH
@@ -552,7 +622,9 @@ class InstallerTests(unittest.TestCase):
         self.write("CLAUDE.md", b"Locally adapted Claude instructions\n")
         plan = self.plan(agents=["codex", "copilot"])
         self.assertIn("CLAUDE.md", plan["adapter_conflicts"])
-        self.assertEqual(len(plan["adapter_conflicts"]), 9)
+        native_skills = {".claude/skills/" + path.parent.name + "/SKILL.md"
+                         for path in (self.source / "template/.agents/skills").glob("*/SKILL.md")}
+        self.assertEqual(set(plan["adapter_conflicts"]), {"CLAUDE.md", *native_skills})
         self.assertTrue(install.needs_review(plan))
         self.assertFalse(install.apply_plan(plan))
         self.assertEqual(state_path.read_bytes(), original_state)
@@ -639,6 +711,50 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual((self.target / "ai-kit/.upstream-cache/candidates/AGENTS.md").read_bytes(),
                          b"Old review work\n")
 
+    def test_new_profile_upgrade_keeps_project_facts_selection_and_measurements(self):
+        # Synthetic older layout; this is not evidence of a real application upgrade.
+        additions = ["template/ai-kit/METRICS.md", "template/ai-kit/stacks/FILAMENT.md",
+                     "template/.agents/skills/filament-work/SKILL.md"]
+        originals = {name: (self.source / name).read_bytes() for name in additions}
+        for name in additions:
+            (self.source / name).unlink()
+        for path in (self.source / "template").rglob("*.md"):
+            data = path.read_bytes()
+            lines = data.decode("utf-8").splitlines(keepends=True)
+            filtered = "".join(line for line in lines if "FILAMENT.md" not in line and
+                               "filament-work" not in line and "METRICS.md" not in line).encode("utf-8")
+            if filtered != data:
+                originals[path.relative_to(self.source).as_posix()] = data
+                path.write_bytes(filtered)
+        (self.source / "VERSION").write_text("0.4.7\n", encoding="utf-8")
+        self.write("admin/composer.json", b'{"require":{"filament/filament":"^5.0"}}\n')
+        self.write("admin/artisan", b"<?php\n")
+        self.apply(agents=["codex", "claude"], mode="team")
+        preserved = {"PROJECT_CONTEXT.md": b"# Reviewed application facts\n",
+                     "ai-kit/project.json": b'{"schema":1,"modules":[],"operations":{}}\n',
+                     "ai-kit/.metrics/tasks.jsonl": b"Private measurement data\n"}
+        for name, data in preserved.items():
+            self.write(name, data)
+        selection_path = "ai-kit/router/selection.json"
+        selection_data = json.loads((self.target / selection_path).read_text())
+        selection_data["default_provider"] = "local"
+        selection_data["local_models"]["work"] = "owner-model"
+        preserved[selection_path] = (json.dumps(selection_data) + "\n").encode()
+        self.write(selection_path, preserved[selection_path])
+        for name, data in originals.items():
+            (self.source / name).write_bytes(data)
+        (self.source / "VERSION").write_text(self.initial_version + "\n", encoding="utf-8")
+        plan = self.plan()
+        self.assertFalse(plan["conflicts"])
+        self.assertEqual(plan["detected_profiles"]["FILAMENT"], ["admin/"])
+        self.assertTrue(install.apply_plan(plan))
+        for name, data in preserved.items():
+            self.assertEqual((self.target / name).read_bytes(), data)
+        original = self.target / ".agents/skills/filament-work/SKILL.md"
+        native = self.target / ".claude/skills/filament-work/SKILL.md"
+        self.assertEqual(original.read_bytes(), native.read_bytes())
+        self.assertFalse(self.plan()["actions"])
+
     def test_existing_mixed_project_and_installed_git_visibility(self):
         git = os.environ.get("AI_KIT_GIT") or shutil.which("git")
         if not git:
@@ -671,12 +787,14 @@ class InstallerTests(unittest.TestCase):
             return result.returncode == 0
 
         shared = ["AGENTS.md", "ai-kit/CORE.md", ".agents/skills/go-work/SKILL.md",
-                  "CLAUDE.md", ".claude/skills/go-work/SKILL.md"]
+                  "CLAUDE.md", ".claude/skills/go-work/SKILL.md", "ai-kit/stacks/FILAMENT.md",
+                  ".agents/skills/filament-work/SKILL.md", ".claude/skills/filament-work/SKILL.md"]
         visible = ["README.md", "CHANGELOG.md", ".env.example", "web/composer.json",
                    "web/composer.lock", "api/go.mod", "api/go.sum", "api/vendor/modules.txt",
                    "tools/pyproject.toml", "tools/uv.lock", "tools/requirements.txt"]
         hidden = [".env", "custom.cache", "web/vendor/autoload.php", "api/go-cache/item",
                   "api/result.out", "tools/__pycache__/task.pyc", "ai-kit/.install-state.json",
+                  "ai-kit/.metrics/tasks.jsonl", "ai-kit/.metrics/write.lock",
                   pending["candidates"]["AGENTS.md"]["path"]]
         for mode in ("private", "team"):
             with self.subTest(mode=mode):

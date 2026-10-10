@@ -1,6 +1,7 @@
 # Laravel
 
 Confirm installed Laravel/PHP/Filament versions and composer scripts. Apply the [PHP baseline](PHP.md) and, when conventions=owner, [owner rules](../profiles/OWNER.md).
+For confirmed Filament UI work also apply the [Filament profile](FILAMENT.md).
 - Read env() only from configuration files; use config() in application code so cached configuration works.
 - Validate request boundaries; policies/gates protect APIs, jobs, tenants, and admin UI. Hidden UI controls are not authorization.
 - Keep database transactions bounded. Dispatch dependent jobs/events after commit using supported framework configuration/APIs; rolled-back work must not escape.

@@ -23,6 +23,8 @@ PROFILE_MANIFESTS = {
     "PYTHON": ("pyproject.toml", "requirements.txt", "setup.py", "setup.cfg"),
     "FRONTEND": ("package.json",),
 }
+FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
+                     "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
 EXTRAS = {"session-start", "guards", "ci"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
@@ -60,7 +62,7 @@ def is_link(path: Path) -> bool:
     """Recognize symlinks and Windows junctions on Python 3.10 and later."""
     try:
         info = path.lstat()
-    except FileNotFoundError:
+    except (FileNotFoundError, NotADirectoryError):
         return False
     return stat.S_ISLNK(info.st_mode) or getattr(info, "st_reparse_tag", None) in {
         getattr(stat, "IO_REPARSE_TAG_SYMLINK", -1),
@@ -79,6 +81,8 @@ def safe_path(target: Path, relative: str) -> Path:
             break
         if is_link(candidate):
             raise ValueError(f"Refusing linked installation path: {candidate}")
+        if candidate != path and candidate.exists() and not candidate.is_dir():
+            raise NotADirectoryError(f"Installation parent is not a directory: {candidate}")
     if path.exists() and not path.is_file():
         raise ValueError(f"Destination is not a regular file: {relative}")
     return path
@@ -453,6 +457,26 @@ def _composer_facts(composer: dict, *, laravel: bool) -> dict:
     return {"language": "PHP", "version": version, "commands": commands}
 
 
+def _filament_manifests(module: Path, composer: dict) -> list[str]:
+    """Suggest a profile from known first-party dependencies, never from a wrapper or directory name."""
+    evidence = []
+    for section in ("require", "require-dev"):
+        dependencies = composer.get(section, {})
+        if isinstance(dependencies, dict) and FILAMENT_PACKAGES.intersection(dependencies):
+            evidence.append("composer.json")
+            break
+    lock_path = module / "composer.lock"
+    lock = (_manifest_json(lock_path) if not is_link(lock_path) else None) or {}
+    for section in ("packages", "packages-dev"):
+        packages = lock.get(section, [])
+        if isinstance(packages, list) and any(isinstance(package, dict) and
+                                             isinstance(package.get("name"), str) and
+                                             package["name"] in FILAMENT_PACKAGES for package in packages):
+            evidence.append("composer.lock")
+            break
+    return evidence
+
+
 def detect_facts(target: Path) -> dict:
     """Detect per-module manifests, language, version, and suggested commands (unverified draft)."""
     modules: dict[str, dict] = {}
@@ -496,7 +520,13 @@ def detect_facts(target: Path) -> dict:
             laravel = (module / "artisan").is_file()
             if laravel:
                 facts["profiles"].append("LARAVEL")
-            composer = _composer_facts(_manifest_json(module / "composer.json") or {}, laravel=laravel)
+            manifest = _manifest_json(module / "composer.json") or {}
+            filament = _filament_manifests(module, manifest)
+            if filament:
+                facts["profiles"].append("FILAMENT")
+                if "composer.lock" in filament:
+                    facts["manifests"].append("composer.lock")
+            composer = _composer_facts(manifest, laravel=laravel)
             if facts["language"] is None:
                 facts["language"] = composer["language"]
             if facts["version"] is None:
@@ -780,7 +810,14 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         for _, destination in items:
             unselected[destination] = agent
     for relative, owner in unselected.items():
-        if owner not in agents and relative not in records and safe_path(target, relative).exists():
+        if owner in agents or relative in records:
+            continue
+        try:
+            exists = safe_path(target, relative).exists()
+        except NotADirectoryError:
+            # An existing native rule file can occupy a directory adapter's parent.
+            continue
+        if exists:
             warnings.append(f"Untracked unselected {owner} entry may still load: {relative}")
     if "claude" not in agents and (target / ".claude/skills").exists():
         warnings.append("Unselected .claude/skills remains on disk; verify actual client loading "

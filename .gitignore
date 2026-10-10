@@ -1,5 +1,6 @@
 # Reference repository: version instruction sources and project templates.
 /ai-kit/.upstream-cache/
+/ai-kit/.metrics/
 /.claude/
 /.cache/
 /.venv/

@@ -3,8 +3,9 @@ TARGET ?=
 TASK ?=
 TITLE ?=
 MSG ?=
+RECORD ?=
 
-.PHONY: check test install apply doctor route configure adr changelog
+.PHONY: check test install apply doctor route configure measure metrics adr changelog
 
 check:
 	python scripts/check_kit.py
@@ -26,6 +27,12 @@ route:
 
 configure:
 	python scripts/router.py configure $(TARGET) --apply
+
+measure:
+	python scripts/metrics.py record $(TARGET) --from-json $(RECORD)
+
+metrics:
+	python scripts/metrics.py summary $(TARGET)
 
 adr:
 	python scripts/adr.py new "$(TITLE)"

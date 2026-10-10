@@ -42,8 +42,18 @@ Unavailable switching means a recommendation, not a claim of execution. Respect 
 
 The reference distribution ships `scripts/router.py`, which works offline and never installs credentials or a switching runtime:
 
-- `route "<task>"` returns a deterministic capability recommendation (level/role/effort) and the resolved provider/model from [selection.json](selection.json) plus the provider configurations. Classification is a transparent keyword rule, not a confidence score; verify availability and your account tier before relying.
+- `route "<task>"` uses English/Russian operation and risk rules, word boundaries, and optional `--operation`, repeatable `--risk`, and `--components` evidence. Signals explain the chosen level; rules can miss context. Level 6 requires explicit selection after diagnosis. File names/code spans are not operation evidence.
+- `--level`, `--role`, `--effort`, `--provider`, and `--model` override the recommendation without changing selection.json. Effort precedence is explicit CLI, explicit role selection, then the ladder; level 6 uses the declared model default unless explicitly chosen. `recommended_effort` preserves the request while `effort` names a declared supported control or is null. Unsupported automatic effort falls back to the declared default; an unsupported explicit effort is refused for a resolved model. Unknown custom/local model capabilities stay unknown until declared in provider configuration.
 - `configure PROJECT --apply` writes `ai-kit/router/resolved.json` (the resolved role mapping) and, when Aider is a selected agent, a native `.aider.conf.yml` model routing file. Preview first; existing differing native files conflict and are never overwritten.
+
+The helper recommends; it does not change the active chat model or run a task. Use [optional local measurements](../METRICS.md) only when evaluation is requested; record the actual executed model separately from routing advice.
+
+Examples from the reference checkout:
+
+~~~sh
+python scripts/router.py route "implement payment parsing" --operation implement --risk payments
+python scripts/router.py route "review the patch" --level 3 --role work --effort high
+~~~
 
 ## Optional decision record
 

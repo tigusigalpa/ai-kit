@@ -8,6 +8,7 @@ Read a skill explicitly when needed and automatic selection has not occurred. St
 | [project-continuity](../.agents/skills/project-continuity/SKILL.md) | Context/procedure |
 | [php-work](../.agents/skills/php-work/SKILL.md) | PHP |
 | [laravel-work](../.agents/skills/laravel-work/SKILL.md) | LARAVEL |
+| [filament-work](../.agents/skills/filament-work/SKILL.md) | FILAMENT |
 | [go-work](../.agents/skills/go-work/SKILL.md) | GO |
 | [python-work](../.agents/skills/python-work/SKILL.md) | PYTHON |
 | [moodle-work](../.agents/skills/moodle-work/SKILL.md) | MOODLE |

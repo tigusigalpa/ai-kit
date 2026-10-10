@@ -26,6 +26,95 @@ def selection(**overrides):
 
 
 class RouteTests(unittest.TestCase):
+    def test_ladder_matches_canonical_policy(self):
+        policy = (router.ROOT / "template/ai-kit/router/POLICY.md").read_text(encoding="utf-8")
+        rows = [line.split("|")[3].strip() for line in policy.splitlines()
+                if line.startswith("| ") and line.split("|")[1].strip().isdigit()]
+        expected = ["cheap / none if supported", "cheap / low", "work / medium", "work / high",
+                    "work / xhigh", "work / max", "escalation / effort selected separately"]
+        self.assertEqual(rows, expected)
+        self.assertEqual(list(router.LEVEL_MAP.values()),
+                         [("cheap", "none"), ("cheap", "low"), ("work", "medium"),
+                          ("work", "high"), ("work", "xhigh"), ("work", "max"), ("escalation", None)])
+
+    def test_operation_risk_and_word_boundaries(self):
+        cases = {"fix typo in research.md": 1, "add stack trace logs": 2,
+                 "implement a parser": 2, "parse payments": 4,
+                 "classify the authentication logs": 4,
+                 "simple distributed consensus fix": 4, "rename `deadlock` to `lock`": 1,
+                 "fix typo in architecture.yaml": 1, "add logging to debug.rs": 2,
+                 "\u043f\u0435\u0440\u0435\u0438\u043c\u0435\u043d\u0443\u0439 \u043f\u0435\u0440\u0435\u043c\u0435\u043d\u043d\u0443\u044e": 1, "\u0438\u0441\u043f\u0440\u0430\u0432\u044c \u043e\u043f\u0435\u0447\u0430\u0442\u043a\u0443 \u0432 research.md": 1,
+                 "\u0434\u043e\u0431\u0430\u0432\u044c \u043d\u043e\u0432\u044b\u0439 \u0444\u0438\u043b\u044c\u0442\u0440": 2, "\u043e\u0442\u043b\u0430\u0434\u044c \u0432\u0437\u0430\u0438\u043c\u043d\u0443\u044e \u0431\u043b\u043e\u043a\u0438\u0440\u043e\u0432\u043a\u0443": 3,
+                 "\u0441\u043f\u0440\u043e\u0435\u043a\u0442\u0438\u0440\u0443\u0439 \u0440\u0430\u0441\u043f\u0440\u0435\u0434\u0435\u043b\u0451\u043d\u043d\u0443\u044e \u0440\u0435\u043f\u043b\u0438\u043a\u0430\u0446\u0438\u044e": 4, "\u0440\u0430\u0437\u0431\u0435\u0440\u0438 \u0430\u0432\u0442\u043e\u0440\u0438\u0437\u0430\u0446\u0438\u044e": 4,
+                 "\u0434\u043e\u043a\u0430\u0436\u0438 \u0442\u0435\u043e\u0440\u0435\u043c\u0443": 5, "\u0438\u0437\u0432\u043b\u0435\u043a\u0438 \u043c\u0435\u0442\u043a\u0438 \u0438\u0437 \u0441\u043f\u0438\u0441\u043a\u0430": 0,
+                 "\u0434\u043e\u0431\u0430\u0432\u044c \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0443 \u043f\u043b\u0430\u0442\u0435\u0436\u0435\u0439": 4}
+        for task, expected in cases.items():
+            with self.subTest(task=task):
+                self.assertEqual(router.classify_level(task), expected)
+
+    def test_structured_evidence_and_manual_level(self):
+        result = router.route_result("unknown", selection(), providers(), operation="extract",
+                                     risks=("payments",), components=3)
+        self.assertEqual(result["level"], 4)
+        self.assertIn("explicit risk: payments", result["signals"])
+        self.assertEqual(router.classify_task("unknown", components=3)["level"], 3)
+        result = router.route_result("payment fix", selection(), providers(), level=1)
+        self.assertEqual(result["level"], 1)
+        self.assertEqual(result["level_source"], "explicit")
+        for kwargs in ({"operation": "missing"}, {"risks": ("missing",)},
+                       {"components": 0}, {"components": True}):
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                router.classify_task("unknown", **kwargs)
+
+    def test_automatic_routing_never_claims_escalation(self):
+        for task in ("formal proof", "debug deadlock", "security audit"):
+            result = router.route_result(task, selection(default_provider="openai"), providers())
+            self.assertNotEqual(result["level"], 6)
+            self.assertNotEqual(result["role"], "escalation")
+        research = router.route_result("formal proof", selection(default_provider="openai"), providers())
+        self.assertEqual((research["role"], research["effort"]), ("work", "max"))
+        escalation = router.route_result("diagnosed shortfall", selection(default_provider="openai"),
+                                         providers(), level=6)
+        self.assertEqual(escalation["effort"], "high")
+        self.assertIsNone(escalation["recommended_effort"])
+
+    def test_selection_effort_is_respected_and_cli_wins(self):
+        settings = selection(default_provider="openai", roles={"work": {"effort": "low"}})
+        chosen = router.route_result("implement feature", settings, providers())
+        self.assertEqual(chosen["effort"], "low")
+        self.assertEqual(chosen["effort_source"], "selection")
+        chosen = router.route_result("implement feature", settings, providers(), effort="high")
+        self.assertEqual(chosen["effort"], "high")
+        self.assertEqual(settings["roles"]["work"]["effort"], "low")
+
+    def test_effort_controls_require_model_capability(self):
+        openai = router.route_result("classify tickets", selection(default_provider="openai"), providers())
+        self.assertEqual(openai["effort"], "none")
+        fallback = router.route_result("classify tickets", selection(default_provider="anthropic"), providers())
+        self.assertEqual(fallback["recommended_effort"], "none")
+        self.assertEqual(fallback["effort"], "low")
+        self.assertTrue(fallback["adjustments"])
+        for provider_id in ("kimi", "local", None, "gemini"):
+            result = router.route_result("implement feature", selection(default_provider=provider_id,
+                                         local_models={"work": "user-model"}), providers())
+            self.assertIsNone(result["effort"])
+        for kwargs in ({"provider": "anthropic", "effort": "none"},
+                       {"provider": "openai", "model": "unknown-model", "effort": "high"}):
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                router.route_result("classify tickets", selection(), providers(), **kwargs)
+
+    def test_provider_and_model_overrides_do_not_mutate_selection(self):
+        settings = selection(default_provider="openai")
+        result = router.route_result("feature", settings, providers(), provider="kimi", model="custom-id")
+        self.assertEqual((result["provider"], result["model"]), ("kimi", "custom-id"))
+        self.assertIsNone(result["effort"])
+        self.assertEqual(settings["default_provider"], "openai")
+        self.assertIsNone(settings["roles"]["work"])
+        settings["roles"]["work"] = {"provider": "openai", "model": "owner-openai-model"}
+        result = router.route_result("feature", settings, providers(), provider="kimi")
+        self.assertEqual(result["model"], providers()["kimi"]["roles"]["work"]["model"])
+        self.assertEqual(settings["roles"]["work"]["model"], "owner-openai-model")
+
     def test_classify_levels(self):
         self.assertEqual(router.classify("classify these tickets")["level"], 0)
         self.assertEqual(router.classify("rename the variable")["level"], 1)
@@ -80,6 +169,17 @@ class RouteTests(unittest.TestCase):
         with contextlib.redirect_stdout(output):
             self.assertEqual(router.main(["route", "implement the feature"]), 0)
         self.assertIn('"level": 2', output.getvalue())
+
+    def test_cli_structured_flags_and_invalid_effort(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            status = router.main(["route", "extract tickets", "--operation", "implement",
+                                  "--risk", "payments", "--components", "2", "--provider", "openai"])
+        self.assertEqual(status, 0)
+        result = json.loads(output.getvalue())
+        self.assertEqual((result["level"], result["effort"]), (4, "xhigh"))
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(router.main(["route", "feature", "--provider", "openai", "--effort", "invalid"]), 1)
 
 
 class ConfigureTests(unittest.TestCase):

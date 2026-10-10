@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import adr
@@ -101,6 +102,40 @@ class DetectFactsTests(unittest.TestCase):
         self.assertEqual(module["profiles"], ["LARAVEL", "PHP"])
         self.assertEqual(module["version"], "^8.2")
         self.assertEqual(module["commands"]["test"], "php artisan test")
+
+    def test_filament_direct_dependencies_and_module_scope(self):
+        self.write("admin/composer.json", json.dumps({"require": {"laravel/framework": "^12.0",
+                                                                 "filament/filament": "^5.0"}}))
+        self.write("admin/artisan", "#!/usr/bin/env php\n")
+        self.write("worker/composer.json", json.dumps({"require": {"php": "^8.2"}}))
+        facts = {module["path"]: module for module in install.detect_facts(self.target)["modules"]}
+        self.assertEqual(facts["/admin/"]["profiles"], ["FILAMENT", "LARAVEL", "PHP"])
+        self.assertEqual(facts["/worker/"]["profiles"], ["PHP"])
+        self.assertEqual(install.detect_profiles(self.target)["FILAMENT"], ["admin/"])
+
+    def test_filament_component_and_lock_evidence(self):
+        self.write("composer.json", json.dumps({"require-dev": {"filament/forms": "^4.0"}}))
+        self.assertEqual(install.detect_facts(self.target)["modules"][0]["profiles"], ["FILAMENT", "PHP"])
+        self.write("composer.json", "{}\n")
+        self.write("composer.lock", json.dumps({"packages": [7, {}, {"name": []}],
+                                                 "packages-dev": [{"name": "filament/tables", "version": "v5.0.0"}]}))
+        facts = install.detect_facts(self.target)["modules"][0]
+        self.assertEqual(facts["profiles"], ["FILAMENT", "PHP"])
+        self.assertEqual(facts["manifests"], ["composer.json", "composer.lock"])
+        self.assertIsNone(facts["version"])
+
+    def test_filament_name_or_wrapper_is_not_dependency_evidence(self):
+        self.write("composer.json", json.dumps({"description": "Filament toolkit",
+                                               "require": {"example/filament-plugin": "*"}}))
+        self.write("app/Filament/Resources/Placeholder.php", "<?php\n")
+        self.write("composer.lock", "{broken\n")
+        self.assertEqual(install.detect_profiles(self.target), {"PHP": [""]})
+
+    def test_filament_lock_probe_does_not_follow_links(self):
+        with mock.patch.object(install, "is_link", return_value=True), mock.patch.object(
+                install, "_manifest_json") as read_manifest:
+            self.assertEqual(install._filament_manifests(self.target, {}), [])
+        read_manifest.assert_not_called()
 
     def test_subdirectory_prefix(self):
         self.write("api/go.mod", "module example.test/api\n")

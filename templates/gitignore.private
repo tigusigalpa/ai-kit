@@ -22,6 +22,7 @@
 /AGENTS.override.md
 /CLAUDE.local.md
 /ai-kit/.upstream-cache/
+/ai-kit/.metrics/
 /ai-kit/.install-state.json
 /ai-kit/.install-report.json
 /.ai-kit-install.lock

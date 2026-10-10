@@ -22,6 +22,8 @@ def source_files(root: Path):
     excluded = {".git", "__pycache__", ".upstream-cache", ".pytest_cache"}
     for directory, dirs, files in os.walk(root, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded]
+        if Path(directory) == root / "ai-kit":
+            dirs[:] = [d for d in dirs if d != ".metrics"]
         for name in files:
             path = Path(directory) / name
             if path.suffix != ".pyc":
@@ -110,6 +112,7 @@ def visibility(root: Path, git: str) -> list[str]:
                 if ignored(path) != (mode == "private"):
                     errors.append(f"{mode}: wrong shared visibility: {path}")
             for path in (".env", ".claude/settings.local.json", "ai-kit/.upstream-cache/a",
+                         "ai-kit/.metrics/tasks.jsonl", "ai-kit/.metrics/write.lock",
                          "go-cache/a", "test.out", "__pycache__/a.pyc"):
                 if not ignored(path):
                     errors.append(f"{mode}: private/generated data visible: {path}")
@@ -144,6 +147,8 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "template/AGENTS.md", "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
                 "template/ai-kit/project.json",
                 "scripts/install.py", "scripts/router.py", "scripts/adr.py", "scripts/changelog.py",
+                "scripts/metrics.py", "template/ai-kit/METRICS.md",
+                "template/ai-kit/stacks/FILAMENT.md", "template/.agents/skills/filament-work/SKILL.md",
                 "integrations/agents.json", "integrations/claude-settings.git-ask.json",
                 "template/.agents/hooks/session-start.md", "template/.agents/hooks/session-start.sh",
                 "template/ai-kit/router/selection.json",

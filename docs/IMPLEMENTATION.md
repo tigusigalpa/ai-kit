@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds profile detection, the project doctor, and manifest-scoped Node/Python ignores; v0.3.6 adds the session-start, guards, and CI extras; v0.3.8 adds the Gemini/Windsurf/Cline/Roo adapters and verified Anthropic/Kimi router mappings; v0.4.5 adds the agent registry and offline router helper; v0.4.6 adds interactive/check onboarding and machine-readable project facts; v0.4.7 adds key-level client settings ownership, ask guards, a context-injecting session hook, client detection, and evidence-based command suggestions. See [audit disposition](MANUS_REVIEW.md).
+The [changelog](../CHANGELOG.md) records kit evolution; [v0.5.0 verification](V0_5_0.md) covers the current additions. Earlier reproduced findings remain in the [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -36,8 +36,9 @@ Installation can explicitly select another chat language or standard conventions
 | Security implementation checks | [Security baseline](../template/ai-kit/SECURITY.md) |
 | Container design and cleanup threshold | [Containers](../template/ai-kit/CONTAINERS.md) |
 | Owner Laravel conventions | [Owner profile](../template/ai-kit/profiles/OWNER.md) |
-| Stack practices | [Stack directory](../template/ai-kit/stacks) |
+| Stack practices | [Stack directory](../template/ai-kit/stacks), including Filament |
 | Routing and provider controls | [Router](../template/ai-kit/router/POLICY.md) and relevant provider |
+| Optional local measurement contract | [Metrics](../template/ai-kit/METRICS.md) |
 | Provider selection, agent registry, routing helper | [selection.json](../template/ai-kit/router/selection.json), [agents.json](../integrations/agents.json), [router.py](../scripts/router.py) |
 | Installation/upstream reconciliation | [Bootstrap](../template/ai-kit/BOOTSTRAP.md), [upstream](../template/ai-kit/UPSTREAM.md), installer state |
 | Current project facts and navigation | Installed PROJECT_CONTEXT, WIKI, and ai-kit/project.json |

@@ -161,6 +161,8 @@ def link_warnings(target: Path) -> list[str]:
     excluded = {".git", ".upstream-cache", "node_modules", "vendor", ".venv", "__pycache__"}
     for directory, dirs, files in os.walk(target, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded and not install.is_link(Path(directory) / d)]
+        if Path(directory) == target / "ai-kit":
+            dirs[:] = [d for d in dirs if d != ".metrics"]
         for name in files:
             path = Path(directory) / name
             if path.suffix != ".md":

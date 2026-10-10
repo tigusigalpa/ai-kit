@@ -85,10 +85,15 @@ class CheckerTests(unittest.TestCase):
         self.assertTrue(any("verified_documentation_date" in error for error in self.check()))
 
     def test_source_enumeration_skips_git_but_keeps_hidden_instructions(self):
+        measurement = self.root / "ai-kit/.metrics/private-notes.md"
+        measurement.parent.mkdir(parents=True)
+        measurement.write_bytes(b"Private runtime data\n")
         sources = {p.relative_to(self.root).as_posix() for p in check_kit.source_files(self.root)}
         self.assertIn(".agents/skills/project-continuity/SKILL.md", sources)
         self.assertIn("template/.agents/skills/go-work/SKILL.md", sources)
         self.assertFalse(any(p.startswith(".git/") for p in sources))
+        self.assertFalse(any(p.startswith("ai-kit/.metrics/") for p in sources))
+        self.assertIn("template/ai-kit/METRICS.md", sources)
 
     def test_agent_registry_missing_optional_source_is_reported(self):
         path = self.root / "integrations/agents.json"

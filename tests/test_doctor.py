@@ -38,6 +38,8 @@ class DoctorTests(unittest.TestCase):
 
     def test_healthy_installation_reports_no_errors_or_warnings(self):
         self.apply()
+        # Runtime experiment notes are private data, not managed instruction/link sources.
+        self.write("ai-kit/.metrics/private-notes.md", b"[Runtime reference](missing.md)\n\xff")
         report = self.examine()
         self.assertEqual(report["errors"], [])
         self.assertEqual(report["warnings"], [])
