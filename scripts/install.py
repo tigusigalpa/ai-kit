@@ -17,11 +17,15 @@ START = "# BEGIN AI-KIT MANAGED"
 END = "# END AI-KIT MANAGED"
 OWNED = {"README.md", "PROJECT_CONTEXT.md", "WIKI.md", "CHANGELOG.md", "docs/DECISIONS.md",
          "docs/adr/0000-template.md"}
-ENTRIES = {"CLAUDE.md": "claude", "KIMI.md": "kimi", "MANUS.md": "manus"}
-AGENTS = {"codex", "claude", "kimi", "manus", "copilot", "cursor", "aider"}
+ENTRIES = {"CLAUDE.md": "claude", "KIMI.md": "kimi", "MANUS.md": "manus", "GEMINI.md": "gemini"}
+AGENTS = {"codex", "claude", "kimi", "manus", "copilot", "cursor", "aider",
+          "gemini", "windsurf", "cline", "roo"}
 OPTIONAL = {"copilot": ("copilot-instructions.md", ".github/copilot-instructions.md"),
             "cursor": ("ai-kit.mdc", ".cursor/rules/ai-kit.mdc"),
-            "aider": ("CONVENTIONS.md", "CONVENTIONS.md")}
+            "aider": ("CONVENTIONS.md", "CONVENTIONS.md"),
+            "windsurf": ("ai-kit-windsurf.md", ".windsurf/rules/ai-kit.md"),
+            "cline": ("ai-kit-cline.md", ".clinerules/ai-kit.md"),
+            "roo": ("ai-kit-roo.md", ".roo/rules/ai-kit.md")}
 PROFILE_MANIFESTS = {
     "GO": ("go.mod",),
     "PYTHON": ("pyproject.toml", "requirements.txt", "setup.py", "setup.cfg"),

@@ -1,0 +1,26 @@
+{
+  "verified_documentation_date": "2026-10-10",
+  "roles": {
+    "cheap": {
+      "model": "kimi-k2.6"
+    },
+    "work": {
+      "model": "kimi-k2.7-code"
+    },
+    "escalation": {
+      "model": "kimi-k3",
+      "effort": "high"
+    }
+  },
+  "supported_efforts": {
+    "escalation": [
+      "low",
+      "high",
+      "max"
+    ]
+  },
+  "sources": [
+    "https://platform.kimi.ai/docs",
+    "https://platform.kimi.ai/docs/pricing"
+  ]
+}

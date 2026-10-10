@@ -11,6 +11,10 @@
 /.claude/
 /.cursor/rules/ai-kit.mdc
 /.github/copilot-instructions.md
+/.windsurf/rules/
+/.clinerules/
+/.roo/rules/
+/GEMINI.md
 /docs/DECISIONS.md
 /docs/adr/0000-template.md
 /AGENTS.override.md

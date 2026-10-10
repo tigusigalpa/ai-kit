@@ -103,9 +103,9 @@ def visibility(root: Path, git: str) -> list[str]:
             policy = (root / "templates" / ("gitignore." + mode)).read_text(encoding="utf-8")
             merged, _ = install.merge_ignore("", policy, install.module_ignores(scratch))
             (scratch / ".gitignore").write_bytes(merged.encode("utf-8"))
-            for path in ("AGENTS.md", "PROJECT_CONTEXT.md", "ai-kit/CORE.md",
+            for path in ("AGENTS.md", "PROJECT_CONTEXT.md", "ai-kit/CORE.md", "GEMINI.md",
                          ".agents/skills/go-work/SKILL.md", ".claude/skills/go-work/SKILL.md",
-                         "docs/DECISIONS.md"):
+                         ".windsurf/rules/ai-kit.md", "docs/DECISIONS.md"):
                 if ignored(path) != (mode == "private"):
                     errors.append(f"{mode}: wrong shared visibility: {path}")
             for path in (".env", ".claude/settings.local.json", "ai-kit/.upstream-cache/a",
@@ -189,18 +189,37 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         if (root / relative).exists() and re.search(r"2026-\d\d-\d\d|5dd530b9|voice conversation",
                                                    (root / relative).read_text()):
             errors.append("Kit-maintenance history leaked into project template: " + relative)
-    provider_path = root / "template/ai-kit/router/providers/openai.json"
-    if provider_path.exists():
-        try:
-            config = json.loads(provider_path.read_text(encoding="utf-8"))
-            for role, spec in config["roles"].items():
-                if spec["effort"] not in config["supported_efforts"][role]:
-                    errors.append("Unsupported configured effort: " + role)
-        except (ValueError, KeyError, TypeError) as exc:
-            errors.append("Invalid provider configuration: " + str(exc))
-        for p in (root / "template").rglob("*.md"):
-            if re.search(r"gpt-[0-9]", p.read_text()):
-                errors.append("Active model IDs duplicated outside provider configuration: " + str(p))
+    providers_dir = root / "template" / "ai-kit" / "router" / "providers"
+    model_ids: list[str] = []
+    if providers_dir.is_dir():
+        for provider_path in sorted(providers_dir.glob("*.json")):
+            try:
+                config = json.loads(provider_path.read_text(encoding="utf-8"))
+                verified = config.get("verified_documentation_date")
+                if not isinstance(verified, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", verified):
+                    errors.append("Provider lacks a verified_documentation_date: " + provider_path.name)
+                supported = config.get("supported_efforts", {})
+                if not isinstance(supported, dict):
+                    raise ValueError("supported_efforts must be an object")
+                roles = config["roles"]
+                if not isinstance(roles, dict) or not roles:
+                    raise ValueError("roles must be a nonempty object")
+                for role, spec in roles.items():
+                    if not isinstance(spec, dict) or not isinstance(spec.get("model"), str):
+                        raise ValueError(f"Invalid role spec: {role}")
+                    model_ids.append(spec["model"])
+                    if "effort" in spec:
+                        if spec["effort"] not in supported.get(role, []):
+                            errors.append(f"Unsupported configured effort: {provider_path.name} role {role}")
+                    elif role in supported:
+                        errors.append(f"Role declares supported efforts but uses none: "
+                                      f"{provider_path.name} role {role}")
+            except (ValueError, KeyError, TypeError) as exc:
+                errors.append("Invalid provider configuration: " + str(exc))
+    for p in (root / "template").rglob("*.md"):
+        text = p.read_text()
+        if re.search(r"gpt-[0-9]", text) or any(model_id in text for model_id in model_ids):
+            errors.append("Active model IDs duplicated outside provider configuration: " + str(p))
     for mode in ("private", "team"):
         p = root / "templates" / ("gitignore." + mode)
         if p.exists() and any(line in {"SKILL.md", "vendor/"} for line in p.read_text().splitlines()):

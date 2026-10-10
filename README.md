@@ -61,7 +61,7 @@ Give the agent [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) and access to the bund
 
 ## Choose your defaults
 
-Select alternatives during installation. Project choices live in ai-kit/settings.json; defaults are in [the settings template](template/ai-kit/settings.json).
+Project choices live in ai-kit/settings.json; defaults are in [the settings template](template/ai-kit/settings.json).
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -103,12 +103,12 @@ A fresh session reads context before editing.
 
 Follow **plan -> implement -> test -> review -> document**: establish behavior and acceptance checks, make a focused change, run relevant tests, review, and record what changed. Load relevant rules, review risky changes, and report actual checks and unavailable verification; the [engineering guide](template/ai-kit/ENGINEERING.md) owns the detailed rules.
 
-[Core](template/ai-kit/CORE.md) owns Git authorization: commits and pushes require an explicit request for that operation. Normal task completion leaves reviewable local changes.
+[Core](template/ai-kit/CORE.md) owns Git authorization: commits and pushes require an explicit request; normal completion leaves reviewable local changes.
 
 ## Stack profiles
 
 Bootstrap confirms which profiles apply and records a path-to-profile map for each module.
-The install preview suggests profiles from module manifests (go.mod, package.json, composer.json, pyproject.toml); verify suggestions at bootstrap.
+The preview suggests profiles from module manifests (go.mod, package.json, composer.json, pyproject.toml); verify at bootstrap.
 
 | Profile | Main concerns |
 | --- | --- |
@@ -120,7 +120,7 @@ The install preview suggests profiles from module manifests (go.mod, package.jso
 | [Frontend](template/ai-kit/stacks/FRONTEND.md) | Toolchain, UI states, accessibility, and browser checks |
 | [Library](template/ai-kit/stacks/LIBRARY.md) | Public APIs, consumer examples, and compatibility |
 
-Profiles can combine: a Laravel application may also need PHP and frontend guidance.
+Profiles combine: a Laravel application may also need PHP and frontend guidance.
 Adapt them to existing versions and local instructions; available profiles do not establish the project's stack.
 
 ## Agents
@@ -131,18 +131,22 @@ Repeat --agent to select the clients you use:
 python scripts/install.py /path/to/project --agent codex --agent claude --agent cursor
 ~~~
 
-Explicit selections replace recorded choices; tracked adapters left on disk block the change. The installer never deletes adapters.
+Explicit selections replace recorded choices; tracked adapters left on disk block the change; the installer never deletes adapters.
 
 | Client | Entry provided |
 | --- | --- |
 | Codex | AGENTS.md and .agents/skills/ |
 | Claude Code | CLAUDE.md importing AGENTS; skill copies in .claude/skills/ |
 | Kimi / Manus | Short entry files to supply explicitly |
+| Gemini CLI | GEMINI.md project entry |
 | Copilot | .github/copilot-instructions.md |
 | Cursor | .cursor/rules/ai-kit.mdc |
 | Aider | CONVENTIONS.md; load with --read CONVENTIONS.md |
+| Windsurf | .windsurf/rules/ai-kit.md |
+| Cline | .clinerules/ai-kit.md |
+| Roo | .roo/rules/ai-kit.md |
 
-Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md). Opt-in extras: --with-session-start, --with-guards, --with-ci.
+Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md). Extras: --with-session-start, --with-guards, --with-ci.
 
 ## Sharing
 
@@ -155,10 +159,10 @@ Choose how others will receive the project's rules:
 
 Both modes exclude secrets, personal overrides, installer state, and caches. A private-mode clone needs kit installation; team files can be versioned.
 
-The installer owns one marked .gitignore block. Other rules survive and may still hide team files; reconcile them explicitly.
+The installer owns one marked .gitignore block; other rules survive and may still hide team files — reconcile explicitly.
 Ignore rules do not remove files already tracked by Git.
 
-Manifests/checksums/locks stay visible, including composer.lock for applications, go.mod, go.sum, and Python/frontend locks.
+Manifests/checksums/locks stay visible: composer.lock, go.mod, go.sum, and Python/frontend locks.
 Composer, Moodle, Node, and Python exclusions are scoped to verified module manifests, preserving deliberate Go vendoring and executable source.
 See [ignore adaptation](template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
 
@@ -175,7 +179,7 @@ python scripts/install.py /path/to/project --accept-local AGENTS.md
 python scripts/install.py /path/to/project --accept-local AGENTS.md --apply
 ~~~
 
-Repeat --accept-local for each reviewed managed path; local adaptations require review again when that upstream file changes. Changed existing files are backed up in ai-kit/.upstream-cache/backups/.
+Repeat --accept-local for each reviewed managed path; local adaptations need review again when that upstream file changes. Changed existing files are backed up in ai-kit/.upstream-cache/backups/.
 
 Exit codes: 0 success; 1 refusal/failure; 2 unresolved file/adapter conflicts. Invalid state/settings are refused before writes; preview creates nothing.
 
@@ -189,11 +193,11 @@ Run the offline health check against an installed application:
 python scripts/doctor.py /path/to/project
 ~~~
 
-It validates installer state/settings and reports missing or modified managed files, missing owned documents, pending candidates, budget overflows, broken Markdown links/anchors, and stale provider verifications. Exit code 0 means no errors; warnings mark work worth reviewing.
+It validates installer state/settings and reports missing/modified managed files, missing owned documents, pending candidates, budget overflows, broken Markdown links, and stale provider verifications. Exit code 0 means no errors; warnings mark work worth reviewing.
 
 ## Docker and model routing
 
-For container-dependent work, check the Docker client and daemon. A stopped daemon prompts a startup request while independent work continues.
+For container-dependent work, check the Docker client and daemon; a stopped daemon prompts a startup request while independent work continues.
 New services follow the [Kubernetes-ready contract](template/ai-kit/CONTAINERS.md) (configuration, health, shutdown, storage, manifests).
 
 Collect read-only resource evidence with:

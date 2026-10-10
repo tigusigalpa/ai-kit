@@ -8,6 +8,10 @@
 | Copilot | Optional .github/copilot-instructions.md pointing to Core/current context |
 | Cursor | Optional .cursor/rules/ai-kit.mdc; verify native activation in the installed client |
 | Aider | Optional CONVENTIONS.md; load with --read CONVENTIONS.md rather than assuming discovery |
+| Gemini CLI | GEMINI.md project entry discovered at the project root |
+| Windsurf | Optional .windsurf/rules/ai-kit.md; verify during the Windsurf/Devin rules transition |
+| Cline | Optional .clinerules/ai-kit.md |
+| Roo | Optional .roo/rules/ai-kit.md |
 
 Existing adapters/settings are preserved or reported as conflicts. Copied Claude skills retain their three-level relative root paths; discovery must be checked in the actual client.
 Private mode excludes local adapters; team mode keeps shared instruction sources visible. Personal client settings remain excluded.
@@ -21,7 +25,7 @@ For codex + claude to codex + copilot, review CLAUDE.md and each listed .claude/
 Untracked unselected entry files and remaining .claude/skills produce warnings because they may still load. Review custom skills/settings separately; do not delete an entire native directory to resolve a managed-file conflict.
 This version uses an explicit review conflict instead of implementing add/remove/replace commands. Client activation and unloading still require checks in the actual client.
 
-Sources: [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md), [skills](https://learn.chatgpt.com/docs/build-skills), [Claude imports](https://code.claude.com/docs/en/memory), [Claude skills](https://code.claude.com/docs/en/skills), [Claude hooks](https://code.claude.com/docs/en/hooks), [Copilot instructions](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions), [Cursor documentation](https://cursor.com/docs), [Aider conventions](https://aider.chat/docs/usage/conventions.html).
+Sources: [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md), [skills](https://learn.chatgpt.com/docs/build-skills), [Claude imports](https://code.claude.com/docs/en/memory), [Claude skills](https://code.claude.com/docs/en/skills), [Claude hooks](https://code.claude.com/docs/en/hooks), [Copilot instructions](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions), [Cursor documentation](https://cursor.com/docs), [Aider conventions](https://aider.chat/docs/usage/conventions.html), [Gemini CLI configuration](https://geminicli.com/docs/get-started/configuration/), [Windsurf documentation](https://docs.windsurf.com/), [Cline rules](https://docs.cline.bot/customization/cline-rules), [Roo Code custom instructions](https://docs.roocode.com/features/custom-instructions).
 
 ## Optional install extras
 

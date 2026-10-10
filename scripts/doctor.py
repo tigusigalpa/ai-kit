@@ -90,7 +90,7 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
             warnings.append(f"Invalid provider configuration {provider.name}: {exc}")
             continue
         for role, spec in config.get("roles", {}).items():
-            if spec.get("effort") not in config.get("supported_efforts", {}).get(role, []):
+            if "effort" in spec and spec["effort"] not in config.get("supported_efforts", {}).get(role, []):
                 warnings.append(f"Unsupported configured effort: {provider.name} role {role}")
         verified = config.get("verified_documentation_date")
         try:

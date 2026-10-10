@@ -1,5 +1,6 @@
 """Catch concrete metadata, link, template, and checkout regressions."""
 from pathlib import Path
+import json
 import shutil
 import sys
 import tempfile
@@ -62,6 +63,26 @@ class CheckerTests(unittest.TestCase):
         path = self.root / "template/ai-kit/router/providers/openai.json"
         path.write_text("{", encoding="utf-8")
         self.assertTrue(any("invalid JSON" in error for error in self.check()))
+
+    def test_provider_effort_outside_supported_list_is_reported(self):
+        path = self.root / "template/ai-kit/router/providers/openai.json"
+        config = json.loads(path.read_text(encoding="utf-8"))
+        config["roles"]["work"]["effort"] = "ultra"
+        path.write_text(json.dumps(config), encoding="utf-8")
+        self.assertTrue(any("Unsupported configured effort" in error for error in self.check()))
+
+    def test_active_model_id_in_markdown_is_reported(self):
+        with (self.root / "template/ai-kit/ENGINEERING.md").open("a", encoding="utf-8") as stream:
+            stream.write("\nRoute this step to claude-opus-5-5.\n")
+        self.assertTrue(any("duplicated outside provider configuration" in error
+                            for error in self.check()))
+
+    def test_provider_without_verified_date_is_reported(self):
+        path = self.root / "template/ai-kit/router/providers/anthropic.json"
+        config = json.loads(path.read_text(encoding="utf-8"))
+        del config["verified_documentation_date"]
+        path.write_text(json.dumps(config), encoding="utf-8")
+        self.assertTrue(any("verified_documentation_date" in error for error in self.check()))
 
     def test_source_enumeration_skips_git_but_keeps_hidden_instructions(self):
         sources = {p.relative_to(self.root).as_posix() for p in check_kit.source_files(self.root)}

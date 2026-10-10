@@ -1,5 +1,12 @@
 # AI-KIT changelog
 
+## v0.3.8 (2026-10-10)
+
+- Added Gemini CLI, Windsurf, Cline, and Roo adapters: a GEMINI.md project entry plus optional .windsurf/rules/, .clinerules/, and .roo/rules/ pointer rules; private-mode ignores cover the new entries. Client rule formats were checked against current documentation on 2026-10-10 and still require activation verification in the actual clients.
+- Filled in the Anthropic and Kimi router mappings as machine-readable provider configurations with roles, defaults, supported efforts, verified documentation dates, and sources. Anthropic IDs, effort levels, and request-field boundaries were verified against primary documentation (models overview and the Haiku 5.5 migration guide); Kimi facts were cross-checked against current online documentation.
+- Generalized checker provider validation to every providers/*.json (required verified date, effort/support consistency) and extended the model-ID duplication guard to all configured IDs; the project doctor now handles roles without an effort control.
+- Reran the full local suite: 73 tests, 72 passed, 1 unavailable Windows symlink check; kit validation returned no errors or warnings; Python 3.10 grammar verified. Live API calls, native client activation, and hosted CI remain unverified.
+
 ## v0.3.6 (2026-10-10)
 
 - Added opt-in install extras selected with --with-session-start, --with-guards, and --with-ci; accepted choices persist in ai-kit/settings.json. Session start installs .agents/hooks/session-start.md and, for claude, .claude/settings.json SessionStart wiring; guards merges the reference deny-Git permissions into the same client settings file; the ci extra installs a self-contained .github/workflows/ai-kit.yml health check intended for team mode.

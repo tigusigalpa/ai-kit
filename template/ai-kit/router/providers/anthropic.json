@@ -1,0 +1,44 @@
+{
+  "verified_documentation_date": "2026-10-10",
+  "roles": {
+    "cheap": {
+      "model": "claude-haiku-5-5",
+      "effort": "low"
+    },
+    "work": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "escalation": {
+      "model": "claude-fable-5-1",
+      "effort": "high"
+    }
+  },
+  "supported_efforts": {
+    "cheap": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "work": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ],
+    "escalation": [
+      "low",
+      "medium",
+      "high",
+      "xhigh",
+      "max"
+    ]
+  },
+  "sources": [
+    "https://docs.anthropic.com/en/docs/about-claude/models/overview",
+    "https://platform.claude.com/docs/en/models/haiku-5-5/migration-guide"
+  ]
+}

@@ -27,8 +27,8 @@ Normal work uses checks/self-review; critical correctness needs independent revi
 
 ## Providers
 
-Active OpenAI role defaults: [openai.json](providers/openai.json), interpreted by the [OpenAI reference](providers/openai.md).
-Other controls: [Anthropic](providers/anthropic.md), [Kimi](providers/kimi.md). Registry/configuration plus current primary docs establish capabilities; model names alone do not.
+Active role defaults: [openai.json](providers/openai.json), [anthropic.json](providers/anthropic.json), and [kimi.json](providers/kimi.json), interpreted by their provider references.
+Registry/configuration plus current primary docs establish capabilities; model names alone do not.
 Unavailable switching means a recommendation, not a claim of execution. Respect explicit model, cost, and latency choices.
 
 ## Optional decision record

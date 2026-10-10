@@ -260,6 +260,17 @@ class InstallerTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.plan()
 
+    def test_new_adapters_are_opt_in_and_use_native_paths(self):
+        plan = self.plan()
+        for path in (".windsurf/rules/ai-kit.md", ".clinerules/ai-kit.md",
+                     ".roo/rules/ai-kit.md", "GEMINI.md"):
+            self.assertNotIn(path, plan["actions"])
+        self.apply(agents=["codex", "gemini", "windsurf", "cline", "roo"])
+        for path in ("GEMINI.md", ".windsurf/rules/ai-kit.md", ".clinerules/ai-kit.md",
+                     ".roo/rules/ai-kit.md"):
+            self.assertTrue((self.target / path).is_file(), path)
+            self.assertIn("PROJECT_CONTEXT", (self.target / path).read_text(encoding="utf-8"))
+
     def test_claude_and_optional_entries_have_native_paths(self):
         self.apply(agents=["codex", "claude", "copilot", "cursor", "aider"])
         self.assertIn("@AGENTS.md", (self.target / "CLAUDE.md").read_text())
