@@ -8,6 +8,7 @@
 | Interactive onboarding and machine-readable project facts | [ADR 0004](adr/0004-onboarding-and-project-facts.md) |
 | Key-level client settings ownership, ask guards, context-injecting session hook | [ADR 0005](adr/0005-client-settings-ownership.md) |
 | Routing evidence, conditional Filament work, and optional local measurements | [ADR 0006](adr/0006-routing-evidence-and-local-measurements.md) |
+| Generated client configuration, scoped module rules, presets, and workflow skills | [ADR 0007](adr/0007-generated-client-configuration-and-presets.md) |
 | MIT selected by the owner on 2026-10-08 | [License](../LICENSE) |
 | Preserve candidate drafts and require review before adapter retirement | [Manus patch decisions](MANUS_REVIEW.md#decisions) |
 

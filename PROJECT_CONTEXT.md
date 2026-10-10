@@ -5,7 +5,7 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The agent registry lives in integrations/agents.json; scripts/router.py is the routing helper; scripts/adr.py and scripts/changelog.py scaffold records; a Makefile wraps the commands.
-- Version source: [VERSION](VERSION). The local tree is prepared as v0.5.0, including the adapter file-parent fix. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
+- Version source: [VERSION](VERSION). The local tree is prepared as v0.6.4. Publishing/tagging this version has not been requested; the last verified published source was v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -33,7 +33,8 @@
 - Application evaluation: [protocol](docs/EVALUATION.md) separates fixed-model instruction trials, context/continuation checks, and routing. The owner chose to run real-project trials separately; no productivity/cost result is established.
 - Decision record scaffold: python scripts/adr.py new "title" --root TARGET
 - Changelog entry: python scripts/changelog.py add "message" --root TARGET
-- Optional install extras: --with-session-start, --with-guards, --with-ci (persist in ai-kit/settings.json). Claude wiring merges owned entries into .claude/settings.json (recorded as managed_json in installer state); guards are ask rules.
+- Optional install extras: --with-session-start, --with-guards, --with-data-guards, --with-native-settings, --with-scoped-rules, --with-ci (persist in ai-kit/settings.json), or --preset minimal|solo|team|strict for the managed set (CI stays explicit). Claude wiring merges owned entries (managed_json in installer state) into .claude/settings.local.json in private mode and .claude/settings.json in team mode; guards are ask rules.
+- Generated client configuration derives from ai-kit/project.json (detection fallback): secrets from templates/agent-secrets.ignore plus stack additions, client ignore files and scoped rule formats declared per agent in integrations/agents.json. Workflow skills ai-kit-bootstrap/review/sync-context install with source and Claude copies.
 - Client detection: detect markers per agent in integrations/agents.json; preview reports detected_agents/suggested_agents without changing the selection.
 - Adapter file parents: an existing `.clinerules` file is detected and preserved when Cline is unselected. Selecting its directory adapter refuses the blocked parent during planning; see [file-parent compatibility](docs/ADAPTER_PATH_FIX.md).
 - Optional adapters: gemini, windsurf, cline, roo; machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json.
@@ -47,6 +48,7 @@
 - v0.4.7 (2026-10-10): 128 tests ran, 127 passed, 1 Windows symlink skip; kit validation returned no errors (one pending-Gemini warning). Covers key-level client settings merging/migration, ask guards, the session-start script (executed through Git Bash with CRLF and a spaced Windows path), client detection, and evidence-based Node/Python commands; a real v0.4.6 installation upgraded cleanly; [client settings verification](docs/IMPLEMENTATION.md#client-settings-and-detection-verification). Native Claude Code hook delivery/ask enforcement and hosted CI remain unverified.
 - Earlier adapter-only verification (2026-10-10, Windows/Python 3.12.14): 133 tests ran, 129 passed, four skipped (symlink, two junction variants, POSIX sh hook). Portable POSIX-error regressions and Python 3.10 grammar checks passed; [verification record](docs/ADAPTER_PATH_FIX.md). Native Linux and corrected hosted CI remain unverified.
 - v0.5.0 (2026-10-10, Windows/Python 3.12.14): 161 tests ran, 157 passed, four environment-dependent skips; 48 post-review router/manifest/metrics checks and a separate doctor check passed. Kit validation returned zero errors and one pending-Gemini warning; all scripts/tests passed Python 3.10 grammar. Synthetic profile upgrade preserves facts/selection/private journals and source/native skills, with stable rerun; [release verification](docs/V0_5_0.md). Real application trials, native Linux/hosted CI, Filament application execution, and live model/client controls remain unverified.
+- v0.6.4 (2026-10-10, Windows/Python 3.14.6): 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning; Python 3.10 grammar passed. Covers native settings, scoped rules, data guards, presets, and workflow skills; a real v0.5.0 installation upgraded with --preset solo without conflicts and moved private entries to settings.local.json; [release verification](docs/V0_6_4.md). Client formats come from primary docs read 2026-10-10; activation in the actual clients, native Linux, and hosted CI remain unverified.
 
 ## Agreements
 

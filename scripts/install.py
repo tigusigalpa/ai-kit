@@ -25,12 +25,30 @@ PROFILE_MANIFESTS = {
 }
 FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
                      "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
-EXTRAS = {"session-start", "guards", "ci"}
+EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
-EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "ci": "ci"}
+EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "data-guards": "data_guards",
+                       "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci"}
+# Presets set every extra they manage on or off; explicit --with-* flags add on top. CI is left
+# to an explicit choice. A preset mode of None keeps the recorded or explicit sharing mode.
+PRESET_EXTRAS = ("session-start", "guards", "data-guards", "native-settings", "scoped-rules")
+PRESETS = {
+    "minimal": {"mode": None, "extras": ()},
+    "solo": {"mode": "private", "extras": ("session-start", "native-settings", "scoped-rules")},
+    "team": {"mode": "team", "extras": ("session-start", "guards", "native-settings", "scoped-rules")},
+    "strict": {"mode": None, "extras": PRESET_EXTRAS},
+}
 CLAUDE_SETTINGS = ".claude/settings.json"
+CLAUDE_LOCAL_SETTINGS = ".claude/settings.local.json"
 GUARDS_SOURCE = "claude-settings.git-ask.json"
+DATA_GUARDS_SOURCE = "claude-settings.data-ask.json"
+SECRETS_SOURCE = "agent-secrets.ignore"
+SCOPED_FORMATS = {"claude-paths": ".md", "cline-paths": ".md", "cursor-globs": ".mdc",
+                  "copilot-applyto": ".instructions.md", "windsurf-trigger": ".md"}
+MODULE_PATH = re.compile(r"/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*/)*")
+# Recorded commands become allow rules only when they are one plain command.
+UNSAFE_COMMAND = re.compile(r"[;&|<>`$()*\\\"'\r\n]")
 # tr strips CR so a CRLF checkout of the hook script still runs under sh.
 SESSION_START_COMMAND = "tr -d '\\r' < \"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\" | sh"
 # Entries written by v0.3.6-v0.4.6, which managed the whole client settings file.
@@ -110,6 +128,8 @@ def load_agent_registry(root: Path = ROOT) -> dict:
     optional: dict[str, list[tuple[str, str]]] = {}
     skills_copies: dict[str, str] = {}
     detect: dict[str, list[str]] = {}
+    scoped_rules: dict[str, dict[str, str]] = {}
+    ignore_files: dict[str, str] = {}
     for name, spec in agents.items():
         if not re.fullmatch(r"[a-z][a-z0-9-]*", name):
             raise ValueError(f"Invalid agent name: {name}")
@@ -142,8 +162,22 @@ def load_agent_registry(root: Path = ROOT) -> dict:
             raise ValueError(f"Invalid detect markers for {name}")
         if markers:
             detect[name] = markers
+        scoped = spec.get("scoped_rules")
+        if scoped is not None:
+            directory = scoped.get("directory") if isinstance(scoped, dict) else None
+            if (not isinstance(directory, str) or not re.fullmatch(r"\.[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*/",
+                                                                   directory)
+                    or ".." in directory.split("/") or scoped.get("format") not in SCOPED_FORMATS):
+                raise ValueError(f"Invalid scoped_rules for {name}")
+            scoped_rules[name] = {"directory": directory, "format": scoped["format"]}
+        ignore_file = spec.get("ignore_file")
+        if ignore_file is not None:
+            if not isinstance(ignore_file, str) or not re.fullmatch(r"\.[A-Za-z0-9._-]+", ignore_file):
+                raise ValueError(f"Invalid ignore_file for {name}")
+            ignore_files[name] = ignore_file
     return {"names": names, "entries": entries, "optional": optional,
-            "skills_copies": skills_copies, "detect": detect}
+            "skills_copies": skills_copies, "detect": detect, "scoped_rules": scoped_rules,
+            "ignore_files": ignore_files}
 
 
 def detect_agents(target: Path, registry: dict) -> dict[str, list[str]]:
@@ -288,16 +322,161 @@ def merge_managed_json(current: dict, remove: dict[str, list[str]], add: dict[st
     return result
 
 
-def claude_managed_entries(root: Path, extras: set[str]) -> dict[str, list[str]]:
+def project_modules(target: Path, facts: dict) -> tuple[list[dict], list[str]]:
+    """Module facts for generated client configuration: project.json when filled, else detection."""
+    warnings: list[str] = []
+    source = facts["modules"]
+    path = target / "ai-kit" / "project.json"
+    if path.is_file() and not is_link(path):
+        try:
+            value = json.loads(path.read_text(encoding="utf-8"))
+            if isinstance(value, dict) and isinstance(value.get("modules"), list) and value["modules"]:
+                source = value["modules"]
+        except (OSError, ValueError, UnicodeError):
+            warnings.append("ai-kit/project.json is unreadable; generated client configuration uses detection.")
+    modules = []
+    for item in source:
+        module_path = item.get("path") if isinstance(item, dict) else None
+        if isinstance(module_path, str) and not module_path.endswith("/"):
+            module_path += "/"
+        if not isinstance(module_path, str) or not MODULE_PATH.fullmatch(module_path):
+            warnings.append(f"Skipping module path unsupported by generated client configuration: {module_path!r}")
+            continue
+        profiles = item.get("profiles") if isinstance(item.get("profiles"), list) else []
+        commands = item.get("commands") if isinstance(item.get("commands"), dict) else {}
+        modules.append({"path": module_path,
+                        "profiles": sorted({p for p in profiles if isinstance(p, str) and re.fullmatch(r"[A-Z]+", p)}),
+                        "commands": {k: v for k, v in commands.items() if isinstance(k, str) and isinstance(v, str)}})
+    return modules, warnings
+
+
+def secret_patterns(root: Path, modules: list[dict]) -> list[str]:
+    """Gitignore-style secret patterns: the shared list plus secrets of detected stacks."""
+    text = (root / "templates" / SECRETS_SOURCE).read_text(encoding="utf-8")
+    patterns = [line.strip() for line in text.splitlines() if line.strip() and not line.startswith("#")]
+    for module in modules:
+        prefix = module["path"][1:]
+        profiles = set(module["profiles"])
+        extra = []
+        if profiles & {"PHP", "LARAVEL", "MOODLE"}:
+            extra.append("auth.json")
+        if "LARAVEL" in profiles:
+            extra.append("/" + prefix + "storage/*.key")
+        if "MOODLE" in profiles:
+            extra.append("/" + prefix + "config.php")
+        if "PYTHON" in profiles:
+            extra.append(".pypirc")
+        patterns.extend(pattern for pattern in extra if pattern not in patterns)
+    return patterns
+
+
+def claude_read_rules(patterns: list[str]) -> list[str]:
+    """Convert gitignore patterns to Claude Code Read rules; negations keep their order."""
+    rules = []
+    for pattern in patterns:
+        negated = pattern.startswith("!")
+        body = pattern[1:] if negated else pattern
+        if body.endswith("/"):
+            body += "**"
+        rules.append("Read(" + ("!" if negated else "") + body + ")")
+    return rules
+
+
+def claude_allow_rules(modules: list[dict]) -> list[str]:
+    rules = []
+    for module in modules:
+        for key in ("test", "lint", "build"):
+            command = module["commands"].get(key)
+            if command and command == command.strip() and not UNSAFE_COMMAND.search(command):
+                # A trailing " *" also matches the bare command.
+                rule = f"Bash({command} *)"
+                if rule not in rules:
+                    rules.append(rule)
+    return rules
+
+
+def claude_managed_entries(root: Path, extras: set[str], modules: list[dict] | None = None) -> dict[str, list[str]]:
     """Client settings entries AI-KIT owns for the enabled extras."""
     entries: dict[str, list[str]] = {}
+
+    def add(key: str, values: list[str]) -> None:
+        bucket = entries.setdefault(key, [])
+        bucket.extend(value for value in values if value not in bucket)
+
+    modules = modules or []
     if "guards" in extras:
         guards = read_json(root / "integrations" / GUARDS_SOURCE, {})
         for kind, rules in guards.get("permissions", {}).items():
-            entries["permissions." + kind] = list(rules)
+            add("permissions." + kind, list(rules))
+    if "data-guards" in extras:
+        data_guards = read_json(root / "integrations" / DATA_GUARDS_SOURCE, {})
+        for kind, rules in data_guards.get("permissions", {}).items():
+            add("permissions." + kind, list(rules))
+        stacks = data_guards.get("stacks", {})
+        for profile in sorted({p for module in modules for p in module["profiles"]}):
+            add("permissions.ask", list(stacks.get(profile, [])))
+    if "native-settings" in extras:
+        add("permissions.allow", claude_allow_rules(modules))
+        add("permissions.deny", claude_read_rules(secret_patterns(root, modules)))
     if "session-start" in extras:
         entries["hooks.SessionStart"] = [SESSION_START_COMMAND]
-    return entries
+    return {key: values for key, values in entries.items() if values}
+
+
+def _module_slugs(modules: list[dict]) -> dict[str, str]:
+    slugs: dict[str, str] = {}
+    for module in modules:
+        path = module["path"]
+        slug = re.sub(r"[^a-z0-9]+", "-", path.strip("/").lower()).strip("-") or "root"
+        if slug in slugs.values():
+            slug += "-" + digest(path.encode())[:6]
+        slugs[path] = slug
+    return slugs
+
+
+def render_scoped_rule(fmt: str, relative: str, module: dict) -> bytes:
+    """One module rule pointing to canonical profiles; the root module uses each client's always-on form."""
+    path = module["path"]
+    root_module = path == "/"
+    glob = "**" if root_module else path[1:] + "**"
+    up = "../" * relative.count("/")
+    links = ", ".join(f"[{profile}]({up}ai-kit/stacks/{profile}.md)" for profile in module["profiles"])
+    scope = "this repository" if root_module else f"files under `{path[1:]}`"
+    if fmt in {"claude-paths", "cline-paths"}:
+        header = "" if root_module else f"---\npaths:\n  - {json.dumps(glob)}\n---\n\n"
+    elif fmt == "cursor-globs":
+        header = "---\nalwaysApply: true\n---\n\n" if root_module else f"---\nglobs: {glob}\nalwaysApply: false\n---\n\n"
+    elif fmt == "copilot-applyto":
+        header = f"---\napplyTo: {json.dumps(glob)}\n---\n\n"
+    else:
+        header = "---\ntrigger: always_on\n---\n\n" if root_module else f"---\ntrigger: glob\nglobs: {glob}\n---\n\n"
+    body = (f"# AI-KIT module rules: {path}\n\n"
+            "Generated by the AI-KIT installer from ai-kit/project.json; update the module facts there and rerun "
+            "the installer instead of editing this file.\n"
+            f"For {scope} apply {links} with the project's actual versions and conventions.\n")
+    if module["commands"]:
+        body += "Recorded module commands: " + "; ".join(
+            f"{key} `{value}`" for key, value in sorted(module["commands"].items())) + ".\n"
+    return (header + body).encode("utf-8")
+
+
+def scoped_rule_files(root: Path, registry: dict, agents: list[str], modules: list[dict]) -> dict[str, bytes]:
+    """Generate path-scoped rules per module for selected clients that support them."""
+    usable = []
+    for module in modules:
+        profiles = [p for p in module["profiles"] if (root / "template/ai-kit/stacks" / (p + ".md")).is_file()]
+        if profiles:
+            usable.append({**module, "profiles": profiles})
+    slugs = _module_slugs(usable)
+    files: dict[str, bytes] = {}
+    for agent in agents:
+        spec = registry["scoped_rules"].get(agent)
+        if spec is None:
+            continue
+        for module in usable:
+            relative = spec["directory"] + "ai-kit-" + slugs[module["path"]] + SCOPED_FORMATS[spec["format"]]
+            files[relative] = render_scoped_rule(spec["format"], relative, module)
+    return files
 
 
 def adapter_owner(relative: str, registry: dict) -> str | None:
@@ -311,6 +490,9 @@ def adapter_owner(relative: str, registry: dict) -> str | None:
             return agent
     for agent, items in optional.items():
         if any(destination == relative for _, destination in items):
+            return agent
+    for agent, spec in registry.get("scoped_rules", {}).items():
+        if relative.startswith(spec["directory"] + "ai-kit-"):
             return agent
     return None
 
@@ -610,7 +792,9 @@ def merge_ignore(current: str, policy: str, extra: list[str]) -> tuple[str, str]
 def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                language: str | None = None, conventions: str | None = None,
                agents: list[str] | None = None, accept_local: list[str] | None = None,
-               extras: list[str] | None = None) -> dict:
+               extras: list[str] | None = None, preset: str | None = None) -> dict:
+    if preset is not None and preset not in PRESETS:
+        raise ValueError(f"Unknown preset: {preset}; choose one of {', '.join(sorted(PRESETS))}")
     target = target.absolute()
     if is_link(target):
         raise ValueError("Refusing a linked target root")
@@ -627,6 +811,15 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     state = read_json(state_path, {})
     if state_path.exists():
         validate_state(state, target, registry["names"])
+    preset_disabled = []
+    if preset is not None:
+        mode = mode or PRESETS[preset]["mode"]
+        for name in PRESET_EXTRAS:
+            key = EXTRA_SETTINGS_KEYS[name]
+            enabled = name in PRESETS[preset]["extras"]
+            if settings.get(key) is True and not enabled and name not in (extras or []):
+                preset_disabled.append(name)
+            settings[key] = enabled
     mode = mode or settings.get("sharing_mode", "private")
     language = language or settings.get("chat_language", "Russian")
     conventions = conventions or settings.get("conventions", "owner")
@@ -652,6 +845,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     validate_settings(settings)
     facts = detect_facts(target)
     detected = profiles_from_facts(facts)
+    modules, module_warnings = project_modules(target, facts)
     incoming: dict[str, bytes] = {}
     for src in sorted((root / "template").rglob("*")):
         if is_link(src):
@@ -683,6 +877,9 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         elif name in EXTRA_INTEGRATIONS:
             src, dst = EXTRA_INTEGRATIONS[name]
             incoming[dst] = (root / "integrations" / src).read_bytes()
+    if "scoped-rules" in enabled_extras:
+        # Generated module rules are managed files: unchanged ones follow project.json, edited ones conflict.
+        incoming.update(scoped_rule_files(root, registry, agents, modules))
     if accept - incoming.keys() or accept & (OWNED | {"ai-kit/settings.json"}):
         raise ValueError("Accept-local paths must name selected managed instructions")
     records = state.get("files", {})
@@ -753,16 +950,25 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         evidence = "; ".join(f"{agent} ({', '.join(detected_agents[agent])})" for agent in missing_agents)
         warnings.append(f"Detected client files for {evidence}; preview with "
                         + " ".join("--agent " + agent for agent in suggested_agents) + " to wire them.")
+    warnings.extend(module_warnings)
+    if preset_disabled:
+        warnings.append(f"Preset {preset} turns off previously enabled extras: {', '.join(preset_disabled)}; "
+                        "add their --with-* flags to keep them.")
     # AI-KIT owns only its own entries in the client settings file; other settings survive.
+    # Private mode keeps them in the personal local file, team mode in the shared one.
     managed_json = {relative: dict(entries) for relative, entries in state.get("managed_json", {}).items()}
+    claude_target = CLAUDE_LOCAL_SETTINGS if mode == "private" else CLAUDE_SETTINGS
     if "claude" in agents:
-        wanted = claude_managed_entries(root, enabled_extras)
-        previous = {key: list(values) for key, values in managed_json.get(CLAUDE_SETTINGS, {}).items()}
-        if CLAUDE_SETTINGS in records:
-            for key, values in LEGACY_CLAUDE_ENTRIES.items():
-                previous.setdefault(key, []).extend(values)
-        if wanted or previous:
-            settings_file = safe_path(target, CLAUDE_SETTINGS)
+        wanted_entries = claude_managed_entries(root, enabled_extras, modules)
+        for relative in (CLAUDE_SETTINGS, CLAUDE_LOCAL_SETTINGS):
+            wanted = wanted_entries if relative == claude_target else {}
+            previous = {key: list(values) for key, values in managed_json.get(relative, {}).items()}
+            if relative == CLAUDE_SETTINGS and CLAUDE_SETTINGS in records:
+                for key, values in LEGACY_CLAUDE_ENTRIES.items():
+                    previous.setdefault(key, []).extend(values)
+            if not (wanted or previous):
+                continue
+            settings_file = safe_path(target, relative)
             old_settings = settings_file.read_bytes() if settings_file.exists() else None
             try:
                 current = json.loads(old_settings.decode("utf-8-sig")) if old_settings is not None else {}
@@ -771,21 +977,41 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                 merged_settings = merge_managed_json(current, previous, wanted)
             except (ValueError, UnicodeError) as exc:
                 fragment = merge_managed_json({}, {}, wanted)
-                conflicts[CLAUDE_SETTINGS] = (json.dumps(fragment, indent=2) + "\n").encode()
-                conflict_local_hashes[CLAUDE_SETTINGS] = digest(old_settings)
-                warnings.append(f"Cannot merge AI-KIT entries into {CLAUDE_SETTINGS} ({exc}); fix the file "
+                conflicts[relative] = (json.dumps(fragment, indent=2) + "\n").encode()
+                conflict_local_hashes[relative] = digest(old_settings)
+                warnings.append(f"Cannot merge AI-KIT entries into {relative} ({exc}); fix the file "
                                 "or merge the candidate fragment manually, then rerun the preview.")
+                continue
+            if (old_settings is None and wanted) or (old_settings is not None and merged_settings != current):
+                data = (json.dumps(merged_settings, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+                actions[relative] = {"data": data, "old": old_settings}
+            if wanted:
+                managed_json[relative] = wanted
             else:
-                if old_settings is None or merged_settings != current:
-                    data = (json.dumps(merged_settings, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
-                    actions[CLAUDE_SETTINGS] = {"data": data, "old": old_settings}
-                if wanted:
-                    managed_json[CLAUDE_SETTINGS] = wanted
-                else:
-                    managed_json.pop(CLAUDE_SETTINGS, None)
-    elif CLAUDE_SETTINGS in managed_json:
-        warnings.append(f"AI-KIT entries remain in {CLAUDE_SETTINGS} for the unselected claude client; "
-                        "review them before retirement.")
+                managed_json.pop(relative, None)
+    else:
+        for relative in (CLAUDE_SETTINGS, CLAUDE_LOCAL_SETTINGS):
+            if relative in managed_json:
+                warnings.append(f"AI-KIT entries remain in {relative} for the unselected claude client; "
+                                "review them before retirement.")
+    # Client ignore files get one marked secret block, like .gitignore; other lines survive.
+    secret_block = None
+    if "native-settings" in enabled_extras:
+        secret_block = ("# Secret files AI clients must not read\n"
+                        + "\n".join(secret_patterns(root, modules)) + "\n")
+    for agent, relative in sorted(registry["ignore_files"].items()):
+        ignore_file = safe_path(target, relative)
+        old_text_bytes = ignore_file.read_bytes() if ignore_file.exists() else None
+        old_text = (old_text_bytes or b"").decode("utf-8-sig")
+        if secret_block is not None and agent in agents:
+            new_text, _ = merge_ignore(old_text, secret_block, [])
+        elif old_text_bytes is not None and START in old_text:
+            before, after = split_ignore(old_text)
+            new_text = before + after
+        else:
+            continue
+        if new_text.encode("utf-8") != old_text_bytes:
+            actions[relative] = {"data": new_text.encode("utf-8"), "old": old_text_bytes}
     retirements = []
     for relative, record in records.items():
         if relative in incoming or relative in OWNED:
@@ -851,7 +1077,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             "actions": actions, "conflicts": conflicts, "candidates": candidates,
             "adapter_conflicts": sorted(retirements), "preserved": preserved,
             "detected_profiles": detected, "detected_agents": detected_agents,
-            "suggested_agents": suggested_agents, "extras": sorted(enabled_extras), "warnings": warnings}
+            "suggested_agents": suggested_agents, "extras": sorted(enabled_extras), "preset": preset,
+            "warnings": warnings}
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -942,22 +1169,27 @@ def interactive_selections(read=input, *, agents_available: set[str], facts: dic
     for agent, evidence in sorted(detected_agents.items()):
         print(f"  Detected client: {agent} ({', '.join(evidence)})")
     default_agents = sorted({"codex"} | set(detected_agents))
-    mode = (read("Sharing mode [private/team] (private): ").strip() or "private").lower()
+    preset = read(f"Preset [{'/'.join(PRESETS)}] (none): ").strip().lower() or None
+    spec = PRESETS.get(preset or "", {"mode": None, "extras": ()})
+    default_mode = spec["mode"] or "private"
+    mode = (read(f"Sharing mode [private/team] ({default_mode}): ").strip() or default_mode).lower()
     language = read("Chat language (Russian): ").strip() or "Russian"
     conventions = (read("Conventions [owner/standard] (owner): ").strip() or "owner").lower()
     agent_text = read(f"Agents, comma-separated ({', '.join(sorted(agents_available))}) "
                       f"[{','.join(default_agents)}]: ").strip()
     agents = [a.strip() for a in agent_text.split(",") if a.strip()] or default_agents
-    extra_text = read("Extras, comma-separated [session-start,guards,ci] (none): ").strip()
-    extras = [e.strip() for e in extra_text.split(",") if e.strip()]
+    default_extras = list(spec["extras"])
+    extra_text = read(f"Extras, comma-separated [{','.join(sorted(EXTRAS))}] "
+                      f"({','.join(default_extras) or 'none'}): ").strip()
+    extras = [e.strip() for e in extra_text.split(",") if e.strip()] or default_extras
     print("\nSummary:")
-    print(f"  mode={mode}, language={language}, conventions={conventions}")
+    print(f"  preset={preset or 'none'}, mode={mode}, language={language}, conventions={conventions}")
     print(f"  agents={', '.join(agents)}, extras={', '.join(extras) or 'none'}")
     confirm = read("Proceed? [y/N]: ").strip().lower()
     if confirm not in {"y", "yes"}:
         print("Aborted.")
         return None
-    return {"mode": mode, "language": language, "conventions": conventions,
+    return {"preset": preset, "mode": mode, "language": language, "conventions": conventions,
             "agents": agents, "extras": extras}
 
 
@@ -983,11 +1215,23 @@ def main(argv: list[str] | None = None) -> int:
                         help="Install client confirmation (ask) rules for Git commit/push")
     parser.add_argument("--with-ci", action="store_true",
                         help="Install the self-contained AI-KIT project check workflow")
+    parser.add_argument("--with-data-guards", action="store_true",
+                        help="Ask before destructive file, Docker, and detected migration commands (Claude Code)")
+    parser.add_argument("--with-native-settings", action="store_true",
+                        help="Allow recorded checks, deny secret reads, and write client ignore files")
+    parser.add_argument("--with-scoped-rules", action="store_true",
+                        help="Generate path-scoped rules per module for clients that support them")
+    parser.add_argument("--preset", choices=list(PRESETS),
+                        help="Apply a selection bundle; explicit --mode and --with-* flags take precedence")
     args = parser.parse_args(argv)
     extras = [name for name, flag in (("session-start", args.with_session_start),
                                       ("guards", args.with_guards),
-                                      ("ci", args.with_ci)) if flag]
+                                      ("ci", args.with_ci),
+                                      ("data-guards", args.with_data_guards),
+                                      ("native-settings", args.with_native_settings),
+                                      ("scoped-rules", args.with_scoped_rules)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
+    preset = args.preset
     if args.interactive:
         target = args.target.absolute().resolve()
         registry = load_agent_registry()
@@ -1000,11 +1244,13 @@ def main(argv: list[str] | None = None) -> int:
         conventions = conventions or selections["conventions"]
         agents = agents or selections["agents"]
         extras = sorted(set(extras) | set(selections["extras"]))
+        preset = preset or selections["preset"]
     try:
         plan = build_plan(args.target, mode=mode, language=language,
                           conventions=conventions, agents=agents, accept_local=args.accept_local,
-                          extras=extras)
+                          extras=extras, preset=preset)
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
+                          "preset": plan["preset"],
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
                           "conflicts": sorted(plan["conflicts"]), "preserved": sorted(plan["preserved"]),
                           "candidates": plan["candidates"], "adapter_conflicts": plan["adapter_conflicts"],

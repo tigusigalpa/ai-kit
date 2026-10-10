@@ -12,6 +12,8 @@
 /.agents/hooks/session-start.sh
 /.claude/
 /.cursor/rules/ai-kit.mdc
+/.cursor/rules/ai-kit-*.mdc
+/.github/instructions/ai-kit-*.instructions.md
 /.github/copilot-instructions.md
 /.windsurf/rules/
 /.clinerules/

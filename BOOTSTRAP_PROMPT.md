@@ -13,4 +13,6 @@ Run relevant checks, review the changes, and update project context, continuity 
 Report what changed, conflicts, and checks that remain unavailable.
 ~~~
 
+When AI-KIT is already installed, run the installed ai-kit-bootstrap skill instead: /ai-kit-bootstrap in Claude Code, $ai-kit-bootstrap in Codex.
+
 For a file-access-limited chat, attach the relevant template files and current project evidence. An agent must not claim filesystem installation without access.

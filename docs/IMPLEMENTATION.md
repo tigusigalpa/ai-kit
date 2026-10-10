@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-The [changelog](../CHANGELOG.md) records kit evolution; [v0.5.0 verification](V0_5_0.md) covers the current additions. Earlier reproduced findings remain in the [audit disposition](MANUS_REVIEW.md).
+The [changelog](../CHANGELOG.md) records kit evolution; [v0.6.4 verification](V0_6_4.md) covers the current additions and [v0.5.0 verification](V0_5_0.md) the previous ones. Earlier reproduced findings remain in the [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -39,6 +39,7 @@ Installation can explicitly select another chat language or standard conventions
 | Stack practices | [Stack directory](../template/ai-kit/stacks), including Filament |
 | Routing and provider controls | [Router](../template/ai-kit/router/POLICY.md) and relevant provider |
 | Optional local measurement contract | [Metrics](../template/ai-kit/METRICS.md) |
+| Generated client settings, scoped module rules, presets | [Adapters](../template/ai-kit/ADAPTERS.md#optional-install-extras), [secret list](../templates/agent-secrets.ignore), installer |
 | Provider selection, agent registry, routing helper | [selection.json](../template/ai-kit/router/selection.json), [agents.json](../integrations/agents.json), [router.py](../scripts/router.py) |
 | Installation/upstream reconciliation | [Bootstrap](../template/ai-kit/BOOTSTRAP.md), [upstream](../template/ai-kit/UPSTREAM.md), installer state |
 | Current project facts and navigation | Installed PROJECT_CONTEXT, WIKI, and ai-kit/project.json |
@@ -53,6 +54,7 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 - Runtime guards and automatic model switching: clients expose different controls. The opt-in Claude Code ask rules are supplementary confirmation, not a proven universal Git ban; other clients receive no guard.
 - Context/token cost claims: byte budgets are measured, but no tokenizer, runtime-loaded-context benchmark, or performance comparison has been run.
 - Additional model/client mappings: unsupported provider IDs and runtime settings remain unknown; no speculative model names or fake activation.
+- Codex nested AGENTS.md and config.toml: Codex reads AGENTS.md only from the root to its working directory, and approval/sandbox settings are user decisions; Roo has no documented path-scoped rules.
 - Topics, homepage, hosted publication, tags/releases: these require remote changes; local work does not authorize them. The current repository description and MIT were independently confirmed; a homepage is unnecessary for the first usable bundle.
 - PyPI/curl one-line packaging: publication requires remote changes not authorized locally. A Makefile front-door and the documented Python commands provide local one-step onboarding until a maintainer decides to publish.
 - Real-project trials and Linux execution: temporary project fixtures exercise preservation and mixed manifests. These do not replace trials on actual applications or hosted CI.

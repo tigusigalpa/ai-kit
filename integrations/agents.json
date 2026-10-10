@@ -8,6 +8,7 @@
     "claude": {
       "entries": ["CLAUDE.md"],
       "skills_copy": ".claude/skills/",
+      "scoped_rules": {"directory": ".claude/rules/", "format": "claude-paths"},
       "detect": ["CLAUDE.md", "CLAUDE.local.md", ".claude/"]
     },
     "kimi": {
@@ -20,36 +21,43 @@
     },
     "gemini": {
       "entries": ["GEMINI.md"],
+      "ignore_file": ".geminiignore",
       "detect": ["GEMINI.md", ".gemini/"]
     },
     "copilot": {
       "optional": [
         {"source": "copilot-instructions.md", "destination": ".github/copilot-instructions.md"}
       ],
+      "scoped_rules": {"directory": ".github/instructions/", "format": "copilot-applyto"},
       "detect": [".github/copilot-instructions.md", ".github/instructions/"]
     },
     "cursor": {
       "optional": [
         {"source": "ai-kit.mdc", "destination": ".cursor/rules/ai-kit.mdc"}
       ],
+      "scoped_rules": {"directory": ".cursor/rules/", "format": "cursor-globs"},
+      "ignore_file": ".cursorignore",
       "detect": [".cursor/", ".cursorrules", ".cursorignore"]
     },
     "aider": {
       "optional": [
         {"source": "CONVENTIONS.md", "destination": "CONVENTIONS.md"}
       ],
+      "ignore_file": ".aiderignore",
       "detect": [".aider.conf.yml", ".aiderignore"]
     },
     "windsurf": {
       "optional": [
         {"source": "ai-kit-windsurf.md", "destination": ".windsurf/rules/ai-kit.md"}
       ],
+      "scoped_rules": {"directory": ".windsurf/rules/", "format": "windsurf-trigger"},
       "detect": [".windsurf/", ".windsurfrules"]
     },
     "cline": {
       "optional": [
         {"source": "ai-kit-cline.md", "destination": ".clinerules/ai-kit.md"}
       ],
+      "scoped_rules": {"directory": ".clinerules/", "format": "cline-paths"},
       "detect": [".clinerules"]
     },
     "roo": {

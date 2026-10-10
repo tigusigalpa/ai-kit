@@ -1,5 +1,15 @@
 # AI-KIT changelog
 
+## v0.6.4 (2026-10-10)
+
+- Added `--with-native-settings`: Claude Code allow rules for recorded single-command checks, Read deny rules for secrets from [one list](templates/agent-secrets.ignore) plus detected Laravel/Moodle/Composer/Python secrets, and a marked secret block in `.cursorignore`, `.aiderignore`, and `.geminiignore` for selected clients. Private mode now keeps all AI-KIT Claude entries in `.claude/settings.local.json`, team mode in `.claude/settings.json`; owned entries move with the mode and user entries stay.
+- Added `--with-scoped-rules`: one managed rule per module with stack profiles for Claude Code (`paths`), Cursor (`globs`), Copilot (`applyTo`), Windsurf (`trigger: glob`), and Cline (`paths`), generated from `ai-kit/project.json`. Codex gets no nested AGENTS.md (it reads only root-to-working-directory files) and no config.toml.
+- Added `--with-data-guards`: ask rules before `rm -rf`, `git reset --hard`, `git clean`, Docker prune/volume removal, and detected Laravel/Moodle migrations.
+- Added `--preset minimal|solo|team|strict` (also in `--interactive`); explicit flags win and the preview names extras a preset turns off.
+- Added user-invoked workflow skills `ai-kit-bootstrap`, `ai-kit-review`, and `ai-kit-sync-context`, so the first session starts with `/ai-kit-bootstrap` instead of a pasted prompt.
+- Gave the root README its own 16000-byte budget; other documents keep 12000. Moved v0.3.x entries to [docs/history](docs/history/v0.3-changelog.md).
+- Verification: 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning; a real v0.5.0 installation upgraded without conflicts. Client activation remains unverified. [Results](docs/V0_6_4.md), [ADR 0007](docs/adr/0007-generated-client-configuration-and-presets.md).
+
 ## v0.5.0 (2026-10-10)
 
 - Aligned the offline router with the canonical capability ladder (level 0 cheap/none when supported, level 5 work/max, level 6 diagnosed escalation with a separate effort choice). Added English/Russian operation/risk rules, word boundaries, structured evidence flags, explanation signals, and per-call provider/model overrides. Explicit selection/CLI effort wins; unknown or unsupported model controls are not fabricated.
@@ -40,29 +50,7 @@
 - Extended the checker and doctor for the registry, provider schema, and selection/resolved validation.
 - Reran the full local suite: 92 tests, 91 passed, 1 skipped; kit validation returned no errors. Gemini IDs remain pending; no live API or hosted CI.
 
-## v0.3.8 (2026-10-10)
-
-- Added Gemini CLI, Windsurf, Cline, and Roo adapters: a GEMINI.md project entry plus optional .windsurf/rules/, .clinerules/, and .roo/rules/ pointer rules; private-mode ignores cover the new entries. Client rule formats were checked against current documentation on 2026-10-10 and still require activation verification in the actual clients.
-- Filled in the Anthropic and Kimi router mappings as machine-readable provider configurations with roles, defaults, supported efforts, verified documentation dates, and sources. Anthropic IDs, effort levels, and request-field boundaries were verified against primary documentation (models overview and the Haiku 5.5 migration guide); Kimi facts were cross-checked against current online documentation.
-- Generalized checker provider validation to every providers/*.json (required verified date, effort/support consistency) and extended the model-ID duplication guard to all configured IDs; the project doctor now handles roles without an effort control.
-- Reran the full local suite: 73 tests, 72 passed, 1 unavailable Windows symlink check; kit validation returned no errors or warnings; Python 3.10 grammar verified. Live API calls, native client activation, and hosted CI remain unverified.
-
-## v0.3.6 (2026-10-10)
-
-- Added opt-in install extras selected with --with-session-start, --with-guards, and --with-ci; accepted choices persist in ai-kit/settings.json. Session start installs .agents/hooks/session-start.md and, for claude, .claude/settings.json SessionStart wiring; guards merges the reference deny-Git permissions into the same client settings file; the ci extra installs a self-contained .github/workflows/ai-kit.yml health check intended for team mode.
-- Documented extras in ADAPTERS/BOOTSTRAP/README with activation boundaries: hook output, deny enforcement, and workflow behavior require verification in the actual client and hosted runner; MCP servers are declared manually per project and none is installed by default.
-- Reran the full local suite: 69 tests, 68 passed, 1 unavailable Windows symlink check; kit validation returned no errors or warnings; Python 3.10 grammar was verified for all scripts. Hosted CI and real application trials remain unverified.
-
-## v0.3.3 (2026-10-10)
-
-- Added installer-suggested stack profiles: the plan detects GO, PYTHON, FRONTEND, PHP, LARAVEL, and MOODLE evidence from module manifests, reports it in the preview, and drafts module-map rows in a fresh PROJECT_CONTEXT.md marked unverified until bootstrap confirms them. Existing context documents remain preserved untouched.
-- Added scripts/doctor.py, an offline health check for installed projects: state/settings validation, missing or modified managed files, missing owned documents, pending conflict candidates, always-loaded budget overflows, broken Markdown links/anchors, and stale provider verifications. Exit code 0 means no errors.
-- Scoped Node and Python generated-path exclusions to modules with verified manifests (package.json, pyproject.toml, requirements.txt, setup.py, setup.cfg), matching the existing Composer/Moodle scoping; both ignore policies keep only generic output directories statically.
-- Extended the checker visibility fixture to compose each policy with installer-detected module rules, as apply does.
-- Moved maintainer-only reference-update guidance to CONTRIBUTING.md and the original-bundle verification record to docs/history to keep conditional documents within byte budgets; removed the external hero-image hotlink from the README.
-- Reran the full local suite for these changes: 62 tests, 61 passed, 1 unavailable Windows symlink check; kit validation returned no errors or warnings; Python 3.10 grammar was verified for install, checker, and doctor sources. Hosted CI and real application trials remain unverified.
-
 ## Earlier kit
 
-The [archived v0.2 changelog](docs/history/v0.2-changelog.md) preserves the v0.2-v0.2.2 and Windows fixture entries verbatim. The [archived v0.1 changelog](docs/history/v0.1-changelog.txt) preserves the detailed pre-refactor record verbatim. Its old relative paths and past language/router agreements are historical data.
+The [archived v0.3 changelog](docs/history/v0.3-changelog.md) preserves the v0.3.3-v0.3.8 entries verbatim. The [archived v0.2 changelog](docs/history/v0.2-changelog.md) preserves the v0.2-v0.2.2 and Windows fixture entries verbatim. The [archived v0.1 changelog](docs/history/v0.1-changelog.txt) preserves the detailed pre-refactor record verbatim. Its old relative paths and past language/router agreements are historical data.
 [Prior routing decision](docs/adr/0001-adaptive-model-routing.md) records the accepted routing baseline; this changelog is not copied into projects.

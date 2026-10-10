@@ -273,14 +273,17 @@ class InstallerTests(unittest.TestCase):
         plan = self.plan(agents=["codex", "claude"], extras=["session-start"])
         self.assertEqual(plan["extras"], ["session-start"])
         self.assertIn(".agents/hooks/session-start.md", plan["actions"])
-        self.assertIn(".claude/settings.json", plan["actions"])
+        # Private mode keeps AI-KIT client entries in the personal local settings file.
+        self.assertIn(".claude/settings.local.json", plan["actions"])
+        self.assertNotIn(".claude/settings.json", plan["actions"])
         self.apply(agents=["codex", "claude"], extras=["session-start"])
-        self.assertIn("SessionStart", (self.target / ".claude/settings.json").read_text())
+        self.assertIn("SessionStart", (self.target / ".claude/settings.local.json").read_text())
         settings = json.loads((self.target / "ai-kit/settings.json").read_text())
         self.assertIs(settings["session_start"], True)
 
     def test_guards_extra_installs_ask_rules_and_persists(self):
-        self.apply(agents=["claude"], extras=["guards"])
+        # Shared-file merge semantics run in team mode, where settings.json is the target.
+        self.apply(agents=["claude"], extras=["guards"], mode="team")
         claude_settings = json.loads((self.target / ".claude/settings.json").read_text())
         # Core permits an explicitly requested commit, so the guard asks instead of denying.
         self.assertIn("Bash(git push *)", claude_settings["permissions"]["ask"])
@@ -297,7 +300,7 @@ class InstallerTests(unittest.TestCase):
 
     def test_existing_claude_settings_are_merged_by_key(self):
         self.write(".claude/settings.json", (json.dumps(self.user_claude_settings(), indent=4) + "\n").encode())
-        plan = self.apply(agents=["claude"], extras=["guards", "session-start"])
+        plan = self.apply(agents=["claude"], extras=["guards", "session-start"], mode="team")
         self.assertFalse(plan["conflicts"])
         merged = json.loads((self.target / ".claude/settings.json").read_text())
         self.assertEqual(merged["model"], "user-choice")
@@ -315,7 +318,7 @@ class InstallerTests(unittest.TestCase):
         self.assertFalse(self.plan()["actions"])
 
     def test_user_edits_to_merged_settings_survive_reruns(self):
-        self.apply(agents=["claude"], extras=["guards"])
+        self.apply(agents=["claude"], extras=["guards"], mode="team")
         path = self.target / ".claude/settings.json"
         settings = json.loads(path.read_text())
         settings["permissions"]["deny"] = ["Read(./.env)"]
@@ -327,7 +330,7 @@ class InstallerTests(unittest.TestCase):
 
     def test_disabling_an_extra_removes_only_its_managed_entries(self):
         self.write(".claude/settings.json", (json.dumps(self.user_claude_settings()) + "\n").encode())
-        self.apply(agents=["claude"], extras=["guards", "session-start"])
+        self.apply(agents=["claude"], extras=["guards", "session-start"], mode="team")
         settings_path = self.target / "ai-kit/settings.json"
         settings = json.loads(settings_path.read_text())
         settings["guards"] = False
@@ -357,19 +360,21 @@ class InstallerTests(unittest.TestCase):
         settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
         plan = self.apply()
         self.assertFalse(any("retained without a current source" in w for w in plan["warnings"]))
-        merged = json.loads((self.target / ".claude/settings.json").read_text())
+        # Legacy entries leave the shared file; private mode re-adds them to the local file.
+        self.assertEqual(json.loads((self.target / ".claude/settings.json").read_text()), {})
+        merged = json.loads((self.target / ".claude/settings.local.json").read_text())
         self.assertNotIn("deny", merged["permissions"])
         self.assertIn("Bash(git push *)", merged["permissions"]["ask"])
         commands = [h["command"] for group in merged["hooks"]["SessionStart"] for h in group["hooks"]]
         self.assertEqual(commands, [install.SESSION_START_COMMAND])
         state = json.loads(state_path.read_text())
         self.assertNotIn(".claude/settings.json", state["files"])
-        self.assertIn(".claude/settings.json", state["managed_json"])
+        self.assertEqual(sorted(state["managed_json"]), [".claude/settings.local.json"])
         self.assertFalse(self.plan()["actions"])
 
     def test_invalid_claude_settings_become_a_reviewed_conflict(self):
         self.write(".claude/settings.json", b"{not json\n")
-        plan = self.plan(agents=["claude"], extras=["guards"])
+        plan = self.plan(agents=["claude"], extras=["guards"], mode="team")
         self.assertIn(".claude/settings.json", plan["conflicts"])
         self.assertTrue(any("Cannot merge AI-KIT entries" in w for w in plan["warnings"]))
         self.assertFalse(install.apply_plan(plan))
@@ -379,7 +384,7 @@ class InstallerTests(unittest.TestCase):
 
     def test_session_start_hook_injects_context_and_tolerates_crlf(self):
         self.apply(agents=["claude"], extras=["session-start"])
-        claude_settings = json.loads((self.target / ".claude/settings.json").read_text())
+        claude_settings = json.loads((self.target / ".claude/settings.local.json").read_text())
         command = claude_settings["hooks"]["SessionStart"][0]["hooks"][0]["command"]
         self.assertIn("$CLAUDE_PROJECT_DIR", command)
         sh = shutil.which("sh")
@@ -452,7 +457,7 @@ class InstallerTests(unittest.TestCase):
 
     def test_session_start_and_guards_merge_into_one_settings_file(self):
         self.apply(agents=["claude"], extras=["session-start", "guards"])
-        claude_settings = json.loads((self.target / ".claude/settings.json").read_text())
+        claude_settings = json.loads((self.target / ".claude/settings.local.json").read_text())
         self.assertIn("hooks", claude_settings)
         self.assertIn("permissions", claude_settings)
 

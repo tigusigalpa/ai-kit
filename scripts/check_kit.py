@@ -108,6 +108,9 @@ def visibility(root: Path, git: str) -> list[str]:
             for path in ("AGENTS.md", "PROJECT_CONTEXT.md", "ai-kit/CORE.md", "GEMINI.md",
                          ".agents/skills/go-work/SKILL.md", ".claude/skills/go-work/SKILL.md",
                          ".agents/hooks/session-start.md", ".agents/hooks/session-start.sh",
+                         ".agents/skills/ai-kit-bootstrap/SKILL.md", ".claude/rules/ai-kit-web.md",
+                         ".cursor/rules/ai-kit-web.mdc", ".github/instructions/ai-kit-web.instructions.md",
+                         ".windsurf/rules/ai-kit-web.md", ".clinerules/ai-kit-web.md",
                          ".windsurf/rules/ai-kit.md", "docs/DECISIONS.md"):
                 if ignored(path) != (mode == "private"):
                     errors.append(f"{mode}: wrong shared visibility: {path}")
@@ -150,6 +153,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "scripts/metrics.py", "template/ai-kit/METRICS.md",
                 "template/ai-kit/stacks/FILAMENT.md", "template/.agents/skills/filament-work/SKILL.md",
                 "integrations/agents.json", "integrations/claude-settings.git-ask.json",
+                "integrations/claude-settings.data-ask.json", "templates/agent-secrets.ignore",
                 "template/.agents/hooks/session-start.md", "template/.agents/hooks/session-start.sh",
                 "template/ai-kit/router/selection.json",
                 "template/ai-kit/router/providers/local.json",
@@ -188,7 +192,8 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
             errors.append("Trailing whitespace: " + str(p))
         if not text.endswith("\n"):
             errors.append("Missing final newline: " + str(p))
-        if len(text.encode()) > 12000:
+        # The root README is human onboarding that never enters project context, so it gets more room.
+        if len(text.encode()) > (16000 if p == root / "README.md" else 12000):
             warnings.append("Large conditional document: " + str(p))
         for target in links(text):
             if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):

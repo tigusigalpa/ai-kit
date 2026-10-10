@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "ask": [
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(git reset --hard*)",
+      "Bash(git clean *)",
+      "Bash(docker system prune*)",
+      "Bash(docker volume rm *)",
+      "Bash(docker volume prune*)"
+    ]
+  },
+  "stacks": {
+    "LARAVEL": [
+      "Bash(php artisan migrate*)",
+      "Bash(php artisan db:wipe*)",
+      "Bash(php artisan db:seed*)"
+    ],
+    "MOODLE": [
+      "Bash(php admin/cli/upgrade.php*)"
+    ]
+  }
+}

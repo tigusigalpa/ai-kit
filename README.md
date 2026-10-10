@@ -58,7 +58,9 @@ Missing files are created; existing project documents and context survive. Custo
 
 ### 3. Start the first session
 
-Give the agent [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) and access to the bundle and repository. It fills the templates with actual purpose, versions, module paths, commands, and open questions. Without file access, attach the templates and evidence and apply the files yourself.
+Run the installed bootstrap skill: `/ai-kit-bootstrap` in Claude Code, `$ai-kit-bootstrap` in Codex. It confirms the installer drafts and fills the context with actual purpose, versions, module paths, commands, and open questions. For other clients, or to let an agent run the installation itself, give it [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) with access to the bundle and repository.
+
+Two more workflow skills run on request: `ai-kit-review` reviews current changes against the engineering and security rules, and `ai-kit-sync-context` updates context, decisions, and the changelog after work.
 
 ## Choose your defaults
 
@@ -80,6 +82,23 @@ python scripts/install.py /path/to/project --mode team --chat-language English -
 
 Add --apply after reviewing the plan.
 
+### Presets
+
+A preset selects the sharing mode and the optional client machinery in one flag:
+
+~~~sh
+python scripts/install.py /path/to/project --preset solo --agent codex --agent claude
+~~~
+
+| Preset | Mode | What it adds |
+| --- | --- | --- |
+| minimal | unchanged | Instructions only |
+| solo | private | Session-start context, native client settings, scoped module rules |
+| team | team | solo plus Git commit/push confirmation |
+| strict | unchanged | team plus confirmation before destructive and migration commands |
+
+Native client settings allow the recorded test/lint/build commands without prompts, deny agent reads of secret files, and write a secret block into Cursor, Aider, and Gemini ignore files. Scoped module rules attach each module's stack profiles in Claude Code, Cursor, Copilot, Windsurf, and Cline only when files of that module are touched. Explicit `--mode` and `--with-*` flags override a preset; the preview warns when a preset turns an enabled extra off. Details: [extras and presets](template/ai-kit/ADAPTERS.md#optional-install-extras).
+
 **Read [OWNER.md](template/ai-kit/profiles/OWNER.md) before adopting owner for Laravel** (no database foreign key constraints, separate public UUID, model policies/factories/seeders); standard follows your project's established conventions.
 
 ## The files you will use
@@ -92,6 +111,7 @@ Installed project files:
 | PROJECT_CONTEXT.md | Verified purpose, contracts, stack, module map, commands, and open questions |
 | WIKI.md | A short map of useful documentation |
 | .agents/skills/project-continuity/SKILL.md | The procedure for keeping context and pointers current |
+| .agents/skills/ai-kit-*/SKILL.md | User-invoked bootstrap, review, and context-sync workflows |
 | ai-kit/ | Core rules, settings, engineering guidance, profiles, and routing |
 | docs/DECISIONS.md and docs/adr/ | Decisions, reasons, and tradeoffs |
 | CHANGELOG.md | What changed and why |
@@ -147,7 +167,7 @@ Explicit selections replace recorded choices; tracked adapters left on disk bloc
 | Cline | .clinerules/ai-kit.md |
 | Roo | .roo/rules/ai-kit.md |
 
-Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md). Extras: --with-session-start, --with-guards, --with-ci.
+Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md). Extras: --with-session-start, --with-guards, --with-data-guards, --with-native-settings, --with-scoped-rules, --with-ci, or a [preset](#presets).
 
 ## Sharing
 

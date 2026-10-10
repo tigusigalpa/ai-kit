@@ -186,23 +186,39 @@ class ProjectJsonTests(unittest.TestCase):
 
 class InteractiveTests(unittest.TestCase):
     def test_selections_are_collected(self):
-        responses = iter(["team", "English", "standard", "codex,claude", "ci", "y"])
+        responses = iter(["", "team", "English", "standard", "codex,claude", "ci", "y"])
         read = lambda prompt: next(responses)
         selections = install.interactive_selections(read, agents_available={"codex", "claude"},
                                                     facts={"modules": []})
-        self.assertEqual(selections, {"mode": "team", "language": "English", "conventions": "standard",
-                                      "agents": ["codex", "claude"], "extras": ["ci"]})
+        self.assertEqual(selections, {"preset": None, "mode": "team", "language": "English",
+                                      "conventions": "standard", "agents": ["codex", "claude"],
+                                      "extras": ["ci"]})
 
     def test_defaults_apply_when_answers_are_blank(self):
-        responses = iter(["", "", "", "", "", "y"])
+        responses = iter(["", "", "", "", "", "", "y"])
         read = lambda prompt: next(responses)
         selections = install.interactive_selections(read, agents_available={"codex"}, facts={"modules": []})
         self.assertEqual(selections["mode"], "private")
         self.assertEqual(selections["agents"], ["codex"])
         self.assertEqual(selections["extras"], [])
+        self.assertIsNone(selections["preset"])
+
+    def test_preset_answer_sets_mode_and_extras_defaults(self):
+        responses = iter(["team", "", "", "", "", "", "y"])
+        prompts = []
+
+        def read(prompt):
+            prompts.append(prompt)
+            return next(responses)
+
+        selections = install.interactive_selections(read, agents_available={"codex"}, facts={"modules": []})
+        self.assertEqual(selections["preset"], "team")
+        self.assertEqual(selections["mode"], "team")
+        self.assertEqual(selections["extras"], list(install.PRESETS["team"]["extras"]))
+        self.assertIn("(team)", prompts[1])
 
     def test_detected_clients_become_the_default_agent_answer(self):
-        responses = iter(["", "", "", "", "", "y"])
+        responses = iter(["", "", "", "", "", "", "y"])
         read = lambda prompt: next(responses)
         output = io.StringIO()
         with contextlib.redirect_stdout(output):
@@ -213,7 +229,7 @@ class InteractiveTests(unittest.TestCase):
         self.assertIn("Detected client: claude (CLAUDE.md)", output.getvalue())
 
     def test_decline_returns_none(self):
-        responses = iter(["private", "Russian", "owner", "codex", "", "n"])
+        responses = iter(["", "private", "Russian", "owner", "codex", "", "n"])
         read = lambda prompt: next(responses)
         self.assertIsNone(install.interactive_selections(read, agents_available={"codex"},
                                                          facts={"modules": []}))
