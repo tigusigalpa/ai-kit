@@ -22,6 +22,20 @@ AGENTS = {"codex", "claude", "kimi", "manus", "copilot", "cursor", "aider"}
 OPTIONAL = {"copilot": ("copilot-instructions.md", ".github/copilot-instructions.md"),
             "cursor": ("ai-kit.mdc", ".cursor/rules/ai-kit.mdc"),
             "aider": ("CONVENTIONS.md", "CONVENTIONS.md")}
+PROFILE_MANIFESTS = {
+    "GO": ("go.mod",),
+    "PYTHON": ("pyproject.toml", "requirements.txt", "setup.py", "setup.cfg"),
+    "FRONTEND": ("package.json",),
+}
+NODE_IGNORES = ("node_modules/", ".npm/", ".pnpm-store/", ".yarn/cache/", ".yarn/unplugged/",
+                ".yarn/install-state.gz", "npm-debug.log*", "yarn-debug.log*", "yarn-error.log*",
+                "pnpm-debug.log*")
+PYTHON_IGNORES = (".venv/", "venv/", "__pypackages__/", "__pycache__/", "*.py[cod]", "*$py.class",
+                  ".pytest_cache/", ".mypy_cache/", ".ruff_cache/", ".pyre/", ".pytype/",
+                  ".hypothesis/", ".tox/", ".nox/", ".ipynb_checkpoints/", ".coverage", ".coverage.*",
+                  "htmlcov/", "coverage.xml", "*.egg-info/", ".eggs/", "*.egg", "*.whl",
+                  "pip-wheel-metadata/", "pip-log.txt", "pip-delete-this-directory.txt", ".pypirc")
+PYTHON_ROOT_IGNORES = (".cache/pip/", ".cache/uv/", ".cache/pypoetry/")
 
 
 def digest(data: bytes) -> str:
@@ -156,7 +170,55 @@ def module_ignores(target: Path) -> list[str]:
             rules.append("/" + prefix + "vendor/")
         if "config-dist.php" in files and (module / "lib/moodlelib.php").is_file():
             rules.extend(["/" + prefix + "config.php", "/" + prefix + "behat.yml"])
+        # Node/Python generated paths are scoped to modules with verified manifests.
+        if "package.json" in files:
+            rules.extend(prefix + "**/" + name for name in NODE_IGNORES)
+        if any(name in files for name in PROFILE_MANIFESTS["PYTHON"]):
+            rules.extend(prefix + "**/" + name for name in PYTHON_IGNORES)
+            rules.extend("/" + prefix + name for name in PYTHON_ROOT_IGNORES)
     return sorted(set(rules))
+
+
+def detect_profiles(target: Path) -> dict[str, list[str]]:
+    """Map stack profiles to module prefixes evidenced by manifests (unverified draft)."""
+    found: dict[str, set[str]] = {}
+    excluded = {".git", "node_modules", "vendor", "ai-kit", ".agents", ".claude", ".venv"}
+    for directory, dirs, files in os.walk(target, followlinks=False):
+        dirs[:] = [d for d in dirs if d not in excluded and not is_link(Path(directory) / d)]
+        module = Path(directory)
+        prefix = module.relative_to(target).as_posix()
+        prefix = "" if prefix == "." else prefix + "/"
+        for profile, manifests in PROFILE_MANIFESTS.items():
+            if any(name in files for name in manifests):
+                found.setdefault(profile, set()).add(prefix)
+        if "composer.json" in files:
+            found.setdefault("PHP", set()).add(prefix)
+            if (module / "artisan").is_file():
+                found.setdefault("LARAVEL", set()).add(prefix)
+        if "config-dist.php" in files and (module / "lib/moodlelib.php").is_file():
+            found.setdefault("MOODLE", set()).add(prefix)
+    return {profile: sorted(prefixes) for profile, prefixes in sorted(found.items())}
+
+
+def project_context_draft(data: bytes, detected: dict[str, list[str]]) -> bytes:
+    """Turn installer-detected manifests into draft module-map rows for a fresh context."""
+    by_prefix: dict[str, set[str]] = {}
+    for profile, prefixes in detected.items():
+        for prefix in prefixes:
+            by_prefix.setdefault(prefix, set()).add(profile)
+    if not by_prefix:
+        return data
+    text = data.decode("utf-8")
+    placeholder = "| Not established | Not established | Not established | None confirmed | Not established |"
+    if placeholder not in text:
+        return data
+    rows = []
+    for prefix in sorted(by_prefix):
+        label = "/" + prefix.rstrip("/") if prefix else "/"
+        profiles = ", ".join(sorted(by_prefix[prefix]))
+        rows.append(f"| {label} | installer-detected manifests | not established | "
+                    f"{profiles} (suggested, confirm at bootstrap) | not established |")
+    return text.replace(placeholder, "\n".join(rows), 1).encode("utf-8")
 
 
 def merge_ignore(current: str, policy: str, extra: list[str]) -> tuple[str, str]:
@@ -199,6 +261,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     accept = set(accept_local or [])
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
     validate_settings(settings)
+    detected = detect_profiles(target)
     incoming: dict[str, bytes] = {}
     for src in sorted((root / "template").rglob("*")):
         if is_link(src):
@@ -235,6 +298,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             raise ValueError("Invalid baseline record")
         if relative in OWNED:
             if current is None:
+                if relative == "PROJECT_CONTEXT.md":
+                    data = project_context_draft(data, detected)
                 actions[relative] = {"data": data, "old": None}
             else:
                 preserved.append(relative)
@@ -321,7 +386,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         actions["ai-kit/.install-state.json"] = {"data": state_data, "old": old_state}
     return {"target": target, "mode": mode, "version": new_state["accepted_version"],
             "actions": actions, "conflicts": conflicts, "candidates": candidates,
-            "adapter_conflicts": sorted(retirements), "preserved": preserved, "warnings": warnings}
+            "adapter_conflicts": sorted(retirements), "preserved": preserved,
+            "detected_profiles": detected, "warnings": warnings}
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -421,7 +487,8 @@ def main(argv: list[str] | None = None) -> int:
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
                           "conflicts": sorted(plan["conflicts"]), "preserved": sorted(plan["preserved"]),
                           "candidates": plan["candidates"], "adapter_conflicts": plan["adapter_conflicts"],
-                          "warnings": plan["warnings"]}, indent=2))
+                          "detected_profiles": plan["detected_profiles"], "warnings": plan["warnings"]},
+                         indent=2))
         if args.apply:
             apply_plan(plan)
         return 2 if needs_review(plan) else 0

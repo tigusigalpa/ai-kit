@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings. See [audit disposition](MANUS_REVIEW.md).
+Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds installer-suggested stack profiles, the installed-project doctor, and manifest-scoped Node/Python ignore rules. See [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -56,6 +56,10 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 
 ## Verification
 
+### Detection and doctor verification
+
+2026-10-10, Windows/Python 3.14.6: 62 tests ran, 61 passed, 1 skipped (Windows symlink privilege); kit validation was clean, including recomposed policy visibility; Python 3.10 grammar was verified for all scripts. Regressions cover scoped Node/Python ignores, profile detection with the fresh-context draft, and doctor report scenarios. Hosted CI and real application trials remain unverified.
+
 ### Windows CI fixture verification
 
 2026-10-08, Windows/Python 3.12.14: 47 tests executed, 44 passed, 3 skipped (symlink privilege and two junction variants). Equivalent-path reproductions exposed both failures before the fix; the corrected fixture restores rollback injection and reaches the junction permission check. See [source/job evidence and limits](WINDOWS_CI_FIX.md). Corrected hosted Windows results remain unverified.
@@ -89,11 +93,5 @@ Archive inventory/exact bytes and Python 3.10 syntax were verified. Successful h
 
 ### Original bundle checks
 
-- Local environment: Windows, bundled Python 3.12.14; verification date 2026-10-08.
-- Behavioral suite: 33 tests executed; 32 passed and 1 skipped. The skipped symlink test requires a Windows privilege unavailable in this session; no claim is made that it ran.
-- Installer scenarios cover absent-target preview, project-owned files, idempotency, unchanged upgrades, local conflicts/semantic merges/future conflicts, backups, private/team transitions, mixed Composer/Go vendoring, Moodle scoping, optional entries, settings preservation, unsafe paths, changed previews, and rollback after an injected write failure.
-- Checker scenarios cover missing anchors, escaping links, invalid JSON, skill/folder and registry mismatch, clean history boundaries, and Git checkout metadata exclusion.
-- Real Git checks passed for reference-source visibility, private/team shared files, secrets/caches, manifests/checksums/locks, intentional vendoring, and executable source.
-- All 8 installable skills plus the maintainer continuity skill passed the skill-creator metadata validator. Relative file/heading links, registry, JSON, English content hygiene, and always-loaded byte budgets passed the kit checker.
-- Docker evidence tests use a fake command adapter: inspection remains read-only, stopped-container references remain protected, exact bytes stay unknown, and a stopped daemon fails rather than producing a success report. No real Docker environment was exercised.
-- Instruction review checked conditional profile loading, unknown project facts, English artifacts/configured chat language, no publication authorization, Docker preflight, and preserved owner conventions. This is source review, not a live client behavior trial.
+The original-bundle verification record is archived in [docs/history](history/original-bundle-checks.md).
+

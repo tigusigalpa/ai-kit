@@ -5,7 +5,7 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution.
-- Version source: [VERSION](VERSION). The user published v0.2.2 source; the additional Windows CI fixture correction is local. No release or tag refs were returned at the latest read.
+- Version source: [VERSION](VERSION). The local tree is prepared as v0.3.3; the last published source was v0.2.2. No release or tag refs were returned at the latest read.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -24,6 +24,7 @@
 - Behavioral tests: python -m unittest discover -s tests -v
 - Install preview: python scripts/install.py TARGET
 - Apply installation: python scripts/install.py TARGET --apply
+- Installed-project health check: python scripts/doctor.py TARGET
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
 - Local verified environment: Windows, bundled Python 3.12.14. The user supplied a Linux/Python 3.13.16 hosted-check failure; successful hosted matrix execution remains unverified.
 - Earlier patch verification: v0.2.1 clean/mixed-layout checks returned no errors or warnings; its patched public snapshot passed 32 tests with 1 unavailable Windows symlink test.
@@ -35,4 +36,4 @@
 - Policy defaults and authorization: [Core](template/ai-kit/CORE.md) and [settings](template/ai-kit/settings.json).
 - User selected MIT on 2026-10-08; [LICENSE](LICENSE) applies to the kit.
 - Actual client activation, live model switching, Docker cleanup, and successful hosted CI are not established by local file checks.
-- Last context synchronization: 2026-10-08.
+- Last context synchronization: 2026-10-10.

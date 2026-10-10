@@ -1,7 +1,5 @@
 # AI-KIT
 
-![AI KIT](https://i.postimg.cc/BvrB6sKt/ai-kit-hero-banner.jpg)
-
 A new chat should be able to pick up your project without making you explain every decision again. AI-KIT keeps the instructions, verified project facts, and working practices that make that possible alongside your code.
 
 Adapt it to your stack and keep it current.
@@ -20,15 +18,14 @@ Bundle version: [VERSION](VERSION). License: [MIT](LICENSE).
 
 ## Install
 
-You need Python 3.10 or later; the installer uses the standard library.
-Get the repository or extract a prepared bundle, then review its files:
+You need Python 3.10 or later (the installer uses the standard library). Get the repository or extract a prepared bundle, then review its files:
 
 ~~~sh
 git clone https://github.com/tigusigalpa/ai-kit.git
 cd ai-kit
 ~~~
 
-Use a verified revision; main can change. No release tag is assumed. Open a terminal there and choose your application's absolute path outside this reference directory.
+Use a verified revision; main can change and no release tag is assumed. Choose your application's absolute path outside this reference directory.
 
 ### 1. Preview
 
@@ -45,7 +42,7 @@ python scripts/install.py "C:\Projects\my-app"
 ~~~
 
 Replace the path with your own. Preview creates no files; --dry-run is equivalent.
-Review writes, preserved files, candidate paths, and conflicts.
+Review writes, preserved files, candidate paths, conflicts, and the stack profiles suggested from detected module manifests.
 
 ### 2. Apply
 
@@ -55,17 +52,12 @@ Add --apply to the same command:
 python scripts/install.py /home/you/projects/my-app --apply
 ~~~
 
-Missing files are created. Existing project README, context, WIKI, changelog, and decision documents survive.
-Customized instructions can produce conflicts; use [the update procedure](#update-an-application-project) to merge them.
+Missing files are created; existing project README, context, WIKI, changelog, and decision documents survive.
+Customized instructions can conflict; use [the update procedure](#update-an-application-project) to merge them.
 
 ### 3. Start the first session
 
-Give the agent [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) and access to the bundle and repository.
-
-Bootstrap fills the templates with actual purpose, versions, module paths, commands, and open questions.
-Aim for a context file that tells the next session how to run the project and check a change.
-
-For a chat without file access, attach templates and repository evidence, then apply the proposed files yourself.
+Give the agent [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) and access to the bundle and repository. It fills the templates with actual purpose, versions, module paths, commands, and open questions, so the next session knows how to run the project and check a change. Without file access, attach templates and repository evidence, then apply the proposed files yourself.
 
 ## Choose your defaults
 
@@ -87,9 +79,7 @@ python scripts/install.py /path/to/project --mode team --chat-language English -
 
 Add --apply after reviewing the plan.
 
-**Read [OWNER.md](template/ai-kit/profiles/OWNER.md) before adopting owner for Laravel.**
-It includes no database foreign key constraints, a separate public UUID, and model policies/factories/seeders.
-Standard follows your project's established conventions.
+**Read [OWNER.md](template/ai-kit/profiles/OWNER.md) before adopting owner for Laravel** (no database foreign key constraints, separate public UUID, model policies/factories/seeders); standard follows your project's established conventions.
 
 ## The files you will use
 
@@ -105,26 +95,20 @@ Installed project files:
 | docs/DECISIONS.md and docs/adr/ | Decisions, reasons, and tradeoffs |
 | CHANGELOG.md | What changed and why |
 
-Keep current facts in context and the reasoning behind choices in decisions/ADRs.
-When facts, agreements, or procedures change, synchronize context, the continuity skill, and WIKI in the same task.
-After a task changes project files, add a concise changelog entry.
+Keep current facts in context and the reasoning behind choices in decisions/ADRs. When facts, agreements, or procedures change, synchronize context, the continuity skill, and WIKI in the same task. After a task with file changes, add a concise changelog entry.
 
 A fresh session reads context before editing.
 
 ## A normal working session
 
-Follow **plan -> implement -> test -> review -> document**. Establish the behavior and acceptance checks, make a focused change, run relevant tests, review the result, and record what changed.
-
-For a Go HTTP handler, check cancellation, timeouts, and HTTP tests. For a Laravel migration, consider compatibility, recovery, and schema conventions.
-
-Load relevant rules, review risky changes carefully, and report actual checks and unavailable verification.
-The [engineering guide](template/ai-kit/ENGINEERING.md) provides the detailed rules.
+Follow **plan -> implement -> test -> review -> document**: establish behavior and acceptance checks, make a focused change, run relevant tests, review, and record what changed. Load relevant rules, review risky changes, and report actual checks and unavailable verification; the [engineering guide](template/ai-kit/ENGINEERING.md) owns the detailed rules.
 
 [Core](template/ai-kit/CORE.md) owns Git authorization: commits and pushes require an explicit request for that operation. Normal task completion leaves reviewable local changes.
 
 ## Stack profiles
 
 Bootstrap confirms which profiles apply and records a path-to-profile map for each module.
+The install preview suggests profiles from module manifests (go.mod, package.json, composer.json, pyproject.toml); verify suggestions at bootstrap.
 
 | Profile | Main concerns |
 | --- | --- |
@@ -147,7 +131,7 @@ Repeat --agent to select the clients you use:
 python scripts/install.py /path/to/project --agent codex --agent claude --agent cursor
 ~~~
 
-Explicit selections replace recorded choices. Tracked adapters left on disk block the change; review the listed files or keep their agent selected. The installer never deletes adapters.
+Explicit selections replace recorded choices; tracked adapters left on disk block the change. The installer never deletes adapters.
 
 | Client | Entry provided |
 | --- | --- |
@@ -158,8 +142,7 @@ Explicit selections replace recorded choices. Tracked adapters left on disk bloc
 | Cursor | .cursor/rules/ai-kit.mdc |
 | Aider | CONVENTIONS.md; load with --read CONVENTIONS.md |
 
-Verify instruction and skill loading in the actual client.
-See [adapter details](template/ai-kit/ADAPTERS.md) for activation boundaries and optional guards.
+Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md).
 
 ## Sharing
 
@@ -170,20 +153,18 @@ Choose how others will receive the project's rules:
 | private | Ignored | Local instructions installed separately |
 | team | Visible | Teammates and agents working from fresh clones |
 
-Both modes exclude secrets, personal overrides, installer state, and caches.
-A private-mode clone needs kit installation; team files can be versioned.
+Both modes exclude secrets, personal overrides, installer state, and caches. A private-mode clone needs kit installation; team files can be versioned.
 
 The installer owns one marked .gitignore block. Other rules survive and may still hide team files; reconcile them explicitly.
 Ignore rules do not remove files already tracked by Git.
 
 Manifests/checksums/locks stay visible, including composer.lock for applications, go.mod, go.sum, and Python/frontend locks.
-Composer/Moodle exclusions are scoped to verified modules, preserving deliberate Go vendoring and executable source.
+Composer, Moodle, Node, and Python exclusions are scoped to verified module manifests, preserving deliberate Go vendoring and executable source.
 See [ignore adaptation](template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
 
 ## Update an application project
 
-Preview a reviewed newer bundle against the same application path.
-Context/history survives. Unchanged managed instructions can update from their baseline; local adaptations need review.
+Preview a reviewed newer bundle against the same application path. Context/history survives; unchanged managed instructions update from their baseline, local adaptations need review.
 
 Conflicts leave the accepted installation unchanged. Apply creates candidates under ai-kit/.upstream-cache/candidates/<source-hash>/ with metadata; existing drafts survive. Compare and merge using the reported paths.
 
@@ -194,18 +175,26 @@ python scripts/install.py /path/to/project --accept-local AGENTS.md
 python scripts/install.py /path/to/project --accept-local AGENTS.md --apply
 ~~~
 
-Repeat --accept-local for each reviewed managed path. Local adaptations require review again when that upstream file changes.
-Changed existing files are backed up in ai-kit/.upstream-cache/backups/.
+Repeat --accept-local for each reviewed managed path; local adaptations require review again when that upstream file changes. Changed existing files are backed up in ai-kit/.upstream-cache/backups/.
 
-Exit codes: 0 success; 1 refusal/failure; 2 unresolved file/adapter conflicts. Invalid state/settings are refused before writes. Preview creates nothing.
+Exit codes: 0 success; 1 refusal/failure; 2 unresolved file/adapter conflicts. Invalid state/settings are refused before writes; preview creates nothing.
 
-The installer works offline. The agent follows [UPSTREAM](template/ai-kit/UPSTREAM.md) to check the configured source and reconcile rules.
-Unavailable access means verified local fallback with freshness marked unverified.
+The installer works offline. The agent follows [UPSTREAM](template/ai-kit/UPSTREAM.md) to check the configured source; unavailable access means verified local fallback with freshness marked unverified.
+
+## Check an installed project
+
+Run the offline health check against an installed application:
+
+~~~sh
+python scripts/doctor.py /path/to/project
+~~~
+
+It validates installer state/settings and reports missing or modified managed files, missing owned documents, pending candidates, budget overflows, broken Markdown links/anchors, and stale provider verifications. Exit code 0 means no errors; warnings mark work worth reviewing.
 
 ## Docker and model routing
 
 For container-dependent work, check the Docker client and daemon. A stopped daemon prompts a startup request while independent work continues.
-New services follow the [Kubernetes-ready contract](template/ai-kit/CONTAINERS.md) for configuration, health, shutdown, storage, and manifests.
+New services follow the [Kubernetes-ready contract](template/ai-kit/CONTAINERS.md) (configuration, health, shutdown, storage, manifests).
 
 Collect read-only resource evidence with:
 
@@ -226,7 +215,7 @@ The reference repository maintains the kit. Application installation uses templa
 | --- | --- |
 | template/ | Clean project instructions, context, skills, and docs |
 | templates/ | Private/team application ignore policies |
-| scripts/ | Installer, checker, and Docker helper |
+| scripts/ | Installer, project doctor, checker, and Docker helper |
 | integrations/ | Optional client entries and guard examples |
 | docs/ | Kit decisions, evidence, and archived history |
 | ai-kit/ | Pointers for old reference paths |
@@ -234,13 +223,7 @@ The reference repository maintains the kit. Application installation uses templa
 
 The root .gitignore keeps reference sources visible.
 
-### Updating a reference repository
-
-Archive overlays leave old files behind. Compatibility pointers retain known v0.1 rule paths.
-Overlay the bundle at the reference root, preserve customizations, and run the checker.
-
-The obsolete .gitignore_real is historical material. Use templates/ policies for applications.
-Retire old pointers after reviewing inbound links and local changes.
+Maintainers: see [updating a reference repository](CONTRIBUTING.md#updating-a-reference-repository).
 
 ## Check and contribute
 

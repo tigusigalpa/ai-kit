@@ -12,6 +12,9 @@ import sys
 import tempfile
 from urllib.parse import unquote
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import install
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -93,8 +96,13 @@ def visibility(root: Path, git: str) -> list[str]:
             relative = p.relative_to(root).as_posix()
             if ignored(relative):
                 errors.append("Reference source ignored: " + relative)
+        # Compose the policy with installer-detected module rules, as apply does.
+        (scratch / "package.json").write_text("{}\n", encoding="utf-8")
+        (scratch / "pyproject.toml").write_text("[project]\nname = \"scratch\"\n", encoding="utf-8")
         for mode in ("private", "team"):
-            (scratch / ".gitignore").write_bytes((root / "templates" / ("gitignore." + mode)).read_bytes())
+            policy = (root / "templates" / ("gitignore." + mode)).read_text(encoding="utf-8")
+            merged, _ = install.merge_ignore("", policy, install.module_ignores(scratch))
+            (scratch / ".gitignore").write_bytes(merged.encode("utf-8"))
             for path in ("AGENTS.md", "PROJECT_CONTEXT.md", "ai-kit/CORE.md",
                          ".agents/skills/go-work/SKILL.md", ".claude/skills/go-work/SKILL.md",
                          "docs/DECISIONS.md"):

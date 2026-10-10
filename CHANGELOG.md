@@ -1,6 +1,13 @@
 # AI-KIT changelog
 
-## Unreleased
+## v0.3.3 (2026-10-10)
+
+- Added installer-suggested stack profiles: the plan detects GO, PYTHON, FRONTEND, PHP, LARAVEL, and MOODLE evidence from module manifests, reports it in the preview, and drafts module-map rows in a fresh PROJECT_CONTEXT.md marked unverified until bootstrap confirms them. Existing context documents remain preserved untouched.
+- Added scripts/doctor.py, an offline health check for installed projects: state/settings validation, missing or modified managed files, missing owned documents, pending conflict candidates, always-loaded budget overflows, broken Markdown links/anchors, and stale provider verifications. Exit code 0 means no errors.
+- Scoped Node and Python generated-path exclusions to modules with verified manifests (package.json, pyproject.toml, requirements.txt, setup.py, setup.cfg), matching the existing Composer/Moodle scoping; both ignore policies keep only generic output directories statically.
+- Extended the checker visibility fixture to compose each policy with installer-detected module rules, as apply does.
+- Moved maintainer-only reference-update guidance to CONTRIBUTING.md and the original-bundle verification record to docs/history to keep conditional documents within byte budgets; removed the external hero-image hotlink from the README.
+- Reran the full local suite for these changes: 62 tests, 61 passed, 1 unavailable Windows symlink check; kit validation returned no errors or warnings; Python 3.10 grammar was verified for install, checker, and doctor sources. Hosted CI and real application trials remain unverified.
 
 - Corrected v0.2.2 installer test fixtures after the Windows/Python 3.13.15 CI log exposed short-versus-long temporary path comparisons. Fixture roots now resolve before child paths are derived; junction guards and rollback fault injection use the same path spelling as the installer.
 - Added permanent regression variants for rollback and junction scenarios using a real equivalent temporary path with a different prefix. Cleanup remains bound to the original owned directories; installer behavior and CI gates were preserved.

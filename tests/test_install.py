@@ -167,6 +167,52 @@ class InstallerTests(unittest.TestCase):
         self.write("other/config-dist.php", b"<?php\n")
         self.assertEqual(install.module_ignores(self.target), ["/moodle/behat.yml", "/moodle/config.php"])
 
+    def test_node_and_python_rules_are_scoped_to_verified_modules(self):
+        self.write("app/package.json", b"{}\n")
+        self.write("svc/pyproject.toml", b'[project]\nname = "svc"\n')
+        self.write("plain/notes.txt", b"nothing detected\n")
+        rules = install.module_ignores(self.target)
+        self.assertIn("app/**/node_modules/", rules)
+        self.assertIn("app/**/.yarn/cache/", rules)
+        self.assertIn("svc/**/__pycache__/", rules)
+        self.assertIn("svc/**/.venv/", rules)
+        self.assertIn("/svc/.cache/pip/", rules)
+        self.assertFalse(any(rule.startswith("plain/") for rule in rules))
+
+    def test_no_manifests_produce_no_generated_path_rules(self):
+        self.write("src/app.go", b"package main\n")
+        self.assertEqual(install.module_ignores(self.target), [])
+
+    def test_detected_profiles_feed_fresh_project_context_draft(self):
+        self.write("go.mod", b"module example.test/app\n")
+        self.write("package.json", b"{}\n")
+        plan = self.plan()
+        self.assertEqual(plan["detected_profiles"], {"FRONTEND": [""], "GO": [""]})
+        self.apply()
+        context = (self.target / "PROJECT_CONTEXT.md").read_text(encoding="utf-8")
+        self.assertIn("| / | installer-detected manifests | not established | "
+                      "FRONTEND, GO (suggested, confirm at bootstrap) | not established |", context)
+
+    def test_detected_profiles_are_scoped_to_module_prefixes(self):
+        self.write("api/go.mod", b"module example.test/api\n")
+        self.write("web/composer.json", b"{}\n")
+        self.write("web/artisan", b"#!/usr/bin/env php\n")
+        self.assertEqual(self.plan()["detected_profiles"],
+                         {"GO": ["api/"], "LARAVEL": ["web/"], "PHP": ["web/"]})
+
+    def test_detection_and_placeholder_persist_without_manifests(self):
+        self.assertEqual(self.plan()["detected_profiles"], {})
+        self.apply()
+        context = (self.target / "PROJECT_CONTEXT.md").read_text(encoding="utf-8")
+        self.assertIn("| Not established | Not established | Not established | None confirmed | Not established |",
+                      context)
+
+    def test_existing_project_context_is_preserved_against_detection(self):
+        self.write("PROJECT_CONTEXT.md", b"Existing verified context\n")
+        self.write("go.mod", b"module example.test/app\n")
+        self.apply()
+        self.assertEqual((self.target / "PROJECT_CONTEXT.md").read_bytes(), b"Existing verified context\n")
+
     def test_claude_and_optional_entries_have_native_paths(self):
         self.apply(agents=["codex", "claude", "copilot", "cursor", "aider"])
         self.assertIn("@AGENTS.md", (self.target / "CLAUDE.md").read_text())
