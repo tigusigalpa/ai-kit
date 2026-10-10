@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds profile detection, the project doctor, and manifest-scoped Node/Python ignores; v0.3.6 adds the session-start, guards, and CI extras; v0.3.8 adds the Gemini/Windsurf/Cline/Roo adapters and verified Anthropic/Kimi router mappings. See [audit disposition](MANUS_REVIEW.md).
+Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds profile detection, the project doctor, and manifest-scoped Node/Python ignores; v0.3.6 adds the session-start, guards, and CI extras; v0.3.8 adds the Gemini/Windsurf/Cline/Roo adapters and verified Anthropic/Kimi router mappings; v0.4.5 adds the agent registry and offline router helper. See [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -38,6 +38,7 @@ Installation can explicitly select another chat language or standard conventions
 | Owner Laravel conventions | [Owner profile](../template/ai-kit/profiles/OWNER.md) |
 | Stack practices | [Stack directory](../template/ai-kit/stacks) |
 | Routing and provider controls | [Router](../template/ai-kit/router/POLICY.md) and relevant provider |
+| Provider selection, agent registry, routing helper | [selection.json](../template/ai-kit/router/selection.json), [agents.json](../integrations/agents.json), [router.py](../scripts/router.py) |
 | Installation/upstream reconciliation | [Bootstrap](../template/ai-kit/BOOTSTRAP.md), [upstream](../template/ai-kit/UPSTREAM.md), installer state |
 | Current project facts and navigation | Installed PROJECT_CONTEXT and WIKI |
 | Context maintenance procedure | [Continuity skill](../template/.agents/skills/project-continuity/SKILL.md) |
@@ -68,27 +69,17 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 
 2026-10-10, Windows/Python 3.14.6: 69 tests ran, 68 passed, 1 skipped (Windows symlink privilege); kit validation was clean; Python 3.10 grammar was verified. Regressions cover extras installation, deny/hook merging into one client settings file, persistence, missing-claude and private-mode guidance, and refusal of unknown extras. Hook execution, deny enforcement, and hosted workflow behavior remain unverified in real clients.
 
+### Router and agent-registry verification
+
+2026-10-10, Windows/Python 3.14.6: 92 tests ran, 91 passed, 1 skipped (Windows symlink privilege); kit validation returned no errors. Covers registry, route classification/resolution, local and pending providers, and configure preview/apply/conflict. Gemini IDs remain pending; no live API or hosted CI ran.
+
 ### Windows CI fixture verification
 
 2026-10-08, Windows/Python 3.12.14: 47 tests executed, 44 passed, 3 skipped (symlink privilege and two junction variants). Equivalent-path reproductions exposed both failures before the fix; the corrected fixture restores rollback injection and reaches the junction permission check. See [source/job evidence and limits](WINDOWS_CI_FIX.md). Corrected hosted Windows results remain unverified.
 
 ### Manus patch verification
 
-Measured on 2026-10-08 for local bundle 0.2.2, on Windows with Python 3.12.14. Upstream read: 73707036c1098d8c1c81ab2c51d723c3d521f6b8; this is not a commit containing the patch.
-
-- Clean behavioral suite: 45 tests executed, 43 passed, 2 skipped. The symlink test lacks Windows privilege; the junction fixture received Access denied in this sandbox. Neither real linked-path test is claimed to have passed locally.
-- After tightening the junction helper to skip only recognized access/privilege denial, its focused check confirmed that unavailable outcome; unexpected helper errors fail the test.
-- The same suite passed on a fresh v0.2.2 overlay of the reconstructed published tree: 43 passed, 2 skipped. Old .gitignore_real, native entries, and legacy skills remained in that fixture; compatibility pointers corrected known obsolete policy paths.
-- New regressions cover edited/old/concurrently created candidates, first-creation metadata, source changes, adapter-retirement conflicts and reviewed resolution, untracked native warnings, invalid settings/state, and previous-version state.
-- An installed synthetic Go/Composer/Python project preserved local AGENTS/README/ignore rules and dependency manifests/locks. Real Git private/team checks verified shared entries/skills, Composer exclusions, deliberate Go vendoring, and hidden secrets/caches/state/candidates.
-- A separate smoke check used the actual v0.2.1 installer, then upgraded with v0.2.2. Documents, settings, and selected agents survived; a repeated plan had no writes or conflicts.
-- Junction detection uses lstat and Windows reparse tags documented in [Python 3.10 os](https://docs.python.org/3.10/library/os.html#os.stat_result.st_reparse_tag) and [stat](https://docs.python.org/3.10/library/stat.html#stat.IO_REPARSE_TAG_MOUNT_POINT), avoiding reliance on a newer pathlib method. The fixture invokes only its saved helper with a process-scoped execution policy; no persistent host setting changes.
-
-- Clean and mixed-layout kit validation returned no errors or warnings, including real Git source visibility. The changed maintainer continuity skill passed its metadata validator.
-- The archive contains exactly 85 source files; file inventory/bytes and ZIP integrity were verified. All Python sources parsed with the Python 3.10 syntax grammar. Always-loaded entries remained 1,327 bytes (template AGENTS), 1,995 (Core), and 1,058 (bootstrap prompt); these are file sizes, not measured runtime token costs.
-
-Python 3.10/3.13 runtime execution and successful hosted CI remain unverified locally; the workflow defines that matrix.
-These are synthetic project/file tests, not application runtime trials. Publication and native client behavior remain separate verification.
+The detailed v0.2.2 record lives in [MANUS_REVIEW.md](MANUS_REVIEW.md): candidate preservation, adapter-retirement review, junction detection, and the synthetic/upgrade smoke checks. Local result: 45 tests, 43 passed, 2 skipped. These are synthetic project/file tests, not application runtime trials; hosted CI remains unverified.
 
 ### Overlay regression
 

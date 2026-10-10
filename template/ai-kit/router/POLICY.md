@@ -28,8 +28,22 @@ Normal work uses checks/self-review; critical correctness needs independent revi
 ## Providers
 
 Active role defaults: [openai.json](providers/openai.json), [anthropic.json](providers/anthropic.json), and [kimi.json](providers/kimi.json), interpreted by their provider references.
+[local.json](providers/local.json) maps the same roles to self-hosted models declared in [selection.json](selection.json); [gemini.json](providers/gemini.json) is a pending scaffold without verified model IDs.
 Registry/configuration plus current primary docs establish capabilities; model names alone do not.
 Unavailable switching means a recommendation, not a claim of execution. Respect explicit model, cost, and latency choices.
+
+## Selection
+
+[selection.json](selection.json) records which providers the project owner actually has, so routing advice and generated configuration resolve to reachable models rather than abstract capability.
+`default_provider` names the provider used for any role without an override; `roles.<role>` may be `null`, a provider name, or an object overriding `provider`/`model`/`effort`.
+`local_models.<role>` supplies self-hosted model IDs for the local provider. Pending providers are skipped until their IDs are verified.
+
+## Offline routing helper
+
+The reference distribution ships `scripts/router.py`, which works offline and never installs credentials or a switching runtime:
+
+- `route "<task>"` returns a deterministic capability recommendation (level/role/effort) and the resolved provider/model from [selection.json](selection.json) plus the provider configurations. Classification is a transparent keyword rule, not a confidence score; verify availability and your account tier before relying.
+- `configure PROJECT --apply` writes `ai-kit/router/resolved.json` (the resolved role mapping) and, when Aider is a selected agent, a native `.aider.conf.yml` model routing file. Preview first; existing differing native files conflict and are never overwritten.
 
 ## Optional decision record
 

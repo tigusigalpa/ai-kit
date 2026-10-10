@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "default_provider": null,
+  "roles": {
+    "cheap": null,
+    "work": null,
+    "escalation": null
+  },
+  "local_models": {
+    "cheap": null,
+    "work": null,
+    "escalation": null
+  }
+}

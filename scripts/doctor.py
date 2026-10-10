@@ -13,6 +13,7 @@ from urllib.parse import unquote
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import check_kit
 import install
+import router
 
 BUDGETS = {"AGENTS.md": 2500, "ai-kit/CORE.md": 3000}
 PROVIDER_FRESHNESS_DAYS = 90
@@ -89,6 +90,8 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
         except ValueError as exc:
             warnings.append(f"Invalid provider configuration {provider.name}: {exc}")
             continue
+        user_supplied = config.get("user_supplied_models") is True
+        pending = config.get("verification_status") == "pending"
         for role, spec in config.get("roles", {}).items():
             if "effort" in spec and spec["effort"] not in config.get("supported_efforts", {}).get(role, []):
                 warnings.append(f"Unsupported configured effort: {provider.name} role {role}")
@@ -97,11 +100,31 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
             verified_date = date.fromisoformat(verified) if isinstance(verified, str) else None
         except ValueError:
             verified_date = None
-        if verified_date is None:
+        if user_supplied:
+            info.append(f"Provider {provider.name} uses project-supplied local models")
+        elif pending:
+            info.append(f"Provider {provider.name} verification is pending")
+        elif verified_date is None:
             warnings.append(f"Provider {provider.name} lacks a valid verified_documentation_date")
         elif (date.today() - verified_date).days > PROVIDER_FRESHNESS_DAYS:
             warnings.append(f"Provider {provider.name} verification is older than "
                             f"{PROVIDER_FRESHNESS_DAYS} days")
+    selection_path = target / "ai-kit" / "router" / "selection.json"
+    if selection_path.is_file():
+        try:
+            router.validate_selection(json.loads(selection_path.read_text(encoding="utf-8")))
+        except (OSError, ValueError, json.JSONDecodeError) as exc:
+            warnings.append(f"Invalid router selection: {exc}")
+    resolved_path = target / "ai-kit" / "router" / "resolved.json"
+    if resolved_path.is_file():
+        try:
+            resolved = json.loads(resolved_path.read_text(encoding="utf-8"))
+            if type(resolved.get("schema")) is not int or resolved["schema"] != 1:
+                raise ValueError("Unsupported resolved schema; expected schema 1")
+            if not isinstance(resolved.get("roles"), dict):
+                raise ValueError("Resolved roles must be an object")
+        except (ValueError, json.JSONDecodeError) as exc:
+            warnings.append(f"Invalid generated router config: {exc}")
     warnings.extend(link_warnings(target))
     return report
 

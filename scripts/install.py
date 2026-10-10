@@ -17,15 +17,7 @@ START = "# BEGIN AI-KIT MANAGED"
 END = "# END AI-KIT MANAGED"
 OWNED = {"README.md", "PROJECT_CONTEXT.md", "WIKI.md", "CHANGELOG.md", "docs/DECISIONS.md",
          "docs/adr/0000-template.md"}
-ENTRIES = {"CLAUDE.md": "claude", "KIMI.md": "kimi", "MANUS.md": "manus", "GEMINI.md": "gemini"}
-AGENTS = {"codex", "claude", "kimi", "manus", "copilot", "cursor", "aider",
-          "gemini", "windsurf", "cline", "roo"}
-OPTIONAL = {"copilot": ("copilot-instructions.md", ".github/copilot-instructions.md"),
-            "cursor": ("ai-kit.mdc", ".cursor/rules/ai-kit.mdc"),
-            "aider": ("CONVENTIONS.md", "CONVENTIONS.md"),
-            "windsurf": ("ai-kit-windsurf.md", ".windsurf/rules/ai-kit.md"),
-            "cline": ("ai-kit-cline.md", ".clinerules/ai-kit.md"),
-            "roo": ("ai-kit-roo.md", ".roo/rules/ai-kit.md")}
+AGENT_REGISTRY_PATH = "integrations/agents.json"
 PROFILE_MANIFESTS = {
     "GO": ("go.mod",),
     "PYTHON": ("pyproject.toml", "requirements.txt", "setup.py", "setup.cfg"),
@@ -87,10 +79,50 @@ def read_json(path: Path, default: dict) -> dict:
     return value
 
 
-def agent_selection(value: object, *, unique: bool = False) -> list[str]:
+def load_agent_registry(root: Path = ROOT) -> dict:
+    """Load and validate the data-driven agent registry (integrations/agents.json)."""
+    data = json.loads((root / AGENT_REGISTRY_PATH).read_text(encoding="utf-8"))
+    if not isinstance(data, dict) or type(data.get("schema")) is not int or data["schema"] != 1:
+        raise ValueError("Unsupported agent registry schema; expected schema 1")
+    agents = data.get("agents")
+    if not isinstance(agents, dict) or not agents:
+        raise ValueError("Agent registry must declare a nonempty agents object")
+    names: set[str] = set()
+    entries: dict[str, str] = {}
+    optional: dict[str, list[tuple[str, str]]] = {}
+    skills_copies: dict[str, str] = {}
+    for name, spec in agents.items():
+        if not re.fullmatch(r"[a-z][a-z0-9-]*", name):
+            raise ValueError(f"Invalid agent name: {name}")
+        if not isinstance(spec, dict):
+            raise ValueError(f"Invalid agent spec for {name}")
+        names.add(name)
+        for entry in spec.get("entries", []):
+            if not isinstance(entry, str) or not entry:
+                raise ValueError(f"Invalid entry for {name}")
+            if entry in entries:
+                raise ValueError(f"Entry owned by multiple agents: {entry}")
+            entries[entry] = name
+        for item in spec.get("optional", []):
+            if not isinstance(item, dict):
+                raise ValueError(f"Invalid optional entry for {name}")
+            source, destination = item.get("source"), item.get("destination")
+            if not isinstance(source, str) or not source or not isinstance(destination, str) or not destination:
+                raise ValueError(f"Invalid optional source/destination for {name}")
+            optional.setdefault(name, []).append((source, destination))
+        prefix = spec.get("skills_copy")
+        if prefix is not None:
+            if not isinstance(prefix, str) or not prefix.startswith(".") or not prefix.endswith("/"):
+                raise ValueError(f"Invalid skills_copy prefix for {name}")
+            skills_copies[name] = prefix
+    return {"names": names, "entries": entries, "optional": optional,
+            "skills_copies": skills_copies}
+
+
+def agent_selection(value: object, agents: set[str], *, unique: bool = False) -> list[str]:
     if not isinstance(value, list) or not value or any(not isinstance(item, str) for item in value):
         raise ValueError("Agents must be a nonempty list of supported strings")
-    if set(value) - AGENTS:
+    if set(value) - agents:
         raise ValueError("Unknown agent selection")
     if unique and len(value) != len(set(value)):
         raise ValueError("State agents must be unique")
@@ -119,12 +151,13 @@ def validate_settings(settings: dict) -> None:
                 raise ValueError(f"Settings upstream.{field} must be a string")
 
 
-def validate_state(state: dict, target: Path) -> None:
+def validate_state(state: dict, target: Path, agents: set[str] | None = None) -> None:
     if type(state.get("schema")) is not int or state["schema"] != 1:
         raise ValueError("Unsupported installer state schema; expected schema 1")
     if not isinstance(state.get("accepted_version"), str) or not state["accepted_version"].strip():
         raise ValueError("State accepted_version must be a nonempty string")
-    agent_selection(state.get("agents"), unique=True)
+    agent_selection(state.get("agents"), agents if agents is not None else load_agent_registry()["names"],
+                    unique=True)
     records = state.get("files")
     if not isinstance(records, dict):
         raise ValueError("State files must be an object")
@@ -140,12 +173,19 @@ def validate_state(state: dict, target: Path) -> None:
             raise ValueError(f"State local_adaptation must be boolean for {relative}")
 
 
-def adapter_owner(relative: str) -> str | None:
-    if relative in ENTRIES:
-        return ENTRIES[relative]
-    if relative.startswith(".claude/skills/"):
-        return "claude"
-    return next((agent for agent, (_, path) in OPTIONAL.items() if relative == path), None)
+def adapter_owner(relative: str, registry: dict) -> str | None:
+    entries = registry["entries"]
+    skills_copies = registry["skills_copies"]
+    optional = registry["optional"]
+    if relative in entries:
+        return entries[relative]
+    for agent, prefix in skills_copies.items():
+        if relative.startswith(prefix):
+            return agent
+    for agent, items in optional.items():
+        if any(destination == relative for _, destination in items):
+            return agent
+    return None
 
 
 def split_ignore(current: str) -> tuple[str, str]:
@@ -256,17 +296,19 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         raise ValueError("Cannot install an application kit inside the reference distribution")
     if target.exists() and not target.is_dir():
         raise ValueError("Target must be a directory")
+    registry = load_agent_registry(root)
     settings_path = safe_path(target, "ai-kit/settings.json")
     settings = read_json(settings_path, read_json(root / "template/ai-kit/settings.json", {}))
     validate_settings(settings)
     state_path = safe_path(target, "ai-kit/.install-state.json")
     state = read_json(state_path, {})
     if state_path.exists():
-        validate_state(state, target)
+        validate_state(state, target, registry["names"])
     mode = mode or settings.get("sharing_mode", "private")
     language = language or settings.get("chat_language", "Russian")
     conventions = conventions or settings.get("conventions", "owner")
-    agents = agent_selection(agents if agents is not None else state.get("agents", ["codex"]))
+    agents = agent_selection(agents if agents is not None else state.get("agents", ["codex"]),
+                             registry["names"])
     if accept_local is not None and (not isinstance(accept_local, list) or
                                      any(not isinstance(path, str) for path in accept_local)):
         raise ValueError("Accept-local paths must be a list of strings")
@@ -290,7 +332,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if not src.is_file():
             continue
         relative = src.relative_to(root / "template").as_posix()
-        if relative in ENTRIES and ENTRIES[relative] not in agents:
+        if relative in registry["entries"] and registry["entries"][relative] not in agents:
             continue
         if relative in EXTRA_TEMPLATE.values():
             continue
@@ -298,13 +340,15 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     incoming["ai-kit/settings.json"] = (json.dumps(settings, indent=2) + "\n").encode()
     incoming["ai-kit/VERSION"] = (root / "VERSION").read_bytes()
     incoming["ai-kit/LICENSE"] = (root / "LICENSE").read_bytes()
-    if "claude" in agents:
-        for relative, data in list(incoming.items()):
-            if relative.startswith(".agents/skills/"):
-                incoming[relative.replace(".agents/skills/", ".claude/skills/", 1)] = data
-    for agent, (src, dst) in OPTIONAL.items():
+    for agent, prefix in registry["skills_copies"].items():
         if agent in agents:
-            incoming[dst] = (root / "integrations" / src).read_bytes()
+            for relative, data in list(incoming.items()):
+                if relative.startswith(".agents/skills/"):
+                    incoming[relative.replace(".agents/skills/", prefix, 1)] = data
+    for agent, items in registry["optional"].items():
+        if agent in agents:
+            for source, destination in items:
+                incoming[destination] = (root / "integrations" / source).read_bytes()
     for name in sorted(enabled_extras):
         if name in EXTRA_TEMPLATE:
             relative = EXTRA_TEMPLATE[name]
@@ -391,7 +435,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if safe_path(target, relative).exists():
             # Keep old baseline information even when a path leaves the bundle.
             accepted[relative] = record
-            owner = adapter_owner(relative)
+            owner = adapter_owner(relative, registry)
             if owner is not None and owner not in agents:
                 retirements.append(relative)
             else:
@@ -400,8 +444,10 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         warnings.append("Agent selection replaces the recorded list, but tracked unselected adapters "
                         "remain on disk and may still load. Review/retire the listed files or retain "
                         "their agent selection; accepted files/state will not change.")
-    unselected = {path: agent for path, agent in ENTRIES.items()}
-    unselected.update({path: agent for agent, (_, path) in OPTIONAL.items()})
+    unselected = dict(registry["entries"])
+    for agent, items in registry["optional"].items():
+        for _, destination in items:
+            unselected[destination] = agent
     for relative, owner in unselected.items():
         if owner not in agents and relative not in records and safe_path(target, relative).exists():
             warnings.append(f"Untracked unselected {owner} entry may still load: {relative}")
@@ -521,7 +567,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--mode", choices=["private", "team"])
     parser.add_argument("--chat-language")
     parser.add_argument("--conventions", choices=["owner", "standard"])
-    parser.add_argument("--agent", choices=sorted(AGENTS), action="append")
+    parser.add_argument("--agent", choices=sorted(load_agent_registry()["names"]), action="append")
     parser.add_argument("--accept-local", action="append", default=[],
                         help="Record an explicitly reviewed semantic merge of a managed path")
     parser.add_argument("--with-session-start", action="store_true",

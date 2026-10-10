@@ -1,5 +1,14 @@
 # AI-KIT changelog
 
+## v0.4.5 (2026-10-10)
+
+- Added a data-driven agent registry ([integrations/agents.json](integrations/agents.json)) replacing the installer's hardcoded client/entry constants; the installer, checker, and doctor now share one source for agent names, gated template entries, optional integration files, and Claude skill copies. Adding a client is a data change rather than installer code.
+- Added [scripts/router.py](scripts/router.py), an offline helper: `route "task"` returns a deterministic capability recommendation (level/role/effort plus a resolved provider/model), and `configure PROJECT --apply` writes `ai-kit/router/resolved.json` and, for a selected Aider agent, a native `.aider.conf.yml` model routing file. Classification is a transparent keyword rule, not a confidence score; no credentials or switching runtime are installed.
+- Added [selection.json](template/ai-kit/router/selection.json) to record which providers a project actually uses, with per-role provider/model/effort overrides and self-hosted model IDs.
+- Added provider tiers: a [local provider](template/ai-kit/router/providers/local.json) for Ollama/self-hosted models (user-supplied IDs) and a [pending Gemini scaffold](template/ai-kit/router/providers/gemini.json) that links the existing Gemini adapter to the router without fabricating model IDs. The provider schema now supports `tier`, `user_supplied_models`, and `verification_status`.
+- Extended the checker and doctor for the registry, the new provider schema, and selection/resolved validation; pending and user-supplied providers surface as info rather than stale-date warnings.
+- Reran the full local suite: 92 tests, 91 passed, 1 skipped (Windows symlink privilege); kit validation returned no errors. Gemini router IDs remain pending verification; no live API calls, client activations, or hosted CI ran.
+
 ## v0.3.8 (2026-10-10)
 
 - Added Gemini CLI, Windsurf, Cline, and Roo adapters: a GEMINI.md project entry plus optional .windsurf/rules/, .clinerules/, and .roo/rules/ pointer rules; private-mode ignores cover the new entries. Client rule formats were checked against current documentation on 2026-10-10 and still require activation verification in the actual clients.

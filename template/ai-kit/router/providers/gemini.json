@@ -1,0 +1,12 @@
+{
+  "tier": "cloud",
+  "verification_status": "pending",
+  "roles": {
+    "cheap": {"model": null},
+    "work": {"model": null},
+    "escalation": {"model": null}
+  },
+  "sources": [
+    "https://ai.google.dev/gemini-api/docs/models"
+  ]
+}

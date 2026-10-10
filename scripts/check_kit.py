@@ -119,11 +119,33 @@ def visibility(root: Path, git: str) -> list[str]:
     return errors
 
 
+def agent_registry_links(root: Path) -> list[str]:
+    """Cross-check registry entries and optional sources against the distribution."""
+    errors = []
+    registry = install.load_agent_registry(root)
+    for entry in registry["entries"]:
+        if not (root / "template" / entry).is_file():
+            errors.append("Agent registry entry missing from template: " + entry)
+    destinations: set[str] = set()
+    for agent, items in registry["optional"].items():
+        for source, destination in items:
+            if not (root / "integrations" / source).is_file():
+                errors.append("Agent registry optional source missing: " + source)
+            if destination in destinations:
+                errors.append("Agent registry destination owned by multiple agents: " + destination)
+            destinations.add(destination)
+    return errors
+
+
 def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     required = ["VERSION", "LICENSE", "AGENTS.md", "PROJECT_CONTEXT.md", "README.md",
                 "template/AGENTS.md", "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
-                "scripts/install.py", "templates/gitignore.private", "templates/gitignore.team",
+                "scripts/install.py", "scripts/router.py", "integrations/agents.json",
+                "template/ai-kit/router/selection.json",
+                "template/ai-kit/router/providers/local.json",
+                "template/ai-kit/router/providers/gemini.json",
+                "templates/gitignore.private", "templates/gitignore.team",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md"]
     for relative in required:
         if not (root / relative).is_file():
@@ -195,27 +217,54 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         for provider_path in sorted(providers_dir.glob("*.json")):
             try:
                 config = json.loads(provider_path.read_text(encoding="utf-8"))
+                if not isinstance(config, dict):
+                    raise ValueError("provider must be an object")
+                tier = config.get("tier", "cloud")
+                if tier not in {"cloud", "local", "free"}:
+                    errors.append(f"Unknown provider tier: {provider_path.name}")
+                user_supplied = config.get("user_supplied_models") is True
+                if "user_supplied_models" in config and not isinstance(config["user_supplied_models"], bool):
+                    raise ValueError("user_supplied_models must be a boolean")
+                status = config.get("verification_status", "verified")
+                if status not in {"verified", "pending"}:
+                    errors.append(f"Unknown verification_status: {provider_path.name}")
                 verified = config.get("verified_documentation_date")
-                if not isinstance(verified, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", verified):
+                if isinstance(verified, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", verified):
+                    pass
+                elif user_supplied:
+                    pass
+                elif status == "pending":
+                    warnings.append(f"Provider {provider_path.name} verification is pending")
+                else:
                     errors.append("Provider lacks a verified_documentation_date: " + provider_path.name)
                 supported = config.get("supported_efforts", {})
                 if not isinstance(supported, dict):
                     raise ValueError("supported_efforts must be an object")
-                roles = config["roles"]
+                roles = config.get("roles")
                 if not isinstance(roles, dict) or not roles:
                     raise ValueError("roles must be a nonempty object")
                 for role, spec in roles.items():
-                    if not isinstance(spec, dict) or not isinstance(spec.get("model"), str):
+                    if not isinstance(spec, dict):
                         raise ValueError(f"Invalid role spec: {role}")
-                    model_ids.append(spec["model"])
+                    model = spec.get("model")
+                    if model is not None and not isinstance(model, str):
+                        raise ValueError(f"Invalid model for role {role}")
+                    if model is not None:
+                        model_ids.append(model)
+                    elif not (user_supplied or status == "pending"):
+                        errors.append(f"Provider role lacks a model: {provider_path.name} role {role}")
                     if "effort" in spec:
                         if spec["effort"] not in supported.get(role, []):
                             errors.append(f"Unsupported configured effort: {provider_path.name} role {role}")
-                    elif role in supported:
+                    elif role in supported and not user_supplied:
                         errors.append(f"Role declares supported efforts but uses none: "
                                       f"{provider_path.name} role {role}")
             except (ValueError, KeyError, TypeError) as exc:
                 errors.append("Invalid provider configuration: " + str(exc))
+    try:
+        errors.extend(agent_registry_links(root))
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        errors.append("Invalid agent registry: " + str(exc))
     for p in (root / "template").rglob("*.md"):
         text = p.read_text()
         if re.search(r"gpt-[0-9]", text) or any(model_id in text for model_id in model_ids):

@@ -27,6 +27,11 @@ This version uses an explicit review conflict instead of implementing add/remove
 
 Sources: [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration/agents-md), [skills](https://learn.chatgpt.com/docs/build-skills), [Claude imports](https://code.claude.com/docs/en/memory), [Claude skills](https://code.claude.com/docs/en/skills), [Claude hooks](https://code.claude.com/docs/en/hooks), [Copilot instructions](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/add-custom-instructions/add-repository-instructions), [Cursor documentation](https://cursor.com/docs), [Aider conventions](https://aider.chat/docs/usage/conventions.html), [Gemini CLI configuration](https://geminicli.com/docs/get-started/configuration/), [Windsurf documentation](https://docs.windsurf.com/), [Cline rules](https://docs.cline.bot/customization/cline-rules), [Roo Code custom instructions](https://docs.roocode.com/features/custom-instructions).
 
+## Model routing
+
+The reference distribution ships `scripts/router.py` (offline, no credentials). `route "<task>"` prints a capability recommendation and the resolved provider/model; `configure PROJECT --apply` writes `ai-kit/router/resolved.json` and, for a selected Aider agent, a native `.aider.conf.yml` mapping the cheap/work/escalation roles to `weak_model`/`model`.
+Provider availability and role overrides live in [selection.json](router/selection.json). Most clients select models in their own UI or environment rather than a shared config file; apply `resolved.json` through the client's native mechanism (for example, Claude Code environment model variables) and verify activation in the actual client.
+
 ## Optional install extras
 
 Opt-in flags add machinery beyond the standard entries; accepted choices persist in ai-kit/settings.json and apply to later runs.

@@ -90,6 +90,30 @@ class CheckerTests(unittest.TestCase):
         self.assertIn("template/.agents/skills/go-work/SKILL.md", sources)
         self.assertFalse(any(p.startswith(".git/") for p in sources))
 
+    def test_agent_registry_missing_optional_source_is_reported(self):
+        path = self.root / "integrations/agents.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["agents"]["aider"]["optional"] = [{"source": "missing.md", "destination": "CONVENTIONS.md"}]
+        path.write_text(json.dumps(data) + "\n", encoding="utf-8")
+        self.assertTrue(any("optional source missing" in error for error in self.check()))
+
+    def test_agent_registry_entry_missing_from_template_is_reported(self):
+        path = self.root / "integrations/agents.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        data["agents"]["gemini"]["entries"] = ["NOPE.md"]
+        path.write_text(json.dumps(data) + "\n", encoding="utf-8")
+        self.assertTrue(any("entry missing from template" in error for error in self.check()))
+
+    def test_pending_provider_is_warning_not_error(self):
+        path = self.root / "template/ai-kit/router/providers/gemini.json"
+        config = json.loads(path.read_text(encoding="utf-8"))
+        config["verification_status"] = "pending"
+        path.write_text(json.dumps(config) + "\n", encoding="utf-8")
+        with patch.object(check_kit, "visibility", return_value=[]):
+            errors, warnings = check_kit.check(self.root, git="not-invoked")
+        self.assertEqual(errors, [])
+        self.assertTrue(any("pending" in warning for warning in warnings))
+
 
 if __name__ == "__main__":
     unittest.main()

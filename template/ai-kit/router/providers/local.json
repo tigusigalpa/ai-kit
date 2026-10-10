@@ -1,0 +1,18 @@
+{
+  "tier": "local",
+  "user_supplied_models": true,
+  "roles": {
+    "cheap": {},
+    "work": {},
+    "escalation": {}
+  },
+  "reasoning_mode": "standard",
+  "supported_efforts": {
+    "cheap": ["low", "medium"],
+    "work": ["low", "medium", "high"],
+    "escalation": ["low", "medium", "high", "max"]
+  },
+  "sources": [
+    "https://ollama.com/library"
+  ]
+}

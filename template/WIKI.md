@@ -3,7 +3,7 @@
 Current facts: [PROJECT_CONTEXT](PROJECT_CONTEXT.md). Operating instructions: [AGENTS](AGENTS.md), [Core](ai-kit/CORE.md), and [settings](ai-kit/settings.json).
 Maintenance: [continuity skill](.agents/skills/project-continuity/SKILL.md), [bootstrap](ai-kit/BOOTSTRAP.md), and [upstream](ai-kit/UPSTREAM.md).
 Checks: [engineering](ai-kit/ENGINEERING.md), [security](ai-kit/SECURITY.md), and [containers](ai-kit/CONTAINERS.md) when applicable.
-Adapters: [integration notes](ai-kit/ADAPTERS.md). Full routing: [optional router](ai-kit/router/POLICY.md).
+Adapters: [integration notes](ai-kit/ADAPTERS.md). Full routing: [optional router](ai-kit/router/POLICY.md) with [provider selection](ai-kit/router/selection.json).
 
 ## Available profiles
 
