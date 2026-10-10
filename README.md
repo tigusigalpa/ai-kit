@@ -2,69 +2,183 @@
 
 ![AI KIT](https://i.postimg.cc/BvrB6sKt/ai-kit-hero-banner.jpg)
 
-A new chat should be able to pick up your project without making you explain every decision again. AI-KIT keeps the instructions, verified project facts, and working practices that make that possible alongside your code.
+**Stop re-explaining your project to every new AI chat.**
 
-Adapt it to your stack and keep it current.
+AI-KIT drops a complete working environment for AI coding agents into your repository: project memory that survives every session, expert rules for **Go, PHP, Laravel, Filament 5, Moodle, and Python**, a **Kubernetes-ready** container standard, safety guardrails, **adaptive model routing**, and native configuration for **11 AI clients**. One installer, zero dependencies, nothing written until you approve the preview.
 
-Bundle version: [VERSION](VERSION). License: [MIT](LICENSE).
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
+[![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
+[![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-[Get started](#install) · [Choose defaults](#choose-your-defaults) · [Share with a team](#sharing) · [Update a project](#update-an-application-project)
+[Features](#features-at-a-glance) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
-## What you get
+## Features at a glance
 
-- Project memory: verified context, a documentation map, and decisions.
-- A repeatable plan -> implement -> test -> review -> document workflow.
-- Relevant stack, security, container, and routing guidance.
-- Installation previews, preserved project documents, and conflict handling.
-- Private or shared instructions that grow with your project.
+| | Feature | What it does for you |
+| --- | --- | --- |
+| 🧠 | **Project memory** | Verified facts, module map, commands, and decisions that every new chat reads first |
+| 🧩 | **Stack profiles** | Expert rules for Go, PHP, Laravel, Filament 5, Moodle, Python, frontend, and libraries, auto-detected per module |
+| 🐳 | **Kubernetes-ready containers** | Every new Dockerfile and service ships with probes, graceful shutdown, non-root security, and manifests |
+| 🧭 | **Adaptive model routing** | A 0-6 capability ladder that picks the right model role and reasoning effort for each task |
+| 🤖 | **11 AI clients** | Codex, Claude Code, Cursor, Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi, Manus |
+| 🎯 | **Native client configuration** | Your real test commands run without prompts; module rules load only where they apply |
+| 🛡️ | **Guardrails** | No commits without your request, confirmation before destructive commands, secret files off-limits |
+| 🔁 | **Engineering loop** | Plan → implement → test → review → document, with honest reporting of what was really checked |
+| ⚡ | **One-command workflows** | `/ai-kit-bootstrap`, `/ai-kit-review`, `/ai-kit-sync-context` |
+| 📦 | **Safe installer and upgrades** | Preview first, offline, backups, conflict candidates, your local edits preserved |
+
+## Why AI-KIT
+
+AI agents are brilliant and forgetful. Each new session rediscovers your stack, guesses the test command, forgets the decision you made last week, and may happily run `git push` or read your `.env`. AI-KIT turns your repository into a place where agents behave like a senior teammate who has read the docs:
+
+- **They know the project.** Purpose, module map, versions, commands, and open questions live in `PROJECT_CONTEXT.md` and `ai-kit/project.json`, drafted by the installer from your manifests and confirmed by the agent at bootstrap.
+- **They follow your stack's rules.** Laravel transactions and queues, Go context and cancellation, Moodle capabilities and privacy, Filament authorization: the right profile applies to the files being changed.
+- **They stay inside the lines.** Commits and pushes need your explicit request; risky commands ask first; secrets stay unread.
+- **They tell the truth.** An unavailable check is reported as unverified, never as passed.
+
+```mermaid
+flowchart LR
+    A[install.py preview] --> B[apply]
+    B --> C["/ai-kit-bootstrap"]
+    C --> D[plan → implement → test → review → document]
+    D --> E["/ai-kit-sync-context"]
+    E --> D
+```
+
+## Feature tour
+
+### 🧠 Project memory that survives every chat
+
+- **Verified context.** `PROJECT_CONTEXT.md` holds purpose, contracts, stack, a per-module map, commands, and open questions; `ai-kit/project.json` keeps the same facts machine-readable.
+- **Smart drafts.** The installer reads `go.mod`, `composer.json` and `composer.lock`, `package.json` with its lockfile, `pyproject.toml` and requirements, and Moodle markers. It drafts versions and commands per module, such as `pnpm test` from a pnpm workspace or `uv run pytest` from a uv project, and marks them as suggestions until bootstrap confirms them.
+- **Context at session start.** An optional hook feeds the current context and `git status` into every new Claude Code session.
+- **Decisions that stick.** `docs/DECISIONS.md`, ADRs, and `CHANGELOG.md` record why things are the way they are; a continuity skill keeps facts, WIKI, and pointers in sync.
+
+### 🧩 Built for your stack
+
+| Profile | What the agent gets right |
+| --- | --- |
+| [Go](template/ai-kit/stacks/GO.md) | Context propagation, timeouts, error wrapping, goroutine ownership, `-race`, govulncheck, deliberate vendoring |
+| [PHP](template/ai-kit/stacks/PHP.md) | Composer and PSR boundaries, exact money, bounded HTTP, narrow exceptions, `composer audit` |
+| [Laravel](template/ai-kit/stacks/LARAVEL.md) | Policies, bounded transactions, after-commit jobs, idempotent effects, N+1 checks, safe migrations |
+| [Filament 5](template/ai-kit/stacks/FILAMENT.md) | Resources, schemas, tables, and actions with server-side authorization, tenant scope, and bounded queries |
+| [Moodle](template/ai-kit/stacks/MOODLE.md) | Plugin APIs, capabilities and `sesskey`, upgrade savepoints, Privacy API, cache invalidation |
+| [Python](template/ai-kit/stacks/PYTHON.md) | Safe CLIs, pathlib, subprocess without a shell, isolated environments, uv/ruff for new packages |
+| [Frontend](template/ai-kit/stacks/FRONTEND.md) | Pinned package manager, type/lint/build checks, accessibility, public-config hygiene |
+| [Library/SDK](template/ai-kit/stacks/LIBRARY.md) | Public API stability, semantic versioning, consumer examples, compatibility matrices |
+
+Profiles combine per module, so a monorepo with a Laravel app in `web/` and a Go service in `api/` gets the right rules in each place. Opinionated **owner conventions** for Laravel are available, including no database foreign keys, a public UUID next to the internal id, Policy + Factory + Seeder for every model, one table per migration, and Filament 5+ for new panels. Use `--conventions standard` to follow your project's own conventions instead.
+
+### 🐳 Docker-aware, Kubernetes-ready by default
+
+Every new Dockerfile, container, and microservice follows the [Kubernetes-ready contract](template/ai-kit/CONTAINERS.md) from day one, even for a local Docker Compose project:
+
+- **Images:** multi-stage builds, pinned minimal base images, immutable release references, `.dockerignore`, and build secrets kept out of layers.
+- **Runtime security:** non-root user with explicit UID/GID, read-only root filesystem, exec-form entrypoints, and no privileged mode or Docker socket.
+- **Health and lifecycle:** real readiness, liveness, and startup probes; `SIGTERM` handling with graceful drain; migrations as separate Jobs, never at every replica start.
+- **Configuration and state:** ConfigMap and Secret, stdout logs, stateless replicas, and PVCs for databases and `moodledata`.
+- **Manifests:** minimal Deployment, StatefulSet, or Job with `runAsNonRoot`, dropped capabilities, `seccompProfile`, and resource requests.
+- **Docker preflight:** the agent checks the client and daemon, asks you to start Docker when needed, and keeps doing independent work meanwhile.
+- **Disk hygiene:** after tests it cleans only verified disposable test volumes and build cache, only above 10 GB, and never with an unscoped prune. `scripts/docker_test_usage.py` collects read-only evidence.
+
+### 🧭 Adaptive model routing
+
+Pay for intelligence only where it matters. The [routing policy](template/ai-kit/router/POLICY.md) maps every task to a capability level:
+
+| Level | Task | Role / effort |
+| --- | --- | --- |
+| 0-1 | Classification, narrow mechanical edits | cheap / none or low |
+| 2 | Substantive engineering | work / medium |
+| 3-5 | Hard debugging, concurrency, distributed or sensitive correctness | work / high to max |
+| 6 | Diagnosed capability shortfall | escalation |
+
+Provider configurations map the roles to OpenAI, Anthropic, and Kimi models, to your own local or Ollama models, and to a Gemini scaffold pending verification. The offline helper understands task descriptions in English and Russian and explains its choice:
+
+~~~sh
+python scripts/router.py route "debug a race condition in the queue worker"
+~~~
+
+`router.py configure` writes the resolved role mapping and a native Aider model file. The kit never fakes a model switch: when a client offers no switching control, you get a recommendation.
+
+### 🤖 Works with your AI clients
+
+| Client | What gets installed |
+| --- | --- |
+| Codex | `AGENTS.md` and `.agents/skills/` |
+| Claude Code | `CLAUDE.md` importing AGENTS, skills, settings, path-scoped `.claude/rules/` |
+| Cursor | `.cursor/rules/` with module globs, `.cursorignore` secrets |
+| GitHub Copilot | `copilot-instructions.md` and per-module `.instructions.md` |
+| Gemini CLI | `GEMINI.md` and `.geminiignore`; reads the shared skills |
+| Windsurf, Cline, Roo | Native rule folders, with glob- or path-scoped module rules for Windsurf and Cline |
+| Aider | `CONVENTIONS.md` and `.aiderignore`, plus model routing config |
+| Kimi, Manus | Short entry files |
+
+Scoped rules, ignore files, and settings come with the native-settings and scoped-rules extras. The preview spots the clients you already use from existing files and suggests the matching `--agent` list.
+
+### 🎯 Native configuration from your project facts
+
+- **No permission fatigue:** Claude Code runs your recorded test, lint, and build commands without asking.
+- **Secrets off-limits:** agents are denied reads of `.env`, private keys, Composer `auth.json`, Laravel storage keys, Moodle `config.php`, and `.pypirc`; the same list goes into the Cursor, Aider, and Gemini ignore files.
+- **Rules where they belong:** each module gets a path-scoped rule, so Laravel guidance loads for `web/` files and Go guidance for `api/` files in Claude Code, Cursor, Copilot, Windsurf, and Cline.
+- **Your settings stay yours:** AI-KIT owns only its own entries, uses `.claude/settings.local.json` in private mode, and moves only its entries when you switch to team mode.
+
+### 🛡️ Guardrails you can trust
+
+- **No surprise commits.** Commits and pushes require your explicit request, and optional Claude Code ask rules back that up.
+- **Confirmation before damage.** With data guards, Claude Code asks before `rm -rf`, `git reset --hard`, `git clean`, a Docker prune, or a Laravel/Moodle migration.
+- **Security baseline:** input validation, server-side authorization, and no secrets in code, logs, or prompts. Dependency audits run per stack with `composer audit`, `govulncheck`, `pip-audit`, and your package manager's audit.
+- **Honest verification:** unavailable tools, services, or CI are reported as unverified, never as passed.
+
+### 🔁 Engineering loop and one-command workflows
+
+Every task follows **plan → implement → test → review → document**, with staged migrations and rollback plans, review by concrete scenario and severity, and a changelog entry for every change. Owner conventions add a Codecov gate of at least 90% of changed lines when Codecov is configured. Three user-invoked skills make the routine instant:
+
+- `/ai-kit-bootstrap` confirms installer drafts and fills context from real evidence.
+- `/ai-kit-review` reviews current changes against the engineering and security rules.
+- `/ai-kit-sync-context` updates context, decisions, and the changelog after work.
+
+In Codex, use `$ai-kit-bootstrap` and the other skills the same way.
+
+### More built in
+
+- **Language split:** files and code in English, chat in your language (Russian by default).
+- **Private or team mode:** keep AI-KIT local, or share it with the whole team through Git.
+- **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, and stale provider data.
+- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, and cost from your own evidence for routing experiments, with no automatic telemetry.
 
 ## Install
 
-You need Python 3.10 or later (the installer uses the standard library). Get the repository or extract a prepared bundle, then review its files:
+You need Python 3.10 or later; the installer uses only the standard library.
 
 ~~~sh
 git clone https://github.com/tigusigalpa/ai-kit.git
 cd ai-kit
 ~~~
 
-Use a verified revision; main can change and no release tag is assumed. Choose your application's absolute path outside this reference directory.
+Use a reviewed revision and an application path outside this directory.
 
-### 1. Preview
-
-Linux or macOS:
+**1. Preview.** Nothing is written:
 
 ~~~sh
-python scripts/install.py /home/you/projects/my-app
+python scripts/install.py /path/to/my-app --preset solo --agent codex --agent claude
 ~~~
 
-Windows:
+On Windows, use a path such as `"C:\Projects\my-app"`. The preview lists writes, preserved files, conflicts, detected stacks, and detected AI clients. Add `--interactive` for a guided prompt.
 
-~~~powershell
-python scripts/install.py "C:\Projects\my-app"
-~~~
-
-Replace the path with your own. Preview creates no files; --dry-run is equivalent.
-Review writes, preserved files, candidate paths, conflicts, and the stack profiles suggested from detected module manifests.
-
-### 2. Apply
-
-Add --apply to the same command:
+**2. Apply** the same command with `--apply`; add `--check` to run the doctor right away:
 
 ~~~sh
-python scripts/install.py /home/you/projects/my-app --apply
+python scripts/install.py /path/to/my-app --preset solo --agent codex --agent claude --apply --check
 ~~~
 
-Missing files are created; existing project documents and context survive. Customized instructions can conflict; use [the update procedure](#update-an-application-project) to merge them. Add `--interactive` for a guided prompt or `--check` to run the doctor right after applying.
+**3. Bootstrap.** Open your AI client in the project and run `/ai-kit-bootstrap` (Claude Code) or `$ai-kit-bootstrap` (Codex). For other clients, or to let an agent run the installation itself, give it [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md).
 
-### 3. Start the first session
-
-Run the installed bootstrap skill: `/ai-kit-bootstrap` in Claude Code, `$ai-kit-bootstrap` in Codex. It confirms the installer drafts and fills the context with actual purpose, versions, module paths, commands, and open questions. For other clients, or to let an agent run the installation itself, give it [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md) with access to the bundle and repository.
-
-Two more workflow skills run on request: `ai-kit-review` reviews current changes against the engineering and security rules, and `ai-kit-sync-context` updates context, decisions, and the changelog after work.
+Existing project documents and context are never overwritten; customized instructions become reviewable conflicts.
 
 ## Choose your defaults
 
-Project choices live in ai-kit/settings.json; defaults are in [the settings template](template/ai-kit/settings.json).
+Project choices live in `ai-kit/settings.json`; defaults are in [the settings template](template/ai-kit/settings.json).
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
@@ -74,21 +188,13 @@ Project choices live in ai-kit/settings.json; defaults are in [the settings temp
 | Conventions | owner | Personal Laravel conventions apply when that stack is confirmed |
 | Agent selection | codex | Default entry points and source skills |
 
-For shared rules, English chat, and your project's own conventions, preview:
-
 ~~~sh
 python scripts/install.py /path/to/project --mode team --chat-language English --conventions standard --agent codex --agent claude
 ~~~
 
-Add --apply after reviewing the plan.
+**Read [OWNER.md](template/ai-kit/profiles/OWNER.md) before adopting owner conventions for Laravel**; standard follows your project's established conventions.
 
 ### Presets
-
-A preset selects the sharing mode and the optional client machinery in one flag:
-
-~~~sh
-python scripts/install.py /path/to/project --preset solo --agent codex --agent claude
-~~~
 
 | Preset | Mode | What it adds |
 | --- | --- | --- |
@@ -97,174 +203,55 @@ python scripts/install.py /path/to/project --preset solo --agent codex --agent c
 | team | team | solo plus Git commit/push confirmation |
 | strict | unchanged | team plus confirmation before destructive and migration commands |
 
-Native client settings allow the recorded test/lint/build commands without prompts, deny agent reads of secret files, and write a secret block into Cursor, Aider, and Gemini ignore files. Scoped module rules attach each module's stack profiles in Claude Code, Cursor, Copilot, Windsurf, and Cline only when files of that module are touched. Explicit `--mode` and `--with-*` flags override a preset; the preview warns when a preset turns an enabled extra off. Details: [extras and presets](template/ai-kit/ADAPTERS.md#optional-install-extras).
+Explicit `--mode` and `--with-*` flags (`--with-session-start`, `--with-guards`, `--with-data-guards`, `--with-native-settings`, `--with-scoped-rules`, `--with-ci`) override a preset, and the preview warns when a preset turns an enabled extra off. Details: [extras, presets, and client formats](template/ai-kit/ADAPTERS.md#optional-install-extras).
 
-**Read [OWNER.md](template/ai-kit/profiles/OWNER.md) before adopting owner for Laravel** (no database foreign key constraints, separate public UUID, model policies/factories/seeders); standard follows your project's established conventions.
-
-## The files you will use
-
-Installed project files:
+## What lands in your project
 
 | File or directory | Purpose |
 | --- | --- |
 | AGENTS.md | Starting instructions and links to relevant rules |
 | PROJECT_CONTEXT.md | Verified purpose, contracts, stack, module map, commands, and open questions |
 | WIKI.md | A short map of useful documentation |
-| .agents/skills/project-continuity/SKILL.md | The procedure for keeping context and pointers current |
-| .agents/skills/ai-kit-*/SKILL.md | User-invoked bootstrap, review, and context-sync workflows |
-| ai-kit/ | Core rules, settings, engineering guidance, profiles, and routing |
+| .agents/skills/ | Stack skills, the continuity procedure, and the ai-kit workflows |
+| ai-kit/ | Core rules, settings, project facts, engineering, security, containers, profiles, and routing |
 | docs/DECISIONS.md and docs/adr/ | Decisions, reasons, and tradeoffs |
 | CHANGELOG.md | What changed and why |
 
-Keep current facts in context and the reasoning behind choices in decisions/ADRs. When facts, agreements, or procedures change, synchronize context, the continuity skill, and WIKI in the same task. After a task with file changes, add a concise changelog entry.
-
-A fresh session reads context before editing.
-
-## A normal working session
-
-Follow **plan -> implement -> test -> review -> document**: establish behavior and acceptance checks, make a focused change, run relevant tests, review, and record what changed. Load relevant rules, review risky changes, and report actual checks and unavailable verification; the [engineering guide](template/ai-kit/ENGINEERING.md) owns the detailed rules.
-
-[Core](template/ai-kit/CORE.md) owns Git authorization: commits and pushes require an explicit request; normal completion leaves reviewable local changes.
-
-## Stack profiles
-
-Bootstrap confirms which profiles apply and records a path-to-profile map for each module.
-The preview suggests profiles from module manifests (go.mod, package.json, composer.json, pyproject.toml); verify at bootstrap.
-
-| Profile | Main concerns |
-| --- | --- |
-| [PHP](template/ai-kit/stacks/PHP.md) | Composer, application boundaries, errors, and checks |
-| [Laravel](template/ai-kit/stacks/LARAVEL.md) | Authorization, transactions, queues, and migrations |
-| [Go](template/ai-kit/stacks/GO.md) | Context, HTTP, errors, concurrency, and modules |
-| [Python](template/ai-kit/stacks/PYTHON.md) | Scripts, CLI, paths, dependencies, and tests |
-| [Moodle](template/ai-kit/stacks/MOODLE.md) | Plugins, capabilities, upgrades, and privacy |
-| [Frontend](template/ai-kit/stacks/FRONTEND.md) | Toolchain, UI states, accessibility, and browser checks |
-| [Library](template/ai-kit/stacks/LIBRARY.md) | Public APIs, consumer examples, and compatibility |
-
-Profiles combine: a Laravel application may also need PHP and frontend guidance.
-Adapt them to existing versions and local instructions; available profiles do not establish the project's stack.
-
-## Agents
-
-Repeat --agent to select the clients you use:
-
-~~~sh
-python scripts/install.py /path/to/project --agent codex --agent claude --agent cursor
-~~~
-
-Explicit selections replace recorded choices; tracked adapters left on disk block the change; the installer never deletes adapters. Preview suggests clients detected from existing files.
-
-| Client | Entry provided |
-| --- | --- |
-| Codex | AGENTS.md and .agents/skills/ |
-| Claude Code | CLAUDE.md importing AGENTS; skill copies in .claude/skills/ |
-| Kimi / Manus | Short entry files to supply explicitly |
-| Gemini CLI | GEMINI.md project entry |
-| Copilot | .github/copilot-instructions.md |
-| Cursor | .cursor/rules/ai-kit.mdc |
-| Aider | CONVENTIONS.md; load with --read CONVENTIONS.md |
-| Windsurf | .windsurf/rules/ai-kit.md |
-| Cline | .clinerules/ai-kit.md |
-| Roo | .roo/rules/ai-kit.md |
-
-Verify instruction and skill loading in the actual client; see [adapter details](template/ai-kit/ADAPTERS.md). Extras: --with-session-start, --with-guards, --with-data-guards, --with-native-settings, --with-scoped-rules, --with-ci, or a [preset](#presets).
+[Core](template/ai-kit/CORE.md) owns language, Git authorization, and fact verification; the [engineering guide](template/ai-kit/ENGINEERING.md) owns the work cycle.
 
 ## Sharing
-
-Choose how others will receive the project's rules:
 
 | Mode | Shared AI-KIT files in Git | Suitable for |
 | --- | --- | --- |
 | private | Ignored | Local instructions installed separately |
 | team | Visible | Teammates and agents working from fresh clones |
 
-Both modes exclude secrets, personal overrides, installer state, and caches. A private-mode clone needs kit installation; team files can be versioned.
-
-The installer owns one marked .gitignore block; other rules survive and may still hide team files — reconcile explicitly.
-Ignore rules do not remove files already tracked by Git.
-
-Manifests/checksums/locks stay visible: composer.lock, go.mod, go.sum, and Python/frontend locks.
-Composer, Moodle, Node, and Python exclusions are scoped to verified module manifests, preserving deliberate Go vendoring and executable source.
-See [ignore adaptation](template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
+Both modes exclude secrets, personal overrides, installer state, and caches. The installer owns one marked `.gitignore` block; your other rules survive, and lockfiles and manifests stay visible. Composer, Moodle, Node, and Python exclusions are scoped to detected modules, preserving deliberate Go vendoring. See [ignore adaptation](template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
 
 ## Update an application project
 
-Preview a reviewed newer bundle against the same application path. Context/history survives; unchanged managed instructions update from their baseline, local adaptations need review.
-
-Conflicts leave the accepted installation unchanged. Apply creates candidates under ai-kit/.upstream-cache/candidates/<source-hash>/ with metadata; existing drafts survive. Compare and merge using the reported paths.
-
-After reviewing a merge to AGENTS.md:
+Preview a newer bundle against the same path. Unchanged managed files update, while your context and history are preserved. Locally adapted files become candidates under `ai-kit/.upstream-cache/candidates/` for review, and changed files are backed up first. After merging a candidate, accept it:
 
 ~~~sh
-python scripts/install.py /path/to/project --accept-local AGENTS.md
 python scripts/install.py /path/to/project --accept-local AGENTS.md --apply
 ~~~
 
-Repeat --accept-local for each reviewed managed path; local adaptations need review again when that upstream file changes. Changed existing files are backed up in ai-kit/.upstream-cache/backups/.
+Exit codes: 0 success, 1 refusal, 2 unresolved conflicts. The installer works offline; agents check the configured upstream through [UPSTREAM](template/ai-kit/UPSTREAM.md). Run `python scripts/doctor.py /path/to/project` anytime for a health report.
 
-Exit codes: 0 success; 1 refusal/failure; 2 unresolved file/adapter conflicts. Invalid state/settings are refused before writes; preview creates nothing.
+## Honest boundaries
 
-The installer works offline. The agent follows [UPSTREAM](template/ai-kit/UPSTREAM.md) to check the configured source; unavailable access means verified local fallback with freshness marked unverified.
+AI-KIT writes instructions and configuration; it does not run your agents. Client formats follow each vendor's current documentation, but activation should be confirmed in your actual client. Permission rules and ignore files reduce risk without being a security boundary, and model routing is a recommendation unless your client exposes a switching control.
 
-## Check an installed project
+## For maintainers
 
-Run the offline health check against an installed application:
-
-~~~sh
-python scripts/doctor.py /path/to/project
-~~~
-
-It validates installer state/settings and reports missing/modified managed files, missing owned documents, pending candidates, budget overflows, broken Markdown links, and stale provider verifications. Exit code 0 means no errors; warnings mark work worth reviewing.
-
-## Docker and model routing
-
-For container-dependent work, check the Docker client and daemon; a stopped daemon prompts a startup request while independent work continues.
-New services follow the [Kubernetes-ready contract](template/ai-kit/CONTAINERS.md) (configuration, health, shutdown, storage, manifests).
-
-Collect read-only resource evidence with:
-
-~~~sh
-python scripts/docker_test_usage.py --project my-app-tests
-~~~
-
-The container guide owns size, ownership, and cleanup protections.
-
-See the [routing controls](template/ai-kit/router/POLICY.md), [Filament profile](template/ai-kit/stacks/FILAMENT.md), and [optional evaluation](docs/EVALUATION.md). Live model switching requires runtime support.
-
-## Repository layout
-
-Applications install from template/; the root maintains AI-KIT.
-
-| Path | Purpose |
-| --- | --- |
-| template/ | Clean project instructions, context, skills, and docs |
-| templates/ | Private/team application ignore policies |
-| scripts/ | Installation, checks, routing, measurements, and record helpers |
-| integrations/ | Optional client entries and guard examples |
-| docs/ | Kit decisions, evidence, and archived history |
-| ai-kit/ | Pointers for old reference paths |
-| Root README/context/changelog | AI-KIT's own docs and history |
-
-The root .gitignore keeps reference sources visible.
-
-Maintainers: see [updating a reference repository](CONTRIBUTING.md#updating-a-reference-repository).
-
-## Check and contribute
-
-Run from the reference repository root:
+Applications install from `template/`; the root maintains AI-KIT itself (`scripts/`, `integrations/`, `templates/`, `docs/`). Before contributing, run:
 
 ~~~sh
 python scripts/check_kit.py
 python -m unittest discover -s tests -v
 ~~~
 
-The checker covers internal links/anchors, skills, registry, template boundaries, JSON, content hygiene, and Git visibility when available.
-External links and native client behavior need separate verification.
-
-CI defines Windows/Linux jobs for Python 3.10/3.13. See [GitHub Actions](https://github.com/tigusigalpa/ai-kit/actions) for hosted results and [verification](docs/IMPLEMENTATION.md#verification) for local evidence/limits.
-
-Follow [CONTRIBUTING.md](CONTRIBUTING.md) for improvements and [SECURITY.md](SECURITY.md) for vulnerability reporting.
-Useful additions come from actual project work: a missing check, an unclear instruction, or a convention worth preserving.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [updating a reference repository](CONTRIBUTING.md#updating-a-reference-repository), [verification records](docs/IMPLEMENTATION.md#verification), and [SECURITY.md](SECURITY.md). Bundle version: [VERSION](VERSION).
 
 ## License
 

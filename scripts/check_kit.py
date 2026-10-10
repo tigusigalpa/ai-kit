@@ -193,7 +193,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         if not text.endswith("\n"):
             errors.append("Missing final newline: " + str(p))
         # The root README is human onboarding that never enters project context, so it gets more room.
-        if len(text.encode()) > (16000 if p == root / "README.md" else 12000):
+        if len(text.encode()) > (20000 if p == root / "README.md" else 12000):
             warnings.append("Large conditional document: " + str(p))
         for target in links(text):
             if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):
