@@ -70,6 +70,21 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
             (adapted if records[relative].get("local_adaptation") else modified).append(relative)
     warnings.extend(f"Modified after installation; rerun the installer to review: {r}" for r in modified)
     info.extend(f"Locally adapted (accepted): {r}" for r in adapted)
+    for relative, entries in sorted(state.get("managed_json", {}).items()):
+        path = target / relative
+        if not path.is_file():
+            warnings.append(f"Missing settings file with AI-KIT entries: {relative}")
+            continue
+        try:
+            current = json.loads(path.read_text(encoding="utf-8-sig"))
+            if not isinstance(current, dict):
+                raise ValueError("expected a JSON object")
+            for key, values in sorted(entries.items()):
+                for value in values:
+                    if install.merge_managed_json(current, {}, {key: [value]}) != current:
+                        warnings.append(f"AI-KIT entry missing from {relative}: {key} {value}")
+        except (OSError, ValueError, UnicodeError) as exc:
+            warnings.append(f"Cannot read AI-KIT entries in {relative}: {exc}")
     for relative in sorted(install.OWNED):
         if not (target / relative).is_file():
             warnings.append("Owned project document missing: " + relative)

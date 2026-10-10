@@ -24,9 +24,23 @@ PROFILE_MANIFESTS = {
     "FRONTEND": ("package.json",),
 }
 EXTRAS = {"session-start", "guards", "ci"}
-EXTRA_TEMPLATE = {"session-start": ".agents/hooks/session-start.md"}
+EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
 EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "ci": "ci"}
+CLAUDE_SETTINGS = ".claude/settings.json"
+GUARDS_SOURCE = "claude-settings.git-ask.json"
+# tr strips CR so a CRLF checkout of the hook script still runs under sh.
+SESSION_START_COMMAND = "tr -d '\\r' < \"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\" | sh"
+# Entries written by v0.3.6-v0.4.6, which managed the whole client settings file.
+LEGACY_CLAUDE_ENTRIES = {"permissions.deny": ["Bash(git commit *)", "Bash(git push *)"],
+                         "hooks.SessionStart": ["cat .agents/hooks/session-start.md"]}
+NODE_MANAGERS = ("npm", "pnpm", "yarn", "bun")
+NODE_LOCKFILES = (("pnpm-lock.yaml", "pnpm"), ("yarn.lock", "yarn"), ("bun.lock", "bun"),
+                  ("bun.lockb", "bun"), ("package-lock.json", "npm"), ("npm-shrinkwrap.json", "npm"))
+PYTHON_RUNNERS = (("uv.lock", "uv run "), ("poetry.lock", "poetry run "))
+PYTHON_TOOL_FILES = ("pyproject.toml", "setup.cfg", "tox.ini", "requirements.txt", "requirements-dev.txt",
+                     "requirements_dev.txt", "dev-requirements.txt", "requirements-test.txt",
+                     "test-requirements.txt")
 NODE_IGNORES = ("node_modules/", ".npm/", ".pnpm-store/", ".yarn/cache/", ".yarn/unplugged/",
                 ".yarn/install-state.gz", "npm-debug.log*", "yarn-debug.log*", "yarn-error.log*",
                 "pnpm-debug.log*")
@@ -91,6 +105,7 @@ def load_agent_registry(root: Path = ROOT) -> dict:
     entries: dict[str, str] = {}
     optional: dict[str, list[tuple[str, str]]] = {}
     skills_copies: dict[str, str] = {}
+    detect: dict[str, list[str]] = {}
     for name, spec in agents.items():
         if not re.fullmatch(r"[a-z][a-z0-9-]*", name):
             raise ValueError(f"Invalid agent name: {name}")
@@ -115,8 +130,33 @@ def load_agent_registry(root: Path = ROOT) -> dict:
             if not isinstance(prefix, str) or not prefix.startswith(".") or not prefix.endswith("/"):
                 raise ValueError(f"Invalid skills_copy prefix for {name}")
             skills_copies[name] = prefix
+        markers = spec.get("detect", [])
+        if not isinstance(markers, list) or any(
+                not isinstance(marker, str) or
+                not re.fullmatch(r"[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*/?", marker) or
+                any(part in {".", ".."} for part in marker.rstrip("/").split("/")) for marker in markers):
+            raise ValueError(f"Invalid detect markers for {name}")
+        if markers:
+            detect[name] = markers
     return {"names": names, "entries": entries, "optional": optional,
-            "skills_copies": skills_copies}
+            "skills_copies": skills_copies, "detect": detect}
+
+
+def detect_agents(target: Path, registry: dict) -> dict[str, list[str]]:
+    """Map clients to existing native files/directories suggesting they are in use (unverified)."""
+    found: dict[str, list[str]] = {}
+    for agent, markers in sorted(registry["detect"].items()):
+        evidence = []
+        for marker in markers:
+            path = target.joinpath(*marker.rstrip("/").split("/"))
+            if is_link(path):
+                continue
+            # A trailing slash marks a directory; other markers may be files or directories.
+            if path.is_dir() if marker.endswith("/") else path.exists():
+                evidence.append(marker)
+        if evidence:
+            found[agent] = evidence
+    return found
 
 
 def agent_selection(value: object, agents: set[str], *, unique: bool = False) -> list[str]:
@@ -171,6 +211,89 @@ def validate_state(state: dict, target: Path, agents: set[str] | None = None) ->
                 raise ValueError(f"Invalid state {field} for {relative}")
         if "local_adaptation" in record and type(record["local_adaptation"]) is not bool:
             raise ValueError(f"State local_adaptation must be boolean for {relative}")
+    managed = state.get("managed_json", {})
+    if not isinstance(managed, dict):
+        raise ValueError("State managed_json must be an object")
+    for relative, entries in managed.items():
+        if not isinstance(relative, str) or not isinstance(entries, dict):
+            raise ValueError("State managed_json must map relative paths to objects")
+        safe_path(target, relative)
+        for key, values in entries.items():
+            if (not isinstance(key, str) or not re.fullmatch(r"(?:permissions|hooks)\.[A-Za-z]+", key) or
+                    not isinstance(values, list) or any(not isinstance(value, str) for value in values)):
+                raise ValueError(f"Invalid state managed_json entry for {relative}")
+
+
+def merge_managed_json(current: dict, remove: dict[str, list[str]], add: dict[str, list[str]]) -> dict:
+    """Drop stale AI-KIT-owned entries and add missing ones; all other content is preserved.
+
+    Keys name a settings list: permissions.<list> holds rule strings, hooks.<event> holds
+    command hook groups identified by their command.
+    """
+    result = json.loads(json.dumps(current))
+    for key, values in remove.items():
+        section, name = key.split(".", 1)
+        stale = [value for value in values if value not in add.get(key, [])]
+        container = result.get(section)
+        if not stale or not isinstance(container, dict) or not isinstance(container.get(name), list):
+            continue
+        items = container[name]
+        kept = []
+        for item in items:
+            if section != "hooks":
+                if item not in stale:
+                    kept.append(item)
+                continue
+            handlers = item.get("hooks") if isinstance(item, dict) else None
+            if isinstance(handlers, list):
+                remaining = [h for h in handlers if not (isinstance(h, dict) and h.get("command") in stale)]
+                if len(remaining) != len(handlers):
+                    if not remaining:
+                        continue
+                    item = {**item, "hooks": remaining}
+            kept.append(item)
+        if kept == items:
+            continue
+        container[name] = kept
+        if not kept:
+            del container[name]
+            if not container:
+                del result[section]
+    for key, values in add.items():
+        section, name = key.split(".", 1)
+        container = result.setdefault(section, {})
+        if not isinstance(container, dict):
+            raise ValueError(f"{section} must be an object")
+        items = container.setdefault(name, [])
+        if not isinstance(items, list):
+            raise ValueError(f"{key} must be a list")
+        if section == "hooks":
+            present = set()
+            for group in items:
+                handlers = group.get("hooks") if isinstance(group, dict) else None
+                for handler in handlers if isinstance(handlers, list) else []:
+                    if isinstance(handler, dict):
+                        present.add(handler.get("command"))
+            for value in values:
+                if value not in present:
+                    items.append({"hooks": [{"type": "command", "command": value}]})
+        else:
+            for value in values:
+                if value not in items:
+                    items.append(value)
+    return result
+
+
+def claude_managed_entries(root: Path, extras: set[str]) -> dict[str, list[str]]:
+    """Client settings entries AI-KIT owns for the enabled extras."""
+    entries: dict[str, list[str]] = {}
+    if "guards" in extras:
+        guards = read_json(root / "integrations" / GUARDS_SOURCE, {})
+        for kind, rules in guards.get("permissions", {}).items():
+            entries["permissions." + kind] = list(rules)
+    if "session-start" in extras:
+        entries["hooks.SessionStart"] = [SESSION_START_COMMAND]
+    return entries
 
 
 def adapter_owner(relative: str, registry: dict) -> str | None:
@@ -257,24 +380,63 @@ def _python_requires(path: Path) -> str | None:
     return match.group(1) if match else None
 
 
-def _package_facts(pkg: dict) -> dict:
+def _upward(module: Path, target: Path):
+    """Yield the module directory and its ancestors up to the project root (workspace roots)."""
+    current = module
+    while True:
+        yield current
+        if current == target or target not in current.parents:
+            return
+        current = current.parent
+
+
+def _node_manager(module: Path, target: Path) -> str:
+    """Prefer a declared packageManager, then a lockfile, searching up to the workspace root."""
+    for directory in _upward(module, target):
+        declared = (_manifest_json(directory / "package.json") or {}).get("packageManager")
+        if isinstance(declared, str) and declared.split("@", 1)[0] in NODE_MANAGERS:
+            return declared.split("@", 1)[0]
+        for lockfile, manager in NODE_LOCKFILES:
+            if (directory / lockfile).is_file():
+                return manager
+    return "npm"
+
+
+def _package_facts(pkg: dict, manager: str = "npm") -> dict:
     version = None
     engines = pkg.get("engines")
     if isinstance(engines, dict) and isinstance(engines.get("node"), str):
         version = engines["node"]
-    manager = "npm"
-    declared = pkg.get("packageManager")
-    if isinstance(declared, str) and declared.split("@", 1)[0] in {"npm", "pnpm", "yarn", "bun"}:
-        manager = declared.split("@", 1)[0]
     scripts = pkg.get("scripts") if isinstance(pkg.get("scripts"), dict) else {}
     commands = {}
     if "test" in scripts:
-        commands["test"] = f"{manager} test"
+        # "bun test" starts Bun's own runner rather than the package script.
+        commands["test"] = f"{manager} run test" if manager == "bun" else f"{manager} test"
     if "build" in scripts:
         commands["build"] = f"{manager} run build"
     if "lint" in scripts:
         commands["lint"] = f"{manager} run lint"
     return {"language": "Node", "version": version, "commands": commands}
+
+
+def _python_commands(module: Path, target: Path, files: list[str]) -> dict:
+    """Suggest pytest/ruff only when manifests or config files reference them."""
+    texts = []
+    for name in PYTHON_TOOL_FILES:
+        if name in files:
+            try:
+                texts.append((module / name).read_text(encoding="utf-8"))
+            except (OSError, UnicodeError):
+                pass
+    evidence = "\n".join(texts)
+    runner = next((prefix for directory in _upward(module, target)
+                   for lockfile, prefix in PYTHON_RUNNERS if (directory / lockfile).is_file()), "")
+    commands = {}
+    if re.search(r"\bpytest\b", evidence) or "pytest.ini" in files or "conftest.py" in files:
+        commands["test"] = runner + "pytest"
+    if re.search(r"\bruff\b", evidence) or "ruff.toml" in files or ".ruff.toml" in files:
+        commands["lint"] = runner + "ruff check ."
+    return commands
 
 
 def _composer_facts(composer: dict, *, laravel: bool) -> dict:
@@ -317,11 +479,12 @@ def detect_facts(target: Path) -> dict:
                 facts["language"] = "Python"
             if facts["version"] is None:
                 facts["version"] = _python_requires(module / py_manifest)
-            facts["commands"].update({"test": "pytest", "lint": "ruff check ."})
+            facts["commands"].update(_python_commands(module, target, files))
         if "package.json" in files:
             facts["manifests"].append("package.json")
             facts["profiles"].append("FRONTEND")
-            package = _package_facts(_manifest_json(module / "package.json") or {})
+            package = _package_facts(_manifest_json(module / "package.json") or {},
+                                     _node_manager(module, target))
             if facts["language"] is None:
                 facts["language"] = package["language"]
             if facts["version"] is None:
@@ -437,8 +600,11 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     mode = mode or settings.get("sharing_mode", "private")
     language = language or settings.get("chat_language", "Russian")
     conventions = conventions or settings.get("conventions", "owner")
+    explicit_agents = agents is not None
     agents = agent_selection(agents if agents is not None else state.get("agents", ["codex"]),
                              registry["names"])
+    detected_agents = detect_agents(target, registry)
+    suggested_agents = sorted(set(agents) | set(detected_agents))
     if accept_local is not None and (not isinstance(accept_local, list) or
                                      any(not isinstance(path, str) for path in accept_local)):
         raise ValueError("Accept-local paths must be a list of strings")
@@ -465,7 +631,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         relative = src.relative_to(root / "template").as_posix()
         if relative in registry["entries"] and registry["entries"][relative] not in agents:
             continue
-        if relative in EXTRA_TEMPLATE.values():
+        if any(relative in paths for paths in EXTRA_TEMPLATE.values()):
             continue
         incoming[relative] = src.read_bytes()
     incoming["ai-kit/settings.json"] = (json.dumps(settings, indent=2) + "\n").encode()
@@ -482,20 +648,11 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                 incoming[destination] = (root / "integrations" / source).read_bytes()
     for name in sorted(enabled_extras):
         if name in EXTRA_TEMPLATE:
-            relative = EXTRA_TEMPLATE[name]
-            incoming[relative] = (root / "template" / relative).read_bytes()
+            for relative in EXTRA_TEMPLATE[name]:
+                incoming[relative] = (root / "template" / relative).read_bytes()
         elif name in EXTRA_INTEGRATIONS:
             src, dst = EXTRA_INTEGRATIONS[name]
             incoming[dst] = (root / "integrations" / src).read_bytes()
-    claude_settings: dict = {}
-    if "guards" in enabled_extras:
-        deny = read_json(root / "integrations" / "claude-settings.deny-git.json", {})
-        claude_settings.setdefault("permissions", {}).update(deny.get("permissions", {}))
-    if "session-start" in enabled_extras:
-        claude_settings["hooks"] = {"SessionStart": [{"hooks": [{"type": "command",
-                                                                  "command": "cat .agents/hooks/session-start.md"}]}]}
-    if "claude" in agents and claude_settings:
-        incoming[".claude/settings.json"] = (json.dumps(claude_settings, indent=2) + "\n").encode()
     if accept - incoming.keys() or accept & (OWNED | {"ai-kit/settings.json"}):
         raise ValueError("Accept-local paths must name selected managed instructions")
     records = state.get("files", {})
@@ -561,9 +718,50 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         warnings.append("Remove or reconcile legacy private exclusions explicitly before applying team mode.")
     elif old_ignore != merged.encode():
         actions[".gitignore"] = {"data": merged.encode(), "old": old_ignore}
+    missing_agents = sorted(set(detected_agents) - set(agents))
+    if missing_agents and not explicit_agents:
+        evidence = "; ".join(f"{agent} ({', '.join(detected_agents[agent])})" for agent in missing_agents)
+        warnings.append(f"Detected client files for {evidence}; preview with "
+                        + " ".join("--agent " + agent for agent in suggested_agents) + " to wire them.")
+    # AI-KIT owns only its own entries in the client settings file; other settings survive.
+    managed_json = {relative: dict(entries) for relative, entries in state.get("managed_json", {}).items()}
+    if "claude" in agents:
+        wanted = claude_managed_entries(root, enabled_extras)
+        previous = {key: list(values) for key, values in managed_json.get(CLAUDE_SETTINGS, {}).items()}
+        if CLAUDE_SETTINGS in records:
+            for key, values in LEGACY_CLAUDE_ENTRIES.items():
+                previous.setdefault(key, []).extend(values)
+        if wanted or previous:
+            settings_file = safe_path(target, CLAUDE_SETTINGS)
+            old_settings = settings_file.read_bytes() if settings_file.exists() else None
+            try:
+                current = json.loads(old_settings.decode("utf-8-sig")) if old_settings is not None else {}
+                if not isinstance(current, dict):
+                    raise ValueError("expected a JSON object")
+                merged_settings = merge_managed_json(current, previous, wanted)
+            except (ValueError, UnicodeError) as exc:
+                fragment = merge_managed_json({}, {}, wanted)
+                conflicts[CLAUDE_SETTINGS] = (json.dumps(fragment, indent=2) + "\n").encode()
+                conflict_local_hashes[CLAUDE_SETTINGS] = digest(old_settings)
+                warnings.append(f"Cannot merge AI-KIT entries into {CLAUDE_SETTINGS} ({exc}); fix the file "
+                                "or merge the candidate fragment manually, then rerun the preview.")
+            else:
+                if old_settings is None or merged_settings != current:
+                    data = (json.dumps(merged_settings, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
+                    actions[CLAUDE_SETTINGS] = {"data": data, "old": old_settings}
+                if wanted:
+                    managed_json[CLAUDE_SETTINGS] = wanted
+                else:
+                    managed_json.pop(CLAUDE_SETTINGS, None)
+    elif CLAUDE_SETTINGS in managed_json:
+        warnings.append(f"AI-KIT entries remain in {CLAUDE_SETTINGS} for the unselected claude client; "
+                        "review them before retirement.")
     retirements = []
     for relative, record in records.items():
         if relative in incoming or relative in OWNED:
+            continue
+        if relative == CLAUDE_SETTINGS and "claude" in agents:
+            # Earlier versions managed the whole file; its entries now migrate to managed_json.
             continue
         if safe_path(target, relative).exists():
             # Keep old baseline information even when a path leaves the bundle.
@@ -604,6 +802,10 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     new_state = dict(state)
     new_state.update(schema=1, accepted_version=(root / "VERSION").read_text().strip(),
                      agents=agents, files=accepted)
+    if managed_json:
+        new_state["managed_json"] = managed_json
+    else:
+        new_state.pop("managed_json", None)
     state_data = (json.dumps(new_state, indent=2, sort_keys=True) + "\n").encode()
     old_state = state_path.read_bytes() if state_path.exists() else None
     if old_state != state_data:
@@ -611,7 +813,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     return {"target": target, "mode": mode, "version": new_state["accepted_version"],
             "actions": actions, "conflicts": conflicts, "candidates": candidates,
             "adapter_conflicts": sorted(retirements), "preserved": preserved,
-            "detected_profiles": detected, "extras": sorted(enabled_extras), "warnings": warnings}
+            "detected_profiles": detected, "detected_agents": detected_agents,
+            "suggested_agents": suggested_agents, "extras": sorted(enabled_extras), "warnings": warnings}
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -691,17 +894,23 @@ def apply_plan(plan: dict) -> bool:
     return True
 
 
-def interactive_selections(read=input, *, agents_available: set[str], facts: dict) -> dict | None:
+def interactive_selections(read=input, *, agents_available: set[str], facts: dict,
+                           detected_agents: dict[str, list[str]] | None = None) -> dict | None:
     """Prompt for selections; returns None when the user declines to continue."""
     print("AI-KIT interactive installer")
     for module in facts["modules"]:
         print(f"  Detected: {module['path']} ({', '.join(module['profiles']) or 'no profile'})"
               f" from {', '.join(module['manifests'])}")
+    detected_agents = detected_agents or {}
+    for agent, evidence in sorted(detected_agents.items()):
+        print(f"  Detected client: {agent} ({', '.join(evidence)})")
+    default_agents = sorted({"codex"} | set(detected_agents))
     mode = (read("Sharing mode [private/team] (private): ").strip() or "private").lower()
     language = read("Chat language (Russian): ").strip() or "Russian"
     conventions = (read("Conventions [owner/standard] (owner): ").strip() or "owner").lower()
-    agent_text = read(f"Agents, comma-separated ({', '.join(sorted(agents_available))}) [codex]: ").strip()
-    agents = [a.strip() for a in agent_text.split(",") if a.strip()] or ["codex"]
+    agent_text = read(f"Agents, comma-separated ({', '.join(sorted(agents_available))}) "
+                      f"[{','.join(default_agents)}]: ").strip()
+    agents = [a.strip() for a in agent_text.split(",") if a.strip()] or default_agents
     extra_text = read("Extras, comma-separated [session-start,guards,ci] (none): ").strip()
     extras = [e.strip() for e in extra_text.split(",") if e.strip()]
     print("\nSummary:")
@@ -734,7 +943,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--with-session-start", action="store_true",
                         help="Install the session-start hook file and client wiring")
     parser.add_argument("--with-guards", action="store_true",
-                        help="Install client deny rules for Git write operations")
+                        help="Install client confirmation (ask) rules for Git commit/push")
     parser.add_argument("--with-ci", action="store_true",
                         help="Install the self-contained AI-KIT project check workflow")
     args = parser.parse_args(argv)
@@ -743,8 +952,10 @@ def main(argv: list[str] | None = None) -> int:
                                       ("ci", args.with_ci)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
     if args.interactive:
-        selections = interactive_selections(agents_available=load_agent_registry()["names"],
-                                            facts=detect_facts(args.target.absolute().resolve()))
+        target = args.target.absolute().resolve()
+        registry = load_agent_registry()
+        selections = interactive_selections(agents_available=registry["names"], facts=detect_facts(target),
+                                            detected_agents=detect_agents(target, registry))
         if selections is None:
             return 0
         mode = mode or selections["mode"]
@@ -760,7 +971,9 @@ def main(argv: list[str] | None = None) -> int:
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
                           "conflicts": sorted(plan["conflicts"]), "preserved": sorted(plan["preserved"]),
                           "candidates": plan["candidates"], "adapter_conflicts": plan["adapter_conflicts"],
-                          "detected_profiles": plan["detected_profiles"], "extras": plan["extras"],
+                          "detected_profiles": plan["detected_profiles"],
+                          "detected_agents": plan["detected_agents"],
+                          "suggested_agents": plan["suggested_agents"], "extras": plan["extras"],
                           "warnings": plan["warnings"]}, indent=2))
         if args.apply:
             applied = apply_plan(plan)

@@ -36,17 +36,63 @@ class DetectFactsTests(unittest.TestCase):
         self.assertEqual(module["commands"]["test"], "go test ./...")
 
     def test_python_requires_and_commands(self):
-        self.write("pyproject.toml", '[project]\nname = "svc"\nrequires-python = ">=3.10"\n')
+        self.write("pyproject.toml", '[project]\nname = "svc"\nrequires-python = ">=3.10"\n\n'
+                                     '[tool.pytest.ini_options]\ntestpaths = ["tests"]\n\n[tool.ruff]\n')
         module = install.detect_facts(self.target)["modules"][0]
         self.assertEqual(module["language"], "Python")
         self.assertEqual(module["version"], ">=3.10")
         self.assertEqual(module["commands"]["test"], "pytest")
+        self.assertEqual(module["commands"]["lint"], "ruff check .")
+
+    def test_python_without_tool_evidence_suggests_no_commands(self):
+        self.write("pyproject.toml", '[project]\nname = "svc"\n')
+        self.write("tests/test_app.py", "import unittest\n")
+        self.assertEqual(install.detect_facts(self.target)["modules"][0]["commands"], {})
+
+    def test_python_tools_from_requirements_and_runner_from_lockfile(self):
+        self.write("pyproject.toml", '[project]\nname = "svc"\n')
+        self.write("requirements-dev.txt", "pytest==8.3.0\nruff\n")
+        self.write("uv.lock", "version = 1\n")
+        commands = install.detect_facts(self.target)["modules"][0]["commands"]
+        self.assertEqual(commands, {"test": "uv run pytest", "lint": "uv run ruff check ."})
+
+    def test_python_config_files_are_tool_evidence(self):
+        self.write("requirements.txt", "requests\n")
+        self.write("conftest.py", "")
+        self.write("ruff.toml", "line-length = 100\n")
+        self.write("poetry.lock", "")
+        commands = install.detect_facts(self.target)["modules"][0]["commands"]
+        self.assertEqual(commands, {"test": "poetry run pytest", "lint": "poetry run ruff check ."})
 
     def test_frontend_commands_from_scripts(self):
         self.write("package.json", json.dumps({"scripts": {"test": "jest", "build": "tsc"}}))
         module = install.detect_facts(self.target)["modules"][0]
         self.assertEqual(module["commands"]["test"], "npm test")
         self.assertEqual(module["commands"]["build"], "npm run build")
+
+    def test_node_manager_from_lockfile(self):
+        self.write("package.json", json.dumps({"scripts": {"test": "vitest", "build": "vite build"}}))
+        self.write("pnpm-lock.yaml", "lockfileVersion: '9.0'\n")
+        commands = install.detect_facts(self.target)["modules"][0]["commands"]
+        self.assertEqual(commands, {"test": "pnpm test", "build": "pnpm run build"})
+
+    def test_bun_runs_the_test_script_not_its_own_runner(self):
+        self.write("package.json", json.dumps({"scripts": {"test": "vitest", "lint": "eslint ."}}))
+        self.write("bun.lock", "{}\n")
+        commands = install.detect_facts(self.target)["modules"][0]["commands"]
+        self.assertEqual(commands, {"test": "bun run test", "lint": "bun run lint"})
+
+    def test_package_manager_field_wins_over_lockfile(self):
+        self.write("package.json", json.dumps({"packageManager": "yarn@4.5.0", "scripts": {"test": "jest"}}))
+        self.write("package-lock.json", "{}\n")
+        self.assertEqual(install.detect_facts(self.target)["modules"][0]["commands"]["test"], "yarn test")
+
+    def test_workspace_root_lockfile_applies_to_nested_package(self):
+        self.write("package.json", json.dumps({"private": True}))
+        self.write("pnpm-lock.yaml", "lockfileVersion: '9.0'\n")
+        self.write("packages/web/package.json", json.dumps({"scripts": {"test": "vitest"}}))
+        modules = {m["path"]: m for m in install.detect_facts(self.target)["modules"]}
+        self.assertEqual(modules["/packages/web/"]["commands"]["test"], "pnpm test")
 
     def test_composer_and_laravel(self):
         self.write("composer.json", json.dumps({"require": {"php": "^8.2"}}))
@@ -119,6 +165,17 @@ class InteractiveTests(unittest.TestCase):
         self.assertEqual(selections["mode"], "private")
         self.assertEqual(selections["agents"], ["codex"])
         self.assertEqual(selections["extras"], [])
+
+    def test_detected_clients_become_the_default_agent_answer(self):
+        responses = iter(["", "", "", "", "", "y"])
+        read = lambda prompt: next(responses)
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            selections = install.interactive_selections(read, agents_available={"codex", "claude"},
+                                                        facts={"modules": []},
+                                                        detected_agents={"claude": ["CLAUDE.md"]})
+        self.assertEqual(selections["agents"], ["claude", "codex"])
+        self.assertIn("Detected client: claude (CLAUDE.md)", output.getvalue())
 
     def test_decline_returns_none(self):
         responses = iter(["private", "Russian", "owner", "codex", "", "n"])

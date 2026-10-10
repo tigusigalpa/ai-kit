@@ -8,6 +8,8 @@
 /WIKI.md
 /ai-kit/
 /.agents/skills/
+/.agents/hooks/session-start.md
+/.agents/hooks/session-start.sh
 /.claude/
 /.cursor/rules/ai-kit.mdc
 /.github/copilot-instructions.md

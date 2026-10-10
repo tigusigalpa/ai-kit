@@ -224,13 +224,161 @@ class InstallerTests(unittest.TestCase):
         settings = json.loads((self.target / "ai-kit/settings.json").read_text())
         self.assertIs(settings["session_start"], True)
 
-    def test_guards_extra_merges_deny_rules_and_persists(self):
+    def test_guards_extra_installs_ask_rules_and_persists(self):
         self.apply(agents=["claude"], extras=["guards"])
         claude_settings = json.loads((self.target / ".claude/settings.json").read_text())
-        self.assertIn("Bash(git push *)", claude_settings["permissions"]["deny"])
+        # Core permits an explicitly requested commit, so the guard asks instead of denying.
+        self.assertIn("Bash(git push *)", claude_settings["permissions"]["ask"])
+        self.assertIn("Bash(git commit)", claude_settings["permissions"]["ask"])
+        self.assertNotIn("deny", claude_settings["permissions"])
         plan = self.plan()
         self.assertEqual(plan["extras"], ["guards"])
         self.assertFalse(plan["actions"])
+
+    def user_claude_settings(self):
+        return {"model": "user-choice", "permissions": {"allow": ["Bash(make test)"]},
+                "hooks": {"SessionStart": [{"matcher": "startup",
+                                            "hooks": [{"type": "command", "command": "echo user"}]}]}}
+
+    def test_existing_claude_settings_are_merged_by_key(self):
+        self.write(".claude/settings.json", (json.dumps(self.user_claude_settings(), indent=4) + "\n").encode())
+        plan = self.apply(agents=["claude"], extras=["guards", "session-start"])
+        self.assertFalse(plan["conflicts"])
+        merged = json.loads((self.target / ".claude/settings.json").read_text())
+        self.assertEqual(merged["model"], "user-choice")
+        self.assertEqual(merged["permissions"]["allow"], ["Bash(make test)"])
+        self.assertIn("Bash(git commit *)", merged["permissions"]["ask"])
+        commands = [h["command"] for group in merged["hooks"]["SessionStart"] for h in group["hooks"]]
+        self.assertEqual(commands, ["echo user", install.SESSION_START_COMMAND])
+        state = json.loads((self.target / "ai-kit/.install-state.json").read_text())
+        self.assertNotIn(".claude/settings.json", state["files"])
+        self.assertEqual(state["managed_json"][".claude/settings.json"]["hooks.SessionStart"],
+                         [install.SESSION_START_COMMAND])
+        # The original file was backed up before the merge.
+        backups = list((self.target / "ai-kit/.upstream-cache/backups").glob("*/.claude/settings.json"))
+        self.assertEqual(len(backups), 1)
+        self.assertFalse(self.plan()["actions"])
+
+    def test_user_edits_to_merged_settings_survive_reruns(self):
+        self.apply(agents=["claude"], extras=["guards"])
+        path = self.target / ".claude/settings.json"
+        settings = json.loads(path.read_text())
+        settings["permissions"]["deny"] = ["Read(./.env)"]
+        settings["env"] = {"EXAMPLE": "1"}
+        path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+        plan = self.plan()
+        self.assertFalse(plan["actions"])
+        self.assertFalse(plan["conflicts"])
+
+    def test_disabling_an_extra_removes_only_its_managed_entries(self):
+        self.write(".claude/settings.json", (json.dumps(self.user_claude_settings()) + "\n").encode())
+        self.apply(agents=["claude"], extras=["guards", "session-start"])
+        settings_path = self.target / "ai-kit/settings.json"
+        settings = json.loads(settings_path.read_text())
+        settings["guards"] = False
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+        self.apply()
+        merged = json.loads((self.target / ".claude/settings.json").read_text())
+        self.assertEqual(merged["permissions"], {"allow": ["Bash(make test)"]})
+        self.assertEqual(len(merged["hooks"]["SessionStart"]), 2)
+        state = json.loads((self.target / "ai-kit/.install-state.json").read_text())
+        self.assertEqual(list(state["managed_json"][".claude/settings.json"]), ["hooks.SessionStart"])
+
+    def test_legacy_whole_file_claude_settings_migrate_to_managed_entries(self):
+        self.apply(agents=["claude"])
+        legacy = {"permissions": {"deny": ["Bash(git commit *)", "Bash(git push *)"]},
+                  "hooks": {"SessionStart": [{"hooks": [{"type": "command",
+                                                         "command": "cat .agents/hooks/session-start.md"}]}]}}
+        data = (json.dumps(legacy, indent=2) + "\n").encode()
+        self.write(".claude/settings.json", data)
+        state_path = self.target / "ai-kit/.install-state.json"
+        state = json.loads(state_path.read_text())
+        state["files"][".claude/settings.json"] = {"installed_hash": install.digest(data),
+                                                   "source_hash": install.digest(data)}
+        state_path.write_text(json.dumps(state, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        settings_path = self.target / "ai-kit/settings.json"
+        settings = json.loads(settings_path.read_text())
+        settings.update(guards=True, session_start=True)
+        settings_path.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+        plan = self.apply()
+        self.assertFalse(any("retained without a current source" in w for w in plan["warnings"]))
+        merged = json.loads((self.target / ".claude/settings.json").read_text())
+        self.assertNotIn("deny", merged["permissions"])
+        self.assertIn("Bash(git push *)", merged["permissions"]["ask"])
+        commands = [h["command"] for group in merged["hooks"]["SessionStart"] for h in group["hooks"]]
+        self.assertEqual(commands, [install.SESSION_START_COMMAND])
+        state = json.loads(state_path.read_text())
+        self.assertNotIn(".claude/settings.json", state["files"])
+        self.assertIn(".claude/settings.json", state["managed_json"])
+        self.assertFalse(self.plan()["actions"])
+
+    def test_invalid_claude_settings_become_a_reviewed_conflict(self):
+        self.write(".claude/settings.json", b"{not json\n")
+        plan = self.plan(agents=["claude"], extras=["guards"])
+        self.assertIn(".claude/settings.json", plan["conflicts"])
+        self.assertTrue(any("Cannot merge AI-KIT entries" in w for w in plan["warnings"]))
+        self.assertFalse(install.apply_plan(plan))
+        self.assertEqual((self.target / ".claude/settings.json").read_bytes(), b"{not json\n")
+        candidate = json.loads((self.target / plan["candidates"][".claude/settings.json"]["path"]).read_text())
+        self.assertIn("Bash(git push *)", candidate["permissions"]["ask"])
+
+    def test_session_start_hook_injects_context_and_tolerates_crlf(self):
+        self.apply(agents=["claude"], extras=["session-start"])
+        claude_settings = json.loads((self.target / ".claude/settings.json").read_text())
+        command = claude_settings["hooks"]["SessionStart"][0]["hooks"][0]["command"]
+        self.assertIn("$CLAUDE_PROJECT_DIR", command)
+        sh = shutil.which("sh")
+        if sh is None:
+            self.skipTest("POSIX sh is unavailable for executing the hook")
+        script = self.target / ".agents/hooks/session-start.sh"
+        script.write_bytes(script.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        context = self.target / "PROJECT_CONTEXT.md"
+        context.write_bytes(context.read_bytes() + b"Hook marker fact.\n")
+        result = subprocess.run([sh, "-c", command], cwd=self.base, capture_output=True, text=True,
+                                env={**os.environ, "CLAUDE_PROJECT_DIR": str(self.target)})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("# Session start", result.stdout)
+        self.assertIn("Hook marker fact.", result.stdout)
+        self.assertNotIn("Truncated", result.stdout)
+        context.write_bytes(context.read_bytes() + b"x" * 9000 + b"\n")
+        result = subprocess.run([sh, "-c", command], cwd=self.base, capture_output=True, text=True,
+                                env={**os.environ, "CLAUDE_PROJECT_DIR": str(self.target)})
+        self.assertIn("Truncated at 8000", result.stdout)
+
+    def test_detected_clients_are_suggested_without_changing_selection(self):
+        self.write("CLAUDE.md", b"Existing Claude notes\n")
+        self.write(".cursor/rules/team.mdc", b"rule\n")
+        self.write(".clinerules", b"rules\n")
+        plan = self.plan()
+        self.assertEqual(plan["detected_agents"], {"claude": ["CLAUDE.md"], "cline": [".clinerules"],
+                                                   "cursor": [".cursor/"]})
+        self.assertEqual(plan["suggested_agents"], ["claude", "cline", "codex", "cursor"])
+        self.assertNotIn("CLAUDE.md", plan["actions"])
+        self.assertTrue(any("--agent claude --agent cline --agent codex --agent cursor" in w
+                            for w in plan["warnings"]))
+        explicit = self.plan(agents=["codex"])
+        self.assertFalse(any("Detected client files" in w for w in explicit["warnings"]))
+
+    def test_registry_refuses_unsafe_detect_markers(self):
+        registry_path = self.source / install.AGENT_REGISTRY_PATH
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+        for marker in ("../outside", "/abs", ".claude/../x", "a\\b"):
+            with self.subTest(marker=marker):
+                registry["agents"]["claude"]["detect"] = [marker]
+                registry_path.write_text(json.dumps(registry), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    install.load_agent_registry(self.source)
+
+    def test_invalid_managed_json_state_is_refused(self):
+        self.apply()
+        state_path = self.target / "ai-kit/.install-state.json"
+        valid = json.loads(state_path.read_text())
+        for managed in ([], {".claude/settings.json": []}, {".claude/settings.json": {"other.key": ["x"]}},
+                        {".claude/settings.json": {"permissions.ask": "x"}}, {"../x": {}}):
+            with self.subTest(managed=managed):
+                state_path.write_text(json.dumps({**valid, "managed_json": managed}), encoding="utf-8")
+                with self.assertRaises(ValueError):
+                    self.plan()
 
     def test_session_start_and_guards_merge_into_one_settings_file(self):
         self.apply(agents=["claude"], extras=["session-start", "guards"])

@@ -2,50 +2,61 @@
   "schema": 1,
   "agents": {
     "codex": {
-      "entries": []
+      "entries": [],
+      "detect": [".codex/"]
     },
     "claude": {
       "entries": ["CLAUDE.md"],
-      "skills_copy": ".claude/skills/"
+      "skills_copy": ".claude/skills/",
+      "detect": ["CLAUDE.md", "CLAUDE.local.md", ".claude/"]
     },
     "kimi": {
-      "entries": ["KIMI.md"]
+      "entries": ["KIMI.md"],
+      "detect": ["KIMI.md"]
     },
     "manus": {
-      "entries": ["MANUS.md"]
+      "entries": ["MANUS.md"],
+      "detect": ["MANUS.md"]
     },
     "gemini": {
-      "entries": ["GEMINI.md"]
+      "entries": ["GEMINI.md"],
+      "detect": ["GEMINI.md", ".gemini/"]
     },
     "copilot": {
       "optional": [
         {"source": "copilot-instructions.md", "destination": ".github/copilot-instructions.md"}
-      ]
+      ],
+      "detect": [".github/copilot-instructions.md", ".github/instructions/"]
     },
     "cursor": {
       "optional": [
         {"source": "ai-kit.mdc", "destination": ".cursor/rules/ai-kit.mdc"}
-      ]
+      ],
+      "detect": [".cursor/", ".cursorrules", ".cursorignore"]
     },
     "aider": {
       "optional": [
         {"source": "CONVENTIONS.md", "destination": "CONVENTIONS.md"}
-      ]
+      ],
+      "detect": [".aider.conf.yml", ".aiderignore"]
     },
     "windsurf": {
       "optional": [
         {"source": "ai-kit-windsurf.md", "destination": ".windsurf/rules/ai-kit.md"}
-      ]
+      ],
+      "detect": [".windsurf/", ".windsurfrules"]
     },
     "cline": {
       "optional": [
         {"source": "ai-kit-cline.md", "destination": ".clinerules/ai-kit.md"}
-      ]
+      ],
+      "detect": [".clinerules"]
     },
     "roo": {
       "optional": [
         {"source": "ai-kit-roo.md", "destination": ".roo/rules/ai-kit.md"}
-      ]
+      ],
+      "detect": [".roo/", ".roorules", ".roomodes"]
     }
   }
 }

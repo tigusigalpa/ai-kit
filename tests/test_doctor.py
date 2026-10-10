@@ -43,6 +43,25 @@ class DoctorTests(unittest.TestCase):
         self.assertEqual(report["warnings"], [])
         self.assertEqual(report["installed_version"], self.initial_version)
 
+    def test_user_edits_to_client_settings_are_not_reported(self):
+        self.apply(agents=["claude"], extras=["guards", "session-start"])
+        path = self.target / ".claude/settings.json"
+        settings = json.loads(path.read_text(encoding="utf-8"))
+        settings["model"] = "user-choice"
+        path.write_text(json.dumps(settings) + "\n", encoding="utf-8")
+        self.assertEqual(self.examine()["warnings"], [])
+
+    def test_removed_managed_client_entry_is_reported(self):
+        self.apply(agents=["claude"], extras=["guards"])
+        path = self.target / ".claude/settings.json"
+        settings = json.loads(path.read_text(encoding="utf-8"))
+        settings["permissions"]["ask"].remove("Bash(git push *)")
+        path.write_text(json.dumps(settings) + "\n", encoding="utf-8")
+        self.assertIn("AI-KIT entry missing from .claude/settings.json: permissions.ask Bash(git push *)",
+                      self.examine()["warnings"])
+        path.write_text("[]\n", encoding="utf-8")
+        self.assertTrue(any(w.startswith("Cannot read AI-KIT entries") for w in self.examine()["warnings"]))
+
     def test_missing_installation_is_reported(self):
         self.target.mkdir(parents=True)
         report = self.examine()

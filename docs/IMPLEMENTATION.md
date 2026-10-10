@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds profile detection, the project doctor, and manifest-scoped Node/Python ignores; v0.3.6 adds the session-start, guards, and CI extras; v0.3.8 adds the Gemini/Windsurf/Cline/Roo adapters and verified Anthropic/Kimi router mappings; v0.4.5 adds the agent registry and offline router helper; v0.4.6 adds interactive/check onboarding and machine-readable project facts. See [audit disposition](MANUS_REVIEW.md).
+Version 0.2 consolidates the Claude, Kimi, and DeepSeek reviews and the owner's agreements; v0.2.1 fixes reference overlays; v0.2.2 addresses reproduced Manus installer findings; v0.3.3 adds profile detection, the project doctor, and manifest-scoped Node/Python ignores; v0.3.6 adds the session-start, guards, and CI extras; v0.3.8 adds the Gemini/Windsurf/Cline/Roo adapters and verified Anthropic/Kimi router mappings; v0.4.5 adds the agent registry and offline router helper; v0.4.6 adds interactive/check onboarding and machine-readable project facts; v0.4.7 adds key-level client settings ownership, ask guards, a context-injecting session hook, client detection, and evidence-based command suggestions. See [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -49,7 +49,7 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 
 - Exchange/trading-specific profile: no confirmed domain requirement; the library profile covers reusable code without introducing trading assumptions.
 - Executable Docker cleanup: an inspection report cannot establish exact project bytes, exclusive builder ownership, and disposability by itself. Keep the existing actionable policy; add automation after representative resource fixtures and live trials.
-- Runtime guards and automatic model switching: clients expose different controls. Optional deny examples are supplementary, not a proven universal Git ban; installer does not activate them.
+- Runtime guards and automatic model switching: clients expose different controls. The opt-in Claude Code ask rules are supplementary confirmation, not a proven universal Git ban; other clients receive no guard.
 - Context/token cost claims: byte budgets are measured, but no tokenizer, runtime-loaded-context benchmark, or performance comparison has been run.
 - Additional model/client mappings: unsupported provider IDs and runtime settings remain unknown; no speculative model names or fake activation.
 - Topics, homepage, hosted publication, tags/releases: these require remote changes; local work does not authorize them. The current repository description and MIT were independently confirmed; a homepage is unnecessary for the first usable bundle.
@@ -73,6 +73,10 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 ### Router and agent-registry verification
 
 2026-10-10, Windows/Python 3.14.6: 92 tests ran, 91 passed, 1 skipped (Windows symlink privilege); kit validation returned no errors. Covers registry, route classification/resolution, local and pending providers, and configure preview/apply/conflict. Gemini IDs remain pending; no live API or hosted CI ran.
+
+### Client settings and detection verification
+
+2026-10-10, Windows/Python 3.14.6: 128 tests ran, 127 passed, 1 skipped (Windows symlink privilege); kit validation returned no errors; Python 3.10 grammar was verified. Regressions cover key-level settings merges with backups, user-edit survival, disabled-extra removal, legacy whole-file migration, the invalid-JSON conflict, managed_json validation, doctor reports, client detection, and lockfile/evidence-based commands. The hook ran through Git Bash sh with a CRLF script and a spaced Windows path; an end-to-end CLI run was stable on rerun. A real v0.4.6 installation upgraded cleanly; a v0.4.6 downgrade preview reports a settings conflict. Native Claude Code hook delivery, ask enforcement, and hosted CI remain unverified.
 
 ### Onboarding and project-facts verification
 

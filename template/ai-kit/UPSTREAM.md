@@ -11,6 +11,7 @@ Use existing authorized access; credentials stay out of files/logs. Failure mean
 | Managed instructions, profiles, adapters, skills | Update only if unchanged from the installer baseline; otherwise store candidates and reconcile |
 | Project context, README, WIKI, CHANGELOG, decisions/ADRs | Preserve facts/history; bootstrap merges relevant guidance semantically |
 | ai-kit/settings.json | Preserve selected local settings; change mode/language/conventions explicitly |
+| Client settings (.claude/settings.json) | Change only AI-KIT-owned entries recorded as managed_json in installer state; preserve all other settings ([ownership](ADAPTERS.md#client-settings-ownership)) |
 | .gitignore | Replace only the installer-marked block; preserve other rules and existing tracked-file state |
 | Code, manifests, secrets, CI and production data | Outside rule synchronization |
 

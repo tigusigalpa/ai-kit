@@ -130,7 +130,7 @@ Repeat --agent to select the clients you use:
 python scripts/install.py /path/to/project --agent codex --agent claude --agent cursor
 ~~~
 
-Explicit selections replace recorded choices; tracked adapters left on disk block the change; the installer never deletes adapters.
+Explicit selections replace recorded choices; tracked adapters left on disk block the change; the installer never deletes adapters. Preview suggests clients detected from existing files.
 
 | Client | Entry provided |
 | --- | --- |

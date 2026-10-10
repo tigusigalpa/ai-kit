@@ -105,6 +105,7 @@ def visibility(root: Path, git: str) -> list[str]:
             (scratch / ".gitignore").write_bytes(merged.encode("utf-8"))
             for path in ("AGENTS.md", "PROJECT_CONTEXT.md", "ai-kit/CORE.md", "GEMINI.md",
                          ".agents/skills/go-work/SKILL.md", ".claude/skills/go-work/SKILL.md",
+                         ".agents/hooks/session-start.md", ".agents/hooks/session-start.sh",
                          ".windsurf/rules/ai-kit.md", "docs/DECISIONS.md"):
                 if ignored(path) != (mode == "private"):
                     errors.append(f"{mode}: wrong shared visibility: {path}")
@@ -143,7 +144,8 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "template/AGENTS.md", "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
                 "template/ai-kit/project.json",
                 "scripts/install.py", "scripts/router.py", "scripts/adr.py", "scripts/changelog.py",
-                "integrations/agents.json",
+                "integrations/agents.json", "integrations/claude-settings.git-ask.json",
+                "template/.agents/hooks/session-start.md", "template/.agents/hooks/session-start.sh",
                 "template/ai-kit/router/selection.json",
                 "template/ai-kit/router/providers/local.json",
                 "template/ai-kit/router/providers/gemini.json",
