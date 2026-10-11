@@ -18,6 +18,10 @@ Workflow skills run on an explicit request: /ai-kit-bootstrap in Claude Code, $a
 | [moodle-work](../.agents/skills/moodle-work/SKILL.md) | MOODLE |
 | [frontend-work](../.agents/skills/frontend-work/SKILL.md) | FRONTEND |
 | [library-work](../.agents/skills/library-work/SKILL.md) | LIBRARY |
+| [rust-work](../.agents/skills/rust-work/SKILL.md) | RUST |
+| [dotnet-work](../.agents/skills/dotnet-work/SKILL.md) | DOTNET |
+| [java-work](../.agents/skills/java-work/SKILL.md) | JAVA |
+| [infra-work](../.agents/skills/infra-work/SKILL.md) | INFRA |
 
 ## Lifecycle
 

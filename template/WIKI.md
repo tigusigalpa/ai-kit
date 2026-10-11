@@ -18,6 +18,10 @@ These are references, not confirmed project facts. After bootstrap group active 
 - [Moodle](ai-kit/stacks/MOODLE.md)
 - [Frontend](ai-kit/stacks/FRONTEND.md)
 - [Library/SDK](ai-kit/stacks/LIBRARY.md)
+- [Rust](ai-kit/stacks/RUST.md)
+- [.NET](ai-kit/stacks/DOTNET.md)
+- [Java](ai-kit/stacks/JAVA.md)
+- [Terraform/Helm](ai-kit/stacks/INFRA.md)
 
 ## Project documents
 

@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-The [changelog](../CHANGELOG.md) records kit evolution. v0.12.0 hardens benchmarks (resumable runs, per-unit failure records, configurable kit arms); v0.11.0 extends local v0.10.0 with isolated benchmarks, conservative measured routing and scoped context; [current verification](#measurement-led-development-verification) records limits. Earlier results remain in [v0.6.4 verification](V0_6_4.md), [v0.5.0 verification](V0_5_0.md), and the [audit disposition](MANUS_REVIEW.md).
+The [changelog](../CHANGELOG.md) records kit evolution. v0.13.0 adds Rust/.NET/Java/infra stack profiles; v0.12.0 hardens benchmarks (resumable runs, per-unit failure records, configurable kit arms); v0.11.0 extends local v0.10.0 with isolated benchmarks, conservative measured routing and scoped context; [current verification](#measurement-led-development-verification) records limits. Earlier results remain in [v0.6.4 verification](V0_6_4.md), [v0.5.0 verification](V0_5_0.md), and the [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
 Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
 
@@ -79,7 +79,7 @@ The [plan](DEVELOPMENT_PLAN.md), [benchmark contract](BENCHMARK.md) and [ADR 001
 - Release labeling: seven CLI checks passed; VERSION and wheel metadata agree at 0.11.0. The rebuilt wheel passed external install smoke; kit had zero errors/warnings.
 - Self-review covered boundaries/links, read-only obstructions, visibility, conflicts/locks, paired quality/cost, pins/provider availability and critical context. Synthetic workers establish no model result.
 
-Owner deferred real application/model calls. Hosted CI, other runtimes, native client/MCP activation, live switching and orchestration remain unverified. VERSION is 0.12.0, locally prepared without publication or a tag.
+Owner deferred real application/model calls. Hosted CI, other runtimes, native client/MCP activation, live switching and orchestration remain unverified. VERSION is 0.13.0, locally prepared without publication or a tag.
 
 ### v0.10.0 release preparation
 

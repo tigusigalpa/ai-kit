@@ -5,7 +5,7 @@ description: "Use when installing, configuring, upgrading, explaining, or mainta
 
 # AI-KIT
 
-AI-KIT is a reference distribution of instructions and an offline Python installer. It adds an AI-agent working environment to an application repository: verified project memory, stack profiles (Go, PHP, Laravel, Filament 5, Moodle, Python, frontend, libraries), a Kubernetes-ready container contract, guardrails, adaptive model routing, and native configuration for 11 AI clients.
+AI-KIT is a reference distribution of instructions and an offline Python installer. It adds an AI-agent working environment to an application repository: verified project memory, stack profiles (Go, PHP, Laravel, Filament 5, Moodle, Python, Rust, .NET, Java, Terraform/Helm, frontend, libraries), a Kubernetes-ready container contract, guardrails, adaptive model routing, and native configuration for 11 AI clients.
 Source: https://github.com/tigusigalpa/ai-kit. Commands below run from the repository root; read [VERSION](VERSION) instead of assuming a version.
 
 ## Two places, never mixed

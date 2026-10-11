@@ -19,7 +19,7 @@ LOCK = "ai-kit/.metrics/write.lock"
 IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,127}\Z")
 TOKEN_FIELDS = ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens")
 ATTEMPT_DISPOSITIONS = ("succeeded", "failed", "inconclusive")
-STACKS = ("LARAVEL", "FILAMENT", "GO", "MOODLE", "PYTHON", "unknown")
+STACKS = ("LARAVEL", "FILAMENT", "GO", "MOODLE", "PYTHON", "RUST", "DOTNET", "JAVA", "INFRA", "unknown")
 
 
 def _fields(value: object, allowed: set[str], label: str) -> dict:

@@ -693,6 +693,65 @@ def _filament_manifests(module: Path, composer: dict) -> list[str]:
     return evidence
 
 
+def _cargo_facts(module: Path) -> dict:
+    version = None
+    try:
+        match = re.search(r'^\s*rust-version\s*=\s*"([^"]+)"',
+                          (module / "Cargo.toml").read_text(encoding="utf-8"), re.M)
+        if match:
+            version = match.group(1)
+    except (OSError, UnicodeError):
+        pass
+    return {"language": "Rust", "version": version,
+            "commands": {"test": "cargo test", "build": "cargo build", "lint": "cargo clippy"}}
+
+
+def _dotnet_facts(module: Path, files: list[str]) -> dict:
+    project_file = next((name for name in sorted(files)
+                         if name.endswith((".csproj", ".fsproj", ".vbproj"))), None)
+    version = None
+    if project_file:
+        try:
+            match = re.search(r"<TargetFrameworks?>([^<]+)</TargetFrameworks?>",
+                              (module / project_file).read_text(encoding="utf-8"))
+            if match:
+                version = match.group(1).split(";")[0].strip()
+        except (OSError, UnicodeError):
+            pass
+    return {"language": ".NET", "version": version,
+            "commands": {"test": "dotnet test", "build": "dotnet build"}}
+
+
+def _java_facts(module: Path, files: list[str]) -> dict:
+    if "pom.xml" in files or "mvnw" in files:
+        version = None
+        if "pom.xml" in files:
+            try:
+                match = re.search(r"<(maven.compiler.release|java.version|maven.compiler.source)>([^<]+)</",
+                                  (module / "pom.xml").read_text(encoding="utf-8"))
+                if match:
+                    version = match.group(2).strip()
+            except (OSError, UnicodeError):
+                pass
+        runner = "./mvnw" if "mvnw" in files else "mvn"
+        return {"language": "Java", "version": version,
+                "commands": {"test": runner + " test", "build": runner + " compile"}}
+    runner = "./gradlew" if "gradlew" in files else "gradle"
+    return {"language": "Java", "version": None,
+            "commands": {"test": runner + " test", "build": runner + " build"}}
+
+
+def _infra_facts(module: Path, files: list[str]) -> tuple[list[str], dict]:
+    if "Chart.yaml" in files:
+        return ["Chart.yaml"], {"language": "Helm", "version": None,
+                                "commands": {"lint": "helm lint ."}}
+    terraform = sorted(name for name in files if name.endswith(".tf"))
+    if terraform:
+        return terraform, {"language": "Terraform", "version": None,
+                           "commands": {"lint": "terraform fmt -check", "test": "terraform validate"}}
+    return [], {"language": None, "version": None, "commands": {}}
+
+
 def detect_facts(target: Path) -> dict:
     """Detect per-module manifests, language, version, and suggested commands (unverified draft)."""
     modules: dict[str, dict] = {}
@@ -754,6 +813,44 @@ def detect_facts(target: Path) -> dict:
             if facts["language"] is None:
                 facts["language"] = "PHP"
             facts["commands"].setdefault("test", "vendor/bin/phpunit")
+        if "Cargo.toml" in files:
+            facts["manifests"].append("Cargo.toml")
+            facts["profiles"].append("RUST")
+            cargo = _cargo_facts(module)
+            if facts["language"] is None:
+                facts["language"] = cargo["language"]
+            if facts["version"] is None:
+                facts["version"] = cargo["version"]
+            facts["commands"].update(cargo["commands"])
+        if any(name.endswith((".csproj", ".fsproj", ".vbproj")) for name in files) or "global.json" in files:
+            project_files = [name for name in sorted(files)
+                           if name.endswith((".csproj", ".fsproj", ".vbproj"))]
+            facts["manifests"].extend(project_files or ["global.json"])
+            facts["profiles"].append("DOTNET")
+            dotnet = _dotnet_facts(module, files)
+            if facts["language"] is None:
+                facts["language"] = dotnet["language"]
+            if facts["version"] is None:
+                facts["version"] = dotnet["version"]
+            facts["commands"].update(dotnet["commands"])
+        if any(name in files for name in ("pom.xml", "mvnw", "build.gradle", "build.gradle.kts", "gradlew")):
+            java_manifest = next(name for name in ("pom.xml", "mvnw", "build.gradle", "build.gradle.kts", "gradlew")
+                                 if name in files)
+            facts["manifests"].append(java_manifest)
+            facts["profiles"].append("JAVA")
+            java = _java_facts(module, files)
+            if facts["language"] is None:
+                facts["language"] = java["language"]
+            if facts["version"] is None:
+                facts["version"] = java["version"]
+            facts["commands"].update(java["commands"])
+        infra_manifests, infra = _infra_facts(module, files)
+        if infra_manifests:
+            facts["manifests"].extend(infra_manifests)
+            facts["profiles"].append("INFRA")
+            if facts["language"] is None:
+                facts["language"] = infra["language"]
+            facts["commands"].update(infra["commands"])
         if facts["manifests"]:
             facts["profiles"] = sorted(set(facts["profiles"]))
             modules[prefix] = facts

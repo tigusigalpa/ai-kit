@@ -256,6 +256,42 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(self.plan()["detected_profiles"],
                          {"GO": ["api/"], "LARAVEL": ["web/"], "PHP": ["web/"]})
 
+    def test_new_stack_profiles_are_detected_with_facts(self):
+        self.write("core/Cargo.toml", b'[package]\nname = "core"\nrust-version = "1.75"\n')
+        self.write("api/api.csproj",
+                   b"<Project><PropertyGroup><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>")
+        self.write("svc/pom.xml", b"<project><properties><java.version>21</java.version></properties></project>")
+        self.write("infra/main.tf", b'resource "null_resource" "fixture" {}\n')
+        self.write("chart/Chart.yaml", b"apiVersion: v2\nname: chart\n")
+        facts = {module["path"]: module for module in install.detect_facts(self.target)["modules"]}
+        self.assertEqual(facts["/core/"]["profiles"], ["RUST"])
+        self.assertEqual(facts["/core/"]["language"], "Rust")
+        self.assertEqual(facts["/core/"]["version"], "1.75")
+        self.assertEqual(facts["/core/"]["commands"]["test"], "cargo test")
+        self.assertEqual(facts["/api/"]["profiles"], ["DOTNET"])
+        self.assertEqual(facts["/api/"]["language"], ".NET")
+        self.assertEqual(facts["/api/"]["version"], "net8.0")
+        self.assertEqual(facts["/svc/"]["profiles"], ["JAVA"])
+        self.assertEqual(facts["/svc/"]["version"], "21")
+        self.assertIn("test", facts["/svc/"]["commands"])
+        self.assertEqual(facts["/infra/"]["profiles"], ["INFRA"])
+        self.assertEqual(facts["/infra/"]["language"], "Terraform")
+        self.assertEqual(facts["/chart/"]["profiles"], ["INFRA"])
+        self.assertEqual(facts["/chart/"]["language"], "Helm")
+        self.assertEqual(self.plan()["detected_profiles"],
+                         {"DOTNET": ["api/"], "INFRA": ["chart/", "infra/"],
+                          "JAVA": ["svc/"], "RUST": ["core/"]})
+
+    def test_java_wrappers_select_wrapper_commands(self):
+        self.write("legacy/mvnw", b"#!/bin/sh\n")
+        self.write("gradle-app/build.gradle.kts", b"plugins { java }\n")
+        self.write("gradle-app/gradlew", b"#!/bin/sh\n")
+        facts = {module["path"]: module for module in install.detect_facts(self.target)["modules"]}
+        self.assertEqual(facts["/legacy/"]["commands"]["test"], "./mvnw test")
+        self.assertEqual(facts["/gradle-app/"]["profiles"], ["JAVA"])
+        self.assertEqual(facts["/gradle-app/"]["commands"]["test"], "./gradlew test")
+        self.assertEqual(facts["/gradle-app/"]["commands"]["build"], "./gradlew build")
+
     def test_detection_and_placeholder_persist_without_manifests(self):
         self.assertEqual(self.plan()["detected_profiles"], {})
         self.apply()

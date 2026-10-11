@@ -4,7 +4,7 @@
 
 **Stop re-explaining your project to every new AI chat.**
 
-AI-KIT drops a complete working environment for AI coding agents into your repository: project memory that survives every session, expert rules for **Go, PHP, Laravel, Filament 5, Moodle, and Python**, a **Kubernetes-ready** container standard, safety guardrails, **adaptive model routing**, and native configuration for **11 AI clients**. One installer, zero dependencies, nothing written until you approve the preview.
+AI-KIT drops a complete working environment for AI coding agents into your repository: project memory that survives every session, expert rules for **Go, PHP, Laravel, Filament 5, Moodle, Python, Rust, .NET, Java, and Terraform/Helm**, a **Kubernetes-ready** container standard, safety guardrails, **adaptive model routing**, and native configuration for **11 AI clients**. One installer, zero dependencies, nothing written until you approve the preview.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
@@ -18,7 +18,7 @@ AI-KIT drops a complete working environment for AI coding agents into your repos
 | | Feature | What it does for you |
 | --- | --- | --- |
 | 🧠 | **Project memory** | Verified facts, module map, commands, and decisions that every new chat reads first |
-| 🧩 | **Stack profiles** | Expert rules for Go, PHP, Laravel, Filament 5, Moodle, Python, frontend, and libraries, auto-detected per module |
+| 🧩 | **Stack profiles** | Expert rules for Go, PHP, Laravel, Filament 5, Moodle, Python, Rust, .NET, Java, Terraform/Helm, frontend, and libraries, auto-detected per module |
 | 🐳 | **Kubernetes-ready containers** | Every new Dockerfile and service ships with probes, graceful shutdown, non-root security, and manifests |
 | 🧭 | **Adaptive model routing** | A 0-6 capability ladder that picks the right model role and reasoning effort for each task |
 | 🤖 | **11 AI clients** | Codex, Claude Code, Cursor, Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi, Manus — with documentation evidence and lifecycle reporting |
@@ -33,7 +33,7 @@ AI-KIT drops a complete working environment for AI coding agents into your repos
 AI-KIT preserves verified facts and decisions across sessions, points agents at real project checks and records explicit authorization boundaries:
 
 - **They know the project.** Purpose, module map, versions, commands, and open questions live in `PROJECT_CONTEXT.md` and `ai-kit/project.json`, drafted by the installer from your manifests and confirmed by the agent at bootstrap.
-- **They follow your stack's rules.** Laravel transactions and queues, Go context and cancellation, Moodle capabilities and privacy, Filament authorization: the right profile applies to the files being changed.
+- **They follow your stack's rules.** Laravel transactions and queues, Go context and cancellation, Moodle capabilities and privacy, Filament authorization, Rust ownership and error boundaries, Terraform plan review: the right profile applies to the files being changed.
 - **They stay inside the lines.** Commits and pushes need your explicit request; risky commands ask first; secrets stay unread.
 - **They tell the truth.** An unavailable check is reported as unverified, never as passed.
 
@@ -67,6 +67,10 @@ flowchart LR
 | [Python](template/ai-kit/stacks/PYTHON.md) | Safe CLIs, pathlib, subprocess without a shell, isolated environments, uv/ruff for new packages |
 | [Frontend](template/ai-kit/stacks/FRONTEND.md) | Pinned package manager, type/lint/build checks, accessibility, public-config hygiene |
 | [Library/SDK](template/ai-kit/stacks/LIBRARY.md) | Public API stability, semantic versioning, consumer examples, compatibility matrices |
+| [Rust](template/ai-kit/stacks/RUST.md) | Ownership and borrowing, unsafe discipline, Result errors, cargo fmt/clippy/test, lockfile hygiene |
+| [.NET](template/ai-kit/stacks/DOTNET.md) | Nullable types, async with CancellationToken, deterministic disposal, dotnet build/test |
+| [Java](template/ai-kit/stacks/JAVA.md) | Maven/Gradle wrappers, exception boundaries, try-with-resources, wrapper test/verify |
+| [Terraform/Helm](template/ai-kit/stacks/INFRA.md) | Remote state, plan review, pinned providers and charts, fmt/validate and lint/template gates |
 
 Profiles combine per module, so a monorepo with a Laravel app in `web/` and a Go service in `api/` gets the right rules in each place. Opinionated **owner conventions** for Laravel (no database foreign keys, public UUID beside the internal id, Policy + Factory + Seeder per model, one table per migration, Filament 5+ for new panels) are available; use `--conventions standard` to follow your project's own conventions instead.
 
