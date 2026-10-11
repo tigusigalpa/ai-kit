@@ -20,6 +20,7 @@ _COMMANDS = {
     "providers": ("router", "providers"),
     "metrics": ("metrics", None),
     "evaluate": ("evaluate", None),
+    "benchmark": ("benchmark", None),
     "adr": ("adr", None),
     "changelog": ("changelog", None),
     "check": ("check_kit", None),
@@ -31,7 +32,10 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="aikit", description=__doc__)
     parser.add_argument("command", nargs="?", choices=sorted(_COMMANDS),
                         help="AI-KIT command to run")
-    args, rest = parser.parse_known_args(argv)
+    values = list(argv) if argv is not None else sys.argv[1:]
+    # Parse only the dispatcher command; child --help and flags belong to the child parser.
+    args = parser.parse_args(values[:1])
+    rest = values[1:]
     if args.command is None:
         parser.print_help()
         return 2

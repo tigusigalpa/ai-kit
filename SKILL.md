@@ -73,11 +73,14 @@ Presets set every extra they manage on or off; explicit flags win, and the previ
 
 - `python scripts/router.py route "task"` classifies English or Russian task text and explains signals; overrides include `--operation`, `--risk`, `--level`, `--role`, `--effort`, `--provider`, and `--model`.
 - `python scripts/router.py configure TARGET --apply` writes `ai-kit/router/resolved.json` and, for Aider, `.aider.conf.yml`.
-- Providers available to the project are recorded in `ai-kit/router/selection.json`: OpenAI, Anthropic, Kimi, Gemini, and local or Ollama models. `python scripts/router.py providers` lists status and sources; `python scripts/metrics.py analyze TARGET` aggregates the local journal per provider to inform that selection. Schema 2 task records add attempt disposition while schema 1 journals remain readable.
+- Providers available to the project are recorded in `ai-kit/router/selection.json`: OpenAI, Anthropic, Kimi, Gemini, and local or Ollama models. `python scripts/router.py providers` lists status and sources; `python scripts/metrics.py analyze TARGET` aggregates the local journal per provider to inform that selection. Schema 3 adds controlled-trial strata and semantic review; schemas 1/2 remain readable.
+- Optional `routing.json` configures manual/fixed/recommended/adaptive modes, task/project pins and economy/balanced/quality profiles. Adaptive recommendations require comparable measured evidence; explicit controls win and live switching is never implied.
+- `aikit benchmark run TARGET --pack PRIVATE_PACK` previews isolated A/B/C protocol-worker execution; review/report/export separates semantic acceptance from tests. `metrics compare|stacks|propose|restore` supports actual-cost analysis and immutable proposals without automatic selection changes. Read [the worker contract](docs/BENCHMARK.md) before a real run.
+- `aikit context select TARGET --path MODULE --budget BYTES` selects declared profiles and critical rules/ADRs, detects duplicates and reports measured bytes without changing files or dropping critical requirements.
 
 ## Unified CLI
 
-A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|context|adapters|route|configure|providers|metrics|evaluate|adr|changelog|check|docker ...`. A `pyproject.toml` console script exposes it after `pip install -e .`; a portable wheel carries the same resources and is smoke-tested in CI. The standalone `python scripts/*.py` commands and the Makefile remain equivalent.
+A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|context|adapters|route|configure|providers|metrics|evaluate|benchmark|adr|changelog|check|docker ...`. A `pyproject.toml` console script exposes it after pip installation; a portable wheel carries the same resources with a CI smoke-install job. Standalone scripts remain equivalent; the Makefile wraps common operations.
 
 ## Maintaining AI-KIT itself
 
@@ -89,7 +92,7 @@ A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|
 
 ## Boundaries
 
-AI-KIT writes instructions and configuration; it does not run agents. Confirm activation in the actual client. Permission rules, ignore files, and MCP posture reduce risk but are not a security boundary. Hosted CI and real application trials are recorded as unverified unless evidence exists.
+AI-KIT writes instructions and configuration; its opt-in benchmark invokes only an explicitly configured protocol worker. No live vendor adapter is shipped. Confirm activation in the actual client. Permission rules, ignore files, and MCP posture reduce risk but are not a security boundary. Hosted CI and real application trials are recorded as unverified unless evidence exists.
 
 ## Use this repository as a skill
 

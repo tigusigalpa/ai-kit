@@ -13,6 +13,7 @@
 | Provider review listing, doctor --fix, CI self-install, golden snapshot | [ADR 0009](adr/0009-provider-review-doctor-fix-and-ci-self-install.md) |
 | Measurement analysis for routing and Gemini verification | [ADR 0010](adr/0010-metrics-analysis-and-gemini-verification.md) |
 | Evidence freshness, adapter lifecycle, evaluation coverage, MCP posture, portable wheel | [ADR 0011](adr/0011-evidence-lifecycle-and-evaluation.md) |
+| Isolated benchmarks, measured recommendations, proposal history and scoped context | [ADR 0012](adr/0012-measurement-led-routing.md) |
 | MIT selected by the owner on 2026-10-08 | [License](../LICENSE) |
 | Preserve candidate drafts and require review before adapter retirement | [Manus patch decisions](MANUS_REVIEW.md#decisions) |
 

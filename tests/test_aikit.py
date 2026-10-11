@@ -21,9 +21,18 @@ class AikitCliTests(unittest.TestCase):
         self.assertIn('"level"', output.getvalue())
 
     def test_install_help_forwards_arguments(self):
-        with self.assertRaises(SystemExit) as context:
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as context:
             aikit_cli.main(["install", "--help"])
         self.assertEqual(context.exception.code, 0)
+        self.assertIn("--preset", output.getvalue())
+
+    def test_benchmark_help_reaches_worker_commands(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as context:
+            aikit_cli.main(["benchmark", "--help"])
+        self.assertEqual(context.exception.code, 0)
+        self.assertIn("{run,report,review,export}", output.getvalue())
 
     def test_version_reads_from_version_file(self):
         self.assertEqual(aikit_cli.__version__, (Path(__file__).resolve().parents[1] / "VERSION")

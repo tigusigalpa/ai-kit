@@ -28,7 +28,8 @@ def installed_state(target: Path, registry: dict) -> dict:
     if not path.is_file():
         raise ValueError("No installer state found; is AI-KIT installed in this project?")
     state = install.read_json(path, {})
-    install.validate_state(state, target, registry["names"])
+    # Read-only audits must reach their obstruction report; lexical/link boundaries stay strict.
+    install.validate_state(state, target, registry["names"], allow_obstructions=True)
     return state
 
 

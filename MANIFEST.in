@@ -1,5 +1,11 @@
 include VERSION LICENSE AGENTS.md PROJECT_CONTEXT.md README.md WIKI.md CHANGELOG.md SECURITY.md SKILL.md BOOTSTRAP_PROMPT.md CONTRIBUTING.md
 include .gitignore
+include pyproject.toml Makefile MANIFEST.in
+recursive-include ai-kit *.md
+prune ai-kit/.metrics
+prune ai-kit/.upstream-cache
+recursive-include .agents *
+recursive-include tests *.py *.json *.ps1
 recursive-include docs *
 recursive-include integrations *
 recursive-include template *

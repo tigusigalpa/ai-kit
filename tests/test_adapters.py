@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import adapters
@@ -85,6 +86,19 @@ class AdapterTests(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(adapters.main(["retire", str(self.target), "--agent", "cursor"]), 0)
         self.assertTrue((self.target / ".cursor/rules/ai-kit.mdc").is_file())
+
+    def test_audit_obstruction_does_not_hide_a_linked_ancestor(self):
+        self.apply(agents=["codex", "cursor"])
+        path = self.target / ".cursor/rules/ai-kit.mdc"
+        path.unlink()
+        path.parent.rmdir()
+        path.parent.write_text("native data\n", encoding="utf-8")
+        original = install.is_link
+        with mock.patch.object(install, "is_link", side_effect=lambda p: p == self.target / ".cursor" or original(p)):
+            with self.assertRaisesRegex(ValueError, "linked"):
+                adapters.report(root=self.source, project=self.target)
+            with self.assertRaisesRegex(ValueError, "linked"):
+                adapters.retirement_plan(self.target, "cursor", root=self.source)
 
 
 if __name__ == "__main__":

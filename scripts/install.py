@@ -88,20 +88,24 @@ def is_link(path: Path) -> bool:
     }
 
 
-def safe_path(target: Path, relative: str) -> Path:
+def safe_path(target: Path, relative: str, *, allow_obstructions: bool = False) -> Path:
+    """Guard lexical/link boundaries; only read-only audits may allow file/directory obstructions."""
     parts = relative.replace("\\", "/").split("/")
     if not parts or any(p in {"", ".", ".."} or ":" in p for p in parts):
         raise ValueError(f"Unsafe relative path: {relative}")
     path = target.joinpath(*parts)
     path.resolve().relative_to(target.resolve())
+    obstruction = None
     for candidate in [path, *path.parents]:
         if candidate == target.parent:
             break
         if is_link(candidate):
             raise ValueError(f"Refusing linked installation path: {candidate}")
         if candidate != path and candidate.exists() and not candidate.is_dir():
-            raise NotADirectoryError(f"Installation parent is not a directory: {candidate}")
-    if path.exists() and not path.is_file():
+            obstruction = candidate
+    if obstruction is not None and not allow_obstructions:
+        raise NotADirectoryError(f"Installation parent is not a directory: {obstruction}")
+    if path.exists() and not path.is_file() and not allow_obstructions:
         raise ValueError(f"Destination is not a regular file: {relative}")
     return path
 
@@ -253,7 +257,7 @@ def validate_settings(settings: dict) -> None:
                 raise ValueError(f"Settings upstream.{field} must be a string")
 
 
-def validate_state(state: dict, target: Path, agents: set[str] | None = None) -> None:
+def validate_state(state: dict, target: Path, agents: set[str] | None = None, *, allow_obstructions: bool = False) -> None:
     if type(state.get("schema")) is not int or state["schema"] != 1:
         raise ValueError("Unsupported installer state schema; expected schema 1")
     if not isinstance(state.get("accepted_version"), str) or not state["accepted_version"].strip():
@@ -266,7 +270,10 @@ def validate_state(state: dict, target: Path, agents: set[str] | None = None) ->
     for relative, record in records.items():
         if not isinstance(relative, str) or not isinstance(record, dict):
             raise ValueError("State files must map relative paths to objects")
-        safe_path(target, relative)
+        if allow_obstructions:
+            safe_path(target, relative, allow_obstructions=True)
+        else:
+            safe_path(target, relative)
         for field in ("installed_hash", "source_hash"):
             value = record.get(field)
             if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
@@ -279,7 +286,10 @@ def validate_state(state: dict, target: Path, agents: set[str] | None = None) ->
     for relative, entries in managed.items():
         if not isinstance(relative, str) or not isinstance(entries, dict):
             raise ValueError("State managed_json must map relative paths to objects")
-        safe_path(target, relative)
+        if allow_obstructions:
+            safe_path(target, relative, allow_obstructions=True)
+        else:
+            safe_path(target, relative)
         for key, values in entries.items():
             if (not isinstance(key, str) or not re.fullmatch(r"(?:permissions|hooks)\.[A-Za-z]+", key) or
                     not isinstance(values, list) or any(not isinstance(value, str) for value in values)):

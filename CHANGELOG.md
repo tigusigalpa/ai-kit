@@ -1,5 +1,16 @@
 # AI-KIT changelog
 
+## v0.11.0 (2026-10-11)
+
+- Fixed provider/model overrides carrying inherited effort; synchronized Gemini routing policy with the reviewed registry. Existing selection/settings defaults stay readable and unchanged.
+- Fixed the untested v0.10 adapter audit failing before it could report file-blocked native paths. Read-only state validation now allows obstructions after strict link/boundary checks; installation writes retain their refusal guards.
+- Forwarded subcommand help to the actual command parser, so `aikit benchmark --help` and install flags are discoverable.
+- Added preview-first `aikit benchmark run|review|report|export`: immutable Git blobs, separate A/B/C workspaces/repeats, equal fixed A/B controls, a configured worker protocol, actual-telemetry coverage, checks plus explicit semantic review, private JSON/Markdown reports and idempotent journal export. No live vendor adapter or application savings is claimed.
+- Added metric schema 3 for revision/case/repetition/stack/class/level/capability/review strata, keeping schemas 1/2 readable. Comparisons require matched reviewed tasks and actual single-currency costs, include all failures/retries and refuse lower-quality/unknown/estimated spend claims. Added per-stack analysis.
+- Added optional manual/fixed/recommended/adaptive modes, task/project pins and economy/balanced/quality profiles. Learned recommendations require comparable distinct-case samples and quality floors; unsupported controls or insufficient evidence retain the capability recommendation. Immutable proposals preserve prior selection and support explicit backed-up restore without automatic policy writes.
+- Added read-only module context selection, duplicate detection and byte-budget reporting while preserving critical requirements and architectural decisions. Added staged acceptance plan and orchestration research in ADR 0012.
+- Expanded wheel resources and smoke checks outside the source checkout, including installed validation, new command imports and context selection. Windows/Python 3.12.14 full discovery ran 248 tests (244 passed, four runtime skips); post-review checks and offline wheel installation passed; kit validation returned zero errors/warnings. [Results and limits](docs/IMPLEMENTATION.md#measurement-led-development-verification).
+
 ## v0.10.0 (2026-10-10)
 
 - Fixed `metrics.py analyze` task attribution: the identity is now `(experiment, arm, task_id)`, so baseline and kit rows with the same task ID no longer collapse. Added backward-readable measurement schema 2 with required per-attempt `succeeded`/`failed`/`inconclusive` disposition, coverage, and decisive-attempt rate; schema 1 journals remain valid with unknown disposition.
@@ -8,38 +19,7 @@
 - Added the private `aikit evaluate scaffold|coverage` harness for opaque baseline/kit task packs and measurement-pair coverage. It reports missing pairs and unexpected records but does not inspect prompts or infer semantic correctness.
 - Added MCP posture and an indirect-instruction boundary: untrusted repository/remote content cannot authorize commands, integrations, credentials, or permission changes; MCP servers remain opt-in, least-privilege, and project-recorded.
 - Packaged the `aikit` console command with bundled templates/resources for a portable wheel and added a six-cell Windows/macOS/Linux, Python 3.10/3.14 CI smoke-install job. The hosted job has not run on this revision.
-- Verification is pending: the current agent shell has no accessible Python interpreter, so local checker, unit, build, and wheel smoke results are not established. New regressions cover metrics, context evidence, adapters, evaluator, checker, and CLI behavior; run the documented commands before tagging `v0.10.0`.
-
-## v0.9.0 (2026-10-10)
-
-- Added `metrics.py analyze`, a per-provider aggregation (attempts, reviewed tasks, success rate, cost coverage, cost per correct result, models/efforts) that closes the loop between local measurements and routing: use it to inform `ai-kit/router/selection.json`, never to rewrite it automatically. It writes nothing and performs no API calls or price lookup.
-- Verified the Gemini provider: active cheap/work/escalation model IDs were read from the current [Gemini API models](template/ai-kit/router/providers/gemini.md) documentation and recorded in [gemini.json](template/ai-kit/router/providers/gemini.json). Reasoning goes through Gemini's thinking control, so effort stays unknown until its exact levels are confirmed against the thinking documentation.
-- Kit validation now returns zero errors and zero warnings (the previous pending-Gemini note is resolved); Gemini route/configure now resolve real model IDs.
-- Synchronized the unified-CLI documentation with the released `providers` proxy and added provider-review/analyze coverage to the maintenance continuity procedure.
-- Verification: 199 tests ran, 197 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and zero warnings.
-
-## v0.8.0 (2026-10-10)
-
-- Added `router.py providers` (and `aikit providers`) to list each provider's tier, verification status, date, and primary-doc sources, so pending or stale model mappings are visible for review instead of buried in JSON. Gemini stays pending until a maintainer verifies IDs against current primary documentation.
-- Added `doctor.py --fix`, which re-runs the installer to restore missing managed files and missing owned documents; local edits and conflicts are preserved and reported (exit 2), never overwritten.
-- The CI extra now installs AI-KIT itself from a reviewed revision when installer state is absent, so private-mode projects get CI validation instead of a "missing state" failure. Pin the clone to a tag or SHA before relying on it.
-- Added a golden snapshot test that pins the exact generated `.claude/settings.local.json` (strict preset, Laravel+Go fixture) to catch silent drift in the native-settings/guards/data-guards merge.
-- Verification: 197 tests ran, 195 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Hosted CI and the portable wheel remain unverified.
-
-## v0.7.0 (2026-10-10)
-
-- Added a unified `aikit` command line ([aikit_cli.py](aikit_cli.py)) that dispatches `install`, `doctor`, `route`, `configure`, `metrics`, `adr`, `changelog`, `check`, and `docker` to their scripts, plus a [pyproject.toml](pyproject.toml) console script (`pip install -e .` exposes `aikit`). The version is derived from VERSION; a portable wheel still needs the package-data packaging step, which stays deferred.
-- Expanded the CI matrix to macOS and Python 3.14 and added a `route` smoke step through the unified CLI.
-- The doctor now reports when `ai-kit/project.json` and `PROJECT_CONTEXT.md` module maps disagree, so machine and human project facts cannot silently drift apart.
-- Relaxed `chat_language` to accept non-Latin language names (for example Ukrainian or Chinese); it remains a nonempty, control-character-free name up to 60 characters.
-- Verification: 191 tests ran, 189 passed, two skipped (Windows symlink privilege and POSIX sh unavailable); kit validation returned zero errors and one pending-Gemini warning. Hosted CI on the expanded matrix remains unverified until the next push; a portable wheel is deferred.
-
-## v0.6.5 (2026-10-10)
-
-- Added a root [SKILL.md](SKILL.md) that makes the repository itself a skill: cloned into a skills directory it carries the installer and teaches any assistant to install, configure, upgrade, explain, and maintain the kit; the checker requires it and validates its frontmatter.
-- Revised ignore rules. The reference repository now ignores IDE, editor, and OS files; `.idea/` was removed from the Git index (local files kept). Application policies gain the useful `.gitignore_real` rules: private mode keeps AI client configuration folders out of Git, and both modes ignore extracted AI-KIT bundles, `.netrc`, `.pypirc`, Aider history, PHP-CS-Fixer and Homestead files, Zed/Nova folders, and Delve binaries. Node modules also ignore Next, Nuxt, SvelteKit, Turbo, and Parcel output. Rules that would hide project source (global `vendor/`, `SKILL.md`, `/bin/`, `/config.php`) stay scoped or excluded. The bundle pattern uses a hyphen because `/AI-KIT*/` matched `ai-kit/` itself on case-insensitive systems and would hide AI-KIT files in team mode.
-- Rewrote the root README as a feature showcase: a features-at-a-glance table, a feature tour (project memory, stack profiles for Go/PHP/Laravel/Filament 5/Moodle/Python, the Kubernetes-ready container contract, adaptive model routing, 11 AI clients, native configuration, guardrails, workflows), a three-step quick start, and an honest-boundaries section. Claims were checked against the canonical template documents. The root README budget rises to 20000 bytes; other documents keep 12000.
-- Verification: 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning, including the new private/team visibility checks. Client activation and hosted CI remain unverified.
+- Initial release preparation established no checker, unit, build or wheel-smoke result because the shell did not expose Python. Later bundled-runtime checks cover v0.11.0 preparation; see [current verification](docs/IMPLEMENTATION.md#measurement-led-development-verification). The hosted job and pristine v0.10.0 reconstruction remain unverified.
 
 ## v0.6.4 (2026-10-10)
 
@@ -65,5 +45,5 @@
 
 ## Earlier kit
 
-The [archived v0.4 changelog](docs/history/v0.4-changelog.md) preserves the v0.4.5-v0.4.7 entries verbatim. The [archived v0.3 changelog](docs/history/v0.3-changelog.md) preserves the v0.3.3-v0.3.8 entries verbatim. The [archived v0.2 changelog](docs/history/v0.2-changelog.md) preserves the v0.2-v0.2.2 and Windows fixture entries verbatim. The [archived v0.1 changelog](docs/history/v0.1-changelog.txt) preserves the detailed pre-refactor record verbatim. Its old relative paths and past language/router agreements are historical data.
+The [archived v0.6.5-v0.9 entries](docs/history/v0.6.5-v0.9-changelog.md) preserve later local releases. The [archived v0.4 changelog](docs/history/v0.4-changelog.md) preserves the v0.4.5-v0.4.7 entries verbatim. The [archived v0.3 changelog](docs/history/v0.3-changelog.md) preserves the v0.3.3-v0.3.8 entries verbatim. The [archived v0.2 changelog](docs/history/v0.2-changelog.md) preserves the v0.2-v0.2.2 and Windows fixture entries verbatim. The [archived v0.1 changelog](docs/history/v0.1-changelog.txt) preserves the detailed pre-refactor record verbatim. Its old relative paths and past language/router agreements are historical data.
 [Prior routing decision](docs/adr/0001-adaptive-model-routing.md) records the accepted routing baseline; this changelog is not copied into projects.

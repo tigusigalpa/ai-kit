@@ -1,0 +1,11 @@
+{
+  "schema": 1,
+  "mode": "recommended",
+  "profile": "balanced",
+  "project_pin": null,
+  "task_pins": {},
+  "minimum_cases": 20,
+  "quality_floor": 0.8,
+  "context_bytes": {"economy": 16000, "balanced": 32000, "quality": 64000},
+  "orchestration": {"planner": "work", "executor": "work", "reviewer": "work", "escalation": "escalation"}
+}

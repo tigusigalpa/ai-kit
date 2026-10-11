@@ -27,8 +27,8 @@ Normal work uses checks/self-review; critical correctness needs independent revi
 
 ## Providers
 
-Active role defaults: [openai.json](providers/openai.json), [anthropic.json](providers/anthropic.json), and [kimi.json](providers/kimi.json), interpreted by their provider references.
-[local.json](providers/local.json) maps the same roles to self-hosted models declared in [selection.json](selection.json); [gemini.json](providers/gemini.json) is a pending scaffold without verified model IDs.
+Active role defaults: [openai.json](providers/openai.json), [anthropic.json](providers/anthropic.json), [kimi.json](providers/kimi.json), and [gemini.json](providers/gemini.json), interpreted by their provider references.
+[local.json](providers/local.json) maps the same roles to self-hosted models declared in [selection.json](selection.json). Gemini's reviewed model mapping is active; its thinking controls remain unknown until declared against primary documentation.
 Registry/configuration plus current primary docs establish capabilities; model names alone do not.
 Unavailable switching means a recommendation, not a claim of execution. Respect explicit model, cost, and latency choices.
 
@@ -54,6 +54,21 @@ Examples from the reference checkout:
 python scripts/router.py route "implement payment parsing" --operation implement --risk payments
 python scripts/router.py route "review the patch" --level 3 --role work --effort high
 ~~~
+
+## Modes, pins and optimization profiles
+
+Optional [routing.json](routing.json) selects `manual`, `fixed`, `recommended` (default) or `adaptive`, with `economy`, `balanced` (default) or `quality`. Missing routing.json preserves the default behavior of older installations. Selection.json still owns provider/model role mappings; no command applies learned changes automatically.
+
+`project_pin` and `task_pins.<opaque-id>` contain provider/model/effort (null effort means no control). A task pin overrides a project pin; explicit per-call provider/model/effort overrides pins. Manual/fixed requires a resolved pin or explicit controls. Pins and configured effort are preserved. Switching provider/model discards inherited model-bound effort; an explicit incompatible effort is refused.
+
+`route` accepts --mode, --profile, --task-id, --stack and repeatable --capability. Adaptive mode considers matching schema-3 measurements with the same stack/class/level/capabilities. Default minimum is 20 distinct immutable cases; repeated trials of one case do not inflate that count. Candidates need complete actual single-currency costs, a Wilson 95% lower quality bound above `quality_floor`, identical case/repetition sets and quality no worse than the current model. All retries count. Mixed-model strategies cannot be attributed to one model. Missing/incomparable evidence retains the capability recommendation. Current catalogue/model/effort/capability declarations must permit the proposed controls; unsupported candidates are skipped. Declare required capability labels in the model's provider role configuration; unknown capabilities cannot be asserted from a model name.
+
+Training excludes the instruction baseline and compares kit trials within the same experiments; reused opaque case IDs from different task packs cannot establish comparable history. Pending/incomplete trials and mixed-model recovery are not discarded to inflate quality; pending review, unattributable executed models or mixed strategies block a single-model recommendation.
+Historical access does not declare current availability: learned choices are limited to providers selected by default/role mappings, plus configured self-hosted models. Project/task pins also remain authoritative in the adaptive benchmark arm.
+
+Economy prefers lower cost, can use supported low effort for bounded level-2 work and has a smaller context byte target. Balanced also requires comparable measured time no worse than the incumbent. Quality raises automatic low effort to high when supported, requires independent review and a measured quality lower bound of at least 0.95. Explicit controls, risk floors and critical context take precedence. Escalation remains diagnosed rather than a retry of every lower rung.
+
+`context_bytes` sets per-profile targets; the helper returns a recommendation and never drops critical rules for a budget. `orchestration` maps planner/executor/reviewer/escalation to configured cheap/work/escalation roles; these are research mappings, not executed delegation. Every route returns `execution_confirmed=false`; verify a live client separately. Use the [measurement contract](../METRICS.md) for proposal history and explicit restore.
 
 ## Optional decision record
 

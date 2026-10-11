@@ -30,7 +30,7 @@ AI-KIT drops a complete working environment for AI coding agents into your repos
 
 ## Why AI-KIT
 
-AI agents are brilliant and forgetful. Each new session rediscovers your stack, guesses the test command, forgets the decision you made last week, and may happily run `git push` or read your `.env`. AI-KIT turns your repository into a place where agents behave like a senior teammate who has read the docs:
+AI-KIT preserves verified facts and decisions across sessions, points agents at real project checks and records explicit authorization boundaries:
 
 - **They know the project.** Purpose, module map, versions, commands, and open questions live in `PROJECT_CONTEXT.md` and `ai-kit/project.json`, drafted by the installer from your manifests and confirmed by the agent at bootstrap.
 - **They follow your stack's rules.** Laravel transactions and queues, Go context and cancellation, Moodle capabilities and privacy, Filament authorization: the right profile applies to the files being changed.
@@ -242,7 +242,15 @@ Exit codes: 0 success, 1 refusal, 2 unresolved conflicts. The installer works of
 
 ## Honest boundaries
 
-AI-KIT writes instructions and configuration; it does not run your agents. Client formats follow each vendor's current documentation, but activation should be confirmed in your actual client. Permission rules and ignore files reduce risk without being a security boundary, and model routing is a recommendation unless your client exposes a switching control.
+Routing recommends controls; confirm actual client activation. Permission rules and ignores reduce risk without being a security boundary. The optional benchmark requires an explicitly configured worker; no live vendor adapter is shipped.
+
+## Measure, recommend and select context
+
+`aikit benchmark run TARGET --pack PRIVATE_PACK` previews isolated A/B/C trials. --apply invokes a reviewed worker; review/report/export produces private measured reports. Equal fixed A/B models and separate semantic review prevent tests alone from implying savings. [Worker contract and examples](docs/BENCHMARK.md).
+
+`aikit route "task" --project TARGET --mode adaptive` uses comparable actual-cost/quality history when sufficient; explicit pins win. Profiles: economy/balanced/quality. `metrics compare|stacks|propose|restore` analyzes evidence without automatically changing selection. [Routing policy](template/ai-kit/router/POLICY.md#modes-pins-and-optimization-profiles).
+
+`aikit context select TARGET --path api --budget 32000` selects module rules, detects duplicates and measures bytes while retaining critical requirements/ADRs above budget. No token savings or client loading is inferred. [Development stages](docs/DEVELOPMENT_PLAN.md).
 
 ## Teach any AI about AI-KIT
 

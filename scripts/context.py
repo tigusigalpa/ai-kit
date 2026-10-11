@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
+import re
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -55,14 +57,97 @@ def apply_snapshot(plan: dict) -> bool:
     return True
 
 
+def select_context(target: Path, *, path: str = ".", budget: int = 32000) -> dict:
+    """Select instructions by declared module scope; budgets cannot remove critical rules."""
+    target = target_root(target)
+    if type(budget) is not int or budget < 1:
+        raise ValueError("Context budget must be a positive byte count")
+    if path == ".":
+        relative = ""
+    else:
+        # Probe a file rather than accepting directory links through resolve().
+        install.safe_path(target, path.rstrip("/") + "/__context_probe__")
+        relative = path.strip("/")
+        if path.startswith(("/", "\\")):
+            raise ValueError("Module path must be relative")
+    facts = install.read_json(install.safe_path(target, PROJECT_FACTS), {})
+    if facts.get("schema") != 1 or not isinstance(facts.get("modules"), list):
+        raise ValueError("Missing/invalid project module map")
+    profiles, matching, scoped = set(), [], []
+    for module in facts["modules"]:
+        if not isinstance(module, dict) or not isinstance(module.get("path"), str) or not install.MODULE_PATH.fullmatch(module["path"]):
+            raise ValueError("Invalid declared module path")
+        scope = module["path"].strip("/")
+        if not scope or relative == scope or relative.startswith(scope + "/"):
+            if not isinstance(module.get("profiles"), list) or any(not isinstance(p, str) or not re.fullmatch(r"[A-Z][A-Z0-9_]*", p) for p in module["profiles"]):
+                raise ValueError("Invalid module profiles")
+            scoped.append(module)
+    # A nested declared module supersedes its parent's stack, while shared instructions still apply.
+    deepest = max((len(m["path"]) for m in scoped), default=0)
+    for module in scoped:
+        if len(module["path"]) == deepest:
+            matching.append(module["path"])
+            profiles.update(module["profiles"])
+    critical = ["AGENTS.md", "ai-kit/CORE.md", "ai-kit/settings.json", "PROJECT_CONTEXT.md",
+                "ai-kit/ENGINEERING.md", "ai-kit/SECURITY.md", "docs/DECISIONS.md"]
+    settings = install.read_json(install.safe_path(target, "ai-kit/settings.json"), {})
+    if settings.get("conventions") == "owner" and profiles & {"LARAVEL", "FILAMENT"}:
+        critical.append("ai-kit/profiles/OWNER.md")
+    # ADRs preserve architectural constraints between sessions; do not truncate them for a budget.
+    adr_dir = target / "docs/adr"
+    if install.is_link(adr_dir):
+        raise ValueError("Refusing linked ADR directory")
+    if adr_dir.is_dir():
+        critical.extend(p.relative_to(target).as_posix() for p in sorted(adr_dir.glob("*.md")) if p.name != "0000-template.md")
+    if relative:
+        parts = relative.split("/")
+        critical.extend("/".join(parts[:i]) + "/AGENTS.md" for i in range(1, len(parts) + 1))
+    required_profiles = ["ai-kit/stacks/" + p + ".md" for p in sorted(profiles)]
+    critical.extend(required_profiles)
+    selected, missing, duplicates = [], [], []
+    hashes: dict[str, str] = {}
+    for name in dict.fromkeys(critical):
+        candidate = install.safe_path(target, name)
+        if not candidate.is_file():
+            # Nested instructions and project decision records are optional; Core/settings are required.
+            if name in {"AGENTS.md", "ai-kit/CORE.md", "ai-kit/settings.json", "PROJECT_CONTEXT.md",
+                        "ai-kit/ENGINEERING.md", "ai-kit/SECURITY.md"} or name in required_profiles:
+                missing.append(name)
+            continue
+        data = candidate.read_bytes()
+        digest = hashlib.sha256(data).hexdigest()
+        if digest in hashes:
+            duplicates.append({"path": name, "same_as": hashes[digest]})
+        else:
+            hashes[digest] = name
+        selected.append({"path": name, "bytes": len(data), "sha256": digest, "critical": True})
+    if missing:
+        raise ValueError("Missing required context: " + ", ".join(missing))
+    total = sum(item["bytes"] for item in selected)
+    return {"selected": selected, "duplicates": duplicates, "modules": matching, "profiles": sorted(profiles),
+            "total_bytes": total, "budget_bytes": budget, "over_budget": total > budget,
+            "selection_complete": bool(matching),
+            "note": "Declared modules may still need bootstrap verification. Byte counts are not token counts. "
+                    "Critical rules, matching profiles and architecture decisions are retained even above budget. "
+                    "Duplicate critical files retain their scope/relative-link meaning. "
+                    "Unrelated profiles and instruction history are excluded; no files are changed."}
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
     snapshot = sub.add_parser("snapshot", help="Preview or record current manifest evidence in project.json")
     snapshot.add_argument("project", type=Path)
     snapshot.add_argument("--apply", action="store_true")
+    select = sub.add_parser("select", help="Select module instructions and measure a byte budget without writing")
+    select.add_argument("project", type=Path)
+    select.add_argument("--path", default=".", help="Relative module/directory scope")
+    select.add_argument("--budget", type=int, default=32000, help="Byte budget; critical context is never dropped")
     args = parser.parse_args(argv)
     try:
+        if args.command == "select":
+            print(json.dumps(select_context(args.project, path=args.path, budget=args.budget), indent=2))
+            return 0
         plan = snapshot_plan(args.project)
         print(json.dumps({"target": plan["target"], "preview": not args.apply, "changed": plan["changed"],
                           "path": plan["path"], "detected_modules": plan["detected_modules"]}, indent=2))

@@ -53,7 +53,7 @@ Preview writes nothing. Apply writes the local `ai-kit/.metrics/tasks.jsonl` jou
 
 ## Interpret totals
 
-Summary groups records by experiment and arm. It reports reviewed success, attempts, rework/escalations, elapsed attempt time, token coverage, known costs by currency, and estimated-cost coverage. Cost per correct result divides **all** task costs, including unsuccessful work, by correct results. It remains unknown unless every attempt has a cost in one currency and at least one result is correct. Known subtotals with incomplete coverage are not total spend.
+Summary groups records by experiment and arm. It reports reviewed success, attempts, rework/escalations, elapsed attempt time, token coverage, known costs by currency, and estimated-cost coverage. Cost per correct result divides **all** task costs, including unsuccessful work, by correct results. It remains unknown unless every attempt has an actual (billing/provider-usage) cost in one currency and at least one result is correct. Estimated costs remain labeled subtotals and cannot establish actual cost per correct result or savings. Known subtotals with incomplete coverage are not total spend.
 
 These are descriptive records, not evidence of causation or savings. Compare matched tasks with a fixed model/settings, fresh sessions, the same acceptance checks, and balanced run order. Evaluate routing changes in a separate experiment. Include failed and inconclusive trials; do not infer cache benefit, model switching, or native client activation from a generated configuration.
 
@@ -65,4 +65,19 @@ Use the report to inform `ai-kit/router/selection.json`, never to rewrite it aut
 
 ## Pair coverage
 
-`evaluate.py scaffold` writes an opaque private task pack only with `--apply`; it contains an experiment ID and task IDs, not task text or private evidence. `evaluate.py coverage` compares that pack with the local journal and reports missing baseline/kit pairs, unexpected records, and reviewed outcomes. It does not score prompts, inspect patches, or infer a winner. Keep prompts, rubrics, and private notes outside the pack, then follow the [evaluation protocol](../../docs/EVALUATION.md) for the actual trial design.
+`evaluate.py scaffold` writes an opaque private task pack only with `--apply`; it contains an experiment ID and task IDs, not task text or private evidence. `evaluate.py coverage` compares that pack with the local journal and reports missing baseline/kit pairs, unexpected records, and reviewed outcomes. It does not score prompts, inspect patches, or infer a winner. Keep prompts, rubrics, and private notes outside the pack; document matched tasks, controls, acceptance and review before the actual trial.
+
+## Controlled execution and schema 3
+
+The distribution's `aikit benchmark run PROJECT --pack PRIVATE_PACK` previews isolated baseline/kit-fixed/kit-adaptive trials; --apply invokes an explicitly configured worker. Fixed baseline/kit use the same provider/model/effort. Every task/repetition starts at the same immutable Git revision; worker-reported actual execution stays separate from requests. No live vendor adapter is implied. Tokens/cost must come from actual worker/provider/billing evidence, with missing values left null. Passing checks leaves semantic review pending. `benchmark review` accepts explicit manual/independent outcomes; `benchmark export` transfers reviewed records into the private journal without overwriting differing duplicates. Never benchmark production services or carry credentials into workspaces/reports.
+
+Schema 3 adds required `metadata`: case_id, stack (LARAVEL/FILAMENT/GO/MOODLE/PYTHON/unknown), task_class, level (0-6 or null), revision (full Git commit ID or null), repetition (positive integer), review (manual/independent/pending), and capabilities (opaque labels). Pending review requires an incomplete outcome. Schemas 1/2 remain readable; old records have unknown strata and cannot establish controlled savings. All schema-3 attempts require disposition as in schema 2.
+Schema 3 permits explicit null rework/escalation counts when telemetry cannot establish them. Summary reports intervention coverage rather than inventing zero. A failed/unreported worker becomes one inconclusive local execution phase with unknown model/usage/interventions; that phase count does not establish how many model calls occurred.
+
+`metrics stacks PROJECT` groups declared stack strata; missing stack stays unknown. `metrics compare PROJECT --experiment ID --candidate kit-fixed|kit-adaptive` reports paired costs, correctness, cost per correct result and `(baseline cost - candidate cost) / baseline cost * 100%`. Savings stay null for incomplete pairs/review, unknown/different starting state or strata, unknown/estimated/mixed-currency cost, zero baseline cost or lower candidate correctness. Fixed-model comparisons also require identical observed provider/model/effort. Include all failed and recovery attempts; an observed difference is not a prediction or causal guarantee.
+
+## Proposal history and explicit restore
+
+`metrics propose PROJECT --stack PYTHON --task-class implement --level 2` analyzes matching schema-3 evidence and previews candidate models with sample/quality/cost/time coverage. --apply saves an immutable proposal under `ai-kit/.metrics/proposals/`, including the evidence fingerprint and prior selection. It never changes active selection. Requirements and profile behavior live in [routing policy](router/POLICY.md#modes-pins-and-optimization-profiles).
+
+`metrics restore PROJECT --proposal SHA256` previews restoring that proposal's prior selection; --apply verifies immutable history, backs up the current selection, refuses concurrent writes and performs the explicit restore. It does not roll back project files, journals or live client state. Preserve history and review the proposed selection before applying it.

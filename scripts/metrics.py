@@ -19,6 +19,7 @@ LOCK = "ai-kit/.metrics/write.lock"
 IDENTIFIER = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,127}\Z")
 TOKEN_FIELDS = ("input_tokens", "cached_input_tokens", "output_tokens", "reasoning_tokens")
 ATTEMPT_DISPOSITIONS = ("succeeded", "failed", "inconclusive")
+STACKS = ("LARAVEL", "FILAMENT", "GO", "MOODLE", "PYTHON", "unknown")
 
 
 def _fields(value: object, allowed: set[str], label: str) -> dict:
@@ -35,9 +36,35 @@ def _identifier(value: object, label: str) -> str:
 
 def validate_record(value: object) -> dict:
     record = _fields(value, {"schema", "task_id", "experiment", "arm", "kit_version", "outcome",
-                             "checks", "rework", "escalations", "attempts"}, "task record")
-    if type(record.get("schema")) is not int or record["schema"] not in {1, 2}:
-        raise ValueError("Expected measurement schema 1 or 2")
+                             "checks", "rework", "escalations", "attempts", "metadata"}, "task record")
+    if type(record.get("schema")) is not int or record["schema"] not in {1, 2, 3}:
+        raise ValueError("Expected measurement schema 1, 2 or 3")
+    if record["schema"] < 3 and "metadata" in record:
+        raise ValueError("Metadata requires schema 3")
+    if record["schema"] == 3:
+        metadata = _fields(record.get("metadata"), {"stack", "task_class", "level", "revision",
+                                                   "repetition", "review", "capabilities", "case_id"}, "metadata")
+        if set(metadata) != {"stack", "task_class", "level", "revision", "repetition", "review", "capabilities", "case_id"}:
+            raise ValueError("Schema 3 requires complete metadata, with null for unknown revision/level")
+        if not isinstance(metadata["stack"], str) or metadata["stack"] not in STACKS:
+            raise ValueError("Unknown measurement stack")
+        _identifier(metadata["task_class"], "task_class")
+        _identifier(metadata["case_id"], "case_id")
+        if metadata["level"] is not None and (type(metadata["level"]) is not int or not 0 <= metadata["level"] <= 6):
+            raise ValueError("Metadata level must be 0-6 or null")
+        if metadata["revision"] is not None and (not isinstance(metadata["revision"], str) or
+                                                not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", metadata["revision"])):
+            raise ValueError("Revision must be a full Git object ID or null")
+        if type(metadata["repetition"]) is not int or metadata["repetition"] < 1:
+            raise ValueError("Repetition must be a positive integer")
+        if not isinstance(metadata["review"], str) or metadata["review"] not in {"manual", "independent", "pending"}:
+            raise ValueError("Review must be manual, independent or pending")
+        if metadata["review"] == "pending" and record.get("outcome") != "incomplete":
+            raise ValueError("Pending semantic review requires an incomplete outcome")
+        if not isinstance(metadata["capabilities"], list):
+            raise ValueError("Capabilities must be a list")
+        for capability in metadata["capabilities"]:
+            _identifier(capability, "capability")
     for field in ("task_id", "experiment", "arm", "kit_version"):
         _identifier(record.get(field), field)
     if not isinstance(record.get("outcome"), str) or record["outcome"] not in {"correct", "incorrect", "incomplete"}:
@@ -47,6 +74,8 @@ def validate_record(value: object) -> dict:
     if record["outcome"] == "correct" and record["checks"] == "failed":
         raise ValueError("A correct result cannot have failed required checks")
     for field in ("rework", "escalations"):
+        if record["schema"] == 3 and field in record and record[field] is None:
+            continue
         if type(record.get(field)) is not int or record[field] < 0:
             raise ValueError(f"{field} must be a nonnegative integer")
     attempts = record.get("attempts")
@@ -54,7 +83,7 @@ def validate_record(value: object) -> dict:
         raise ValueError("Include all attempts, including failures and recovery")
     for attempt in attempts:
         allowed = {"provider", "model", "effort", "duration_seconds", "cost", *TOKEN_FIELDS}
-        if record["schema"] == 2:
+        if record["schema"] >= 2:
             allowed.add("disposition")
         _fields(attempt, allowed,
                 "attempt")
@@ -89,7 +118,7 @@ def validate_record(value: object) -> dict:
                 raise ValueError("Cost currency must be a three-letter uppercase code")
             if not isinstance(cost.get("source"), str) or cost["source"] not in {"billing", "provider-usage", "estimate"}:
                 raise ValueError("Cost source must be billing, provider-usage, or estimate")
-        if record["schema"] == 2 and attempt.get("disposition") not in ATTEMPT_DISPOSITIONS:
+        if record["schema"] >= 2 and attempt.get("disposition") not in ATTEMPT_DISPOSITIONS:
             raise ValueError("Schema 2 attempts need disposition: succeeded, failed, or inconclusive")
     # Normalize JSON values without carrying caller-owned mutable objects into a write plan.
     return json.loads(json.dumps(record, allow_nan=False))
@@ -170,14 +199,16 @@ def summarize(records: list[dict]) -> dict:
                 costs[cost["currency"]] += Decimal(cost["amount"])
                 known_costs += 1
                 estimated += cost["source"] == "estimate"
-        complete = known_costs == len(attempts) and len(costs) == 1
+        complete = known_costs == len(attempts) and len(costs) == 1 and not estimated
         total = next(iter(costs.values())) if complete else None
         durations = [attempt["duration_seconds"] for attempt in attempts
                      if attempt.get("duration_seconds") is not None]
         results.append({"experiment": experiment, "arm": arm, "tasks": len(tasks), "correct": correct,
                         "success_rate": correct / len(tasks), "attempts": len(attempts),
-                        "rework": sum(task["rework"] for task in tasks),
-                        "escalations": sum(task["escalations"] for task in tasks),
+                        "rework": sum(task["rework"] for task in tasks) if all(task["rework"] is not None for task in tasks) else None,
+                        "escalations": sum(task["escalations"] for task in tasks) if all(task["escalations"] is not None for task in tasks) else None,
+                        "intervention_coverage": {field: {"known": sum(task[field] is not None for task in tasks),
+                                                          "total": len(tasks)} for field in ("rework", "escalations")},
                         "checks_not_run": sum(task["checks"] == "not-run" for task in tasks),
                         "known_cost_by_currency": {key: str(value) for key, value in sorted(costs.items())},
                         "cost_coverage": {"known": known_costs, "total": len(attempts), "estimated": estimated},
@@ -205,7 +236,8 @@ def analyze(records: list[dict]) -> dict:
             entry = providers.setdefault(provider, {"tasks": set(), "correct_tasks": set(),
                                                     "attempts": 0, "cost": defaultdict(Decimal),
                                                     "cost_attempts": 0, "models": set(), "efforts": set(),
-                                                    "dispositions": defaultdict(int), "known_dispositions": 0})
+                                                    "dispositions": defaultdict(int), "known_dispositions": 0,
+                                                    "estimated": 0})
             entry["attempts"] += 1
             identity = (record["experiment"], record["arm"], record["task_id"])
             entry["tasks"].add(identity)
@@ -219,6 +251,7 @@ def analyze(records: list[dict]) -> dict:
             if cost is not None:
                 entry["cost"][cost["currency"]] += Decimal(cost["amount"])
                 entry["cost_attempts"] += 1
+                entry["estimated"] += cost["source"] == "estimate"
             disposition = attempt.get("disposition")
             if disposition is not None:
                 entry["dispositions"][disposition] += 1
@@ -228,13 +261,15 @@ def analyze(records: list[dict]) -> dict:
         entry = providers[name]
         tasks = len(entry["tasks"])
         correct = len(entry["correct_tasks"])
-        complete = entry["cost_attempts"] == entry["attempts"] and len(entry["cost"]) == 1
+        complete = (entry["cost_attempts"] == entry["attempts"] and len(entry["cost"]) == 1
+                    and not entry["estimated"])
         total = next(iter(entry["cost"].values())) if complete else None
         decisive = entry["dispositions"]["succeeded"] + entry["dispositions"]["failed"]
         results.append({"provider": name, "attempts": entry["attempts"], "tasks": tasks,
                         "correct_tasks": correct, "success_rate": correct / tasks if tasks else None,
                         "known_cost_by_currency": {key: str(value) for key, value in sorted(entry["cost"].items())},
-                        "cost_coverage": {"known": entry["cost_attempts"], "total": entry["attempts"]},
+                        "cost_coverage": {"known": entry["cost_attempts"], "total": entry["attempts"],
+                                          "estimated": entry["estimated"]},
                         "cost_per_correct": str(total / correct) if complete and correct else None,
                         "attempt_dispositions": {key: entry["dispositions"][key] for key in ATTEMPT_DISPOSITIONS},
                         "attempt_disposition_coverage": {"known": entry["known_dispositions"],
@@ -260,6 +295,26 @@ def main(argv: list[str] | None = None) -> int:
     summary_parser.add_argument("project", type=Path)
     analyze_parser = sub.add_parser("analyze", help="Aggregate per provider to inform routing, without writing")
     analyze_parser.add_argument("project", type=Path)
+    compare_parser = sub.add_parser("compare", help="Compare matched reviewed trials with actual costs")
+    compare_parser.add_argument("project", type=Path)
+    compare_parser.add_argument("--experiment", required=True)
+    compare_parser.add_argument("--baseline", default="baseline")
+    compare_parser.add_argument("--candidate", default="kit-fixed")
+    stacks_parser = sub.add_parser("stacks", help="Summarize by declared technology stack")
+    stacks_parser.add_argument("project", type=Path)
+    propose_parser = sub.add_parser("propose", help="Preview or save evidence; never apply routing changes")
+    propose_parser.add_argument("project", type=Path)
+    propose_parser.add_argument("--stack", choices=STACKS, required=True)
+    propose_parser.add_argument("--task-class", required=True)
+    propose_parser.add_argument("--level", type=int, required=True)
+    propose_parser.add_argument("--capability", action="append", default=[])
+    propose_parser.add_argument("--minimum", type=int, default=20)
+    propose_parser.add_argument("--quality-floor", type=float, default=0.8)
+    propose_parser.add_argument("--apply", action="store_true")
+    restore_parser = sub.add_parser("restore", help="Explicitly restore a proposal's prior selection with backup")
+    restore_parser.add_argument("project", type=Path)
+    restore_parser.add_argument("--proposal", required=True)
+    restore_parser.add_argument("--apply", action="store_true")
     args = parser.parse_args(argv)
     try:
         if args.command == "record":
@@ -267,6 +322,22 @@ def main(argv: list[str] | None = None) -> int:
             result = record_task(args.project, record, apply=args.apply)
         elif args.command == "analyze":
             result = analyze(read_records(args.project))
+        elif args.command in {"compare", "stacks", "propose", "restore"}:
+            import learning
+            if args.command == "compare":
+                result = learning.compare(read_records(args.project), args.experiment, args.baseline, args.candidate)
+            elif args.command == "stacks":
+                result = learning.by_stack(read_records(args.project))
+            elif args.command == "restore":
+                result = learning.restore_selection(args.project, args.proposal, apply=args.apply)
+            else:
+                proposal = {"stack": args.stack, "task_class": args.task_class, "level": args.level,
+                            "capabilities": args.capability, "minimum": args.minimum,
+                            "quality_floor": args.quality_floor,
+                            "candidates": learning.candidates(read_records(args.project), stack=args.stack,
+                                task_class=args.task_class, level=args.level, capabilities=args.capability,
+                                minimum=args.minimum, quality_floor=args.quality_floor)}
+                result = learning.save_proposal(args.project, proposal, apply=args.apply)
         else:
             result = summarize(read_records(args.project))
         print(json.dumps(result, indent=2, allow_nan=False))

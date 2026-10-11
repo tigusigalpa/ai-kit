@@ -7,6 +7,7 @@ import shutil
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import install
@@ -26,6 +27,24 @@ def selection(**overrides):
 
 
 class RouteTests(unittest.TestCase):
+    def test_provider_change_discards_inherited_effort_but_explicit_effort_wins(self):
+        original = selection(default_provider="first", roles={"work": {"model": "old", "effort": "max"}})
+        catalogue = {"first": {"roles": {"work": {"model": "old"}}, "supported_efforts": {"work": ["max"]}},
+                     "second": {"roles": {"work": {"model": "new"}}, "supported_efforts": {"work": ["low"]}}}
+        before = json.dumps(original, sort_keys=True)
+        result = router.route_result("implement feature", original, catalogue, provider="second")
+        self.assertEqual(result["model"], "new")
+        self.assertIsNone(result["effort"])
+        result = router.route_result("implement feature", original, catalogue, provider="second", effort="low")
+        self.assertEqual(result["effort"], "low")
+        with self.assertRaises(ValueError):
+            router.route_result("implement feature", original, catalogue, provider="second", effort="max")
+        self.assertEqual(json.dumps(original, sort_keys=True), before)
+        custom = selection(default_provider="first", roles={"cheap": {"model": "small"},
+            "work": {"model": 'quoted"\nmodel: injected'}})
+        self.assertIn('model: "quoted\\"\\nmodel: injected"\n', router.aider_config(custom, catalogue))
+        self.assertEqual(router.aider_config(custom, catalogue).count("\n"), 3)
+
     def test_ladder_matches_canonical_policy(self):
         policy = (router.ROOT / "template/ai-kit/router/POLICY.md").read_text(encoding="utf-8")
         rows = [line.split("|")[3].strip() for line in policy.splitlines()
@@ -281,6 +300,13 @@ class ConfigureTests(unittest.TestCase):
             self.assertEqual(router.main(["route", "implement the feature",
                                           "--project", str(self.target)]), 0)
         self.assertIn('"model": "gpt-6.1-sol"', output.getvalue())
+        with mock.patch("metrics.read_records", side_effect=AssertionError("Recommended mode must not load optional history")):
+            with contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(router.main(["route", "implement feature", "--project", str(self.target)]), 0)
+        original = install.is_link
+        with mock.patch.object(install, "is_link", side_effect=lambda p: p.name == "selection.json" or original(p)):
+            with self.assertRaisesRegex(ValueError, "linked"):
+                router._selection_and_providers(self.target, self.source)
 
 
 class RegistryTests(unittest.TestCase):

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import os
 import subprocess
 import sys
 import tempfile
@@ -29,17 +30,25 @@ def main(argv: list[str] | None = None) -> int:
     if not wheel.is_file():
         raise SystemExit("Wheel not found: " + str(wheel))
     with tempfile.TemporaryDirectory(prefix="ai-kit-wheel-") as folder:
-        root = Path(folder)
+        root = Path(folder).resolve()
         env = root / "venv"
         venv.EnvBuilder(with_pip=True, clear=True).create(env)
         python = venv_python(env)
-        subprocess.run([str(python), "-m", "pip", "install", "--no-index", "--no-deps", str(wheel)], check=True)
+        environment = dict(os.environ)
+        environment.pop("PYTHONPATH", None)
+        def run(command):
+            subprocess.run([str(item) for item in command], cwd=root, env=environment, check=True)
+        run([python, "-m", "pip", "install", "--no-index", "--no-deps", wheel])
         aikit = venv_aikit(env)
-        subprocess.run([str(aikit), "route", "implement a feature"], check=True)
+        run([aikit, "route", "implement a feature"])
+        for module in ("learning", "adaptive", "benchmark"):
+            run([python, "-c", "from aikit.scripts import " + module])
+        run([aikit, "benchmark", "--help"])
+        run([aikit, "check"])
         project = root / "project"
-        subprocess.run([str(aikit), "install", str(project), "--preset", "minimal",
-                        "--agent", "codex", "--apply", "--check"], check=True)
-        subprocess.run([str(aikit), "adapters", "report", "--project", str(project)], check=True)
+        run([aikit, "install", project, "--preset", "minimal", "--agent", "codex", "--apply", "--check"])
+        run([aikit, "adapters", "report", "--project", project])
+        run([aikit, "context", "select", project])
     return 0
 
 
