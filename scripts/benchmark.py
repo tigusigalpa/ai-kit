@@ -36,9 +36,10 @@ def argv(value: object) -> list[str]:
     return value
 
 
-def validate_pack(value: object) -> dict:
+def validate_pack(value: object, project: Path) -> dict:
     pack = metrics._fields(value, {"schema", "experiment", "revision", "repeats", "fixed", "worker",
-                                  "tasks", "checks", "timeout_seconds"}, "benchmark pack")
+                                  "tasks", "checks", "timeout_seconds", "kit_agents", "kit_preset"},
+                           "benchmark pack")
     if type(pack.get("schema")) is not int or pack["schema"] != 1:
         raise ValueError("Expected benchmark schema 1")
     metrics._identifier(pack.get("experiment"), "experiment")
@@ -50,6 +51,11 @@ def validate_pack(value: object) -> dict:
     if type(pack.get("repeats")) is not int or not 1 <= pack["repeats"] <= 100:
         raise ValueError("Repeats must be 1-100")
     adaptive.validate_pin(pack.get("fixed"))
+    pack["kit_agents"] = install.agent_selection(pack.get("kit_agents", ["codex"]),
+                                                 install.load_agent_registry()["names"], unique=True)
+    pack["kit_preset"] = pack.get("kit_preset", "minimal")
+    if pack["kit_preset"] not in install.PRESETS:
+        raise ValueError(f"Unknown kit preset: {pack['kit_preset']}")
     worker = metrics._fields(pack.get("worker"), {"protocol", "argv"}, "worker")
     if worker.get("protocol") != "aikit-worker-v1":
         raise ValueError("Worker must explicitly implement aikit-worker-v1")
@@ -75,7 +81,7 @@ def validate_pack(value: object) -> dict:
             if not isinstance(task[field], str) or not task[field]:
                 raise ValueError("Task paths must be nonempty relative paths")
         if task["path"] != ".":
-            install.safe_path(Path.cwd(), task["path"] + "/__path_probe__")
+            install.safe_path(project, task["path"] + "/__path_probe__")
         if task["stack"] not in metrics.STACKS or task["operation"] not in router.OPERATIONS:
             raise ValueError("Unknown stack/operation")
         if not isinstance(task["risks"], list) or any(r not in router.RISKS for r in task["risks"]):
@@ -170,7 +176,7 @@ def prepare(project: Path, pack_file: Path, *, git: str | None = None) -> dict:
     project = metrics._target(project)
     pack_file = pack_file.absolute()
     pack_file = install.safe_path(metrics._target(pack_file.parent), pack_file.name)
-    pack = validate_pack(json.loads(pack_file.read_text(encoding="utf-8")))
+    pack = validate_pack(json.loads(pack_file.read_text(encoding="utf-8")), project)
     task_fingerprints = set()
     for task in pack["tasks"]:
         for field in ("prompt_file", "rubric_file"):
@@ -206,9 +212,7 @@ def prepare(project: Path, pack_file: Path, *, git: str | None = None) -> dict:
                               "case_id": task["task_id"], "arm": arm, "repetition": repetition,
                               "route": route})
     relative = "ai-kit/.metrics/benchmarks/" + pack["experiment"]
-    probe = install.safe_path(project, relative + "/plan.json")
-    if probe.parent.exists():
-        raise ValueError("Benchmark run already exists; preserve it and use a new experiment ID")
+    install.safe_path(project, relative + "/plan.json")
     return {"project": project, "relative": relative, "pack": pack, "files": files, "units": units,
             "context_budget": config["context_bytes"][config["profile"]]}
 
@@ -235,84 +239,126 @@ def invoke(command: list[str], workspace: Path, seconds: int, *, request: dict |
         return None, ""
 
 
+def run_unit(plan: dict, manifest: dict, run: Path, unit: dict, tasks: dict) -> dict:
+    """Execute one unit or raise; callers record infrastructure failures per unit."""
+    workspace = install.safe_path(run, unit["unit_id"] + "/workspace/probe").parent
+    workspace.mkdir(parents=True)
+    for name, data, file_mode in plan["files"]:
+        destination = install.safe_path(workspace, name)
+        install.atomic_write(destination, data)
+        destination.chmod(file_mode)
+    task = tasks[unit["case_id"]]
+    pack = plan["pack"]
+    context_report = {"selected": [], "total_bytes": 0}
+    if unit["arm"] != "baseline":
+        install_plan = install.build_plan(workspace, root=ROOT, agents=pack["kit_agents"],
+                                          preset=pack["kit_preset"])
+        if install_plan["conflicts"] or not install.apply_plan(install_plan):
+            raise ValueError("Kit installation conflict inside benchmark workspace")
+        context_report = context.select_context(workspace, path=task["path"],
+                                                budget=plan["context_budget"])
+        if task["stack"] != "unknown" and task["stack"] not in context_report["profiles"]:
+            raise ValueError("Task stack is not evidenced by its module; confirm the test fixture")
+    request = {"schema": 1, "protocol": "aikit-worker-v1", "task_id": unit["task_id"],
+               "arm": unit["arm"], "revision": pack["revision"], "workspace": str(workspace),
+               "prompt": task["prompt"], "rubric": task["rubric"], "requested": unit["route"],
+               "context": context_report,
+               "constraints": {"disposable_services_only": True, "no_commit_push": True,
+                               "credentials_external": True}}
+    start = time.monotonic()
+    status, output = invoke(pack["worker"]["argv"], workspace, pack["timeout_seconds"], request=request)
+    wall = time.monotonic() - start
+    attempts, rework, escalations = [{"disposition": "inconclusive"}], None, None
+    telemetry_valid = False
+    if status == 0:
+        try:
+            response = json.loads(output)
+            if (not isinstance(response, dict) or set(response) != {"schema", "attempts", "rework", "escalations"} or
+                    type(response["schema"]) is not int or response["schema"] != 1):
+                raise ValueError("Invalid worker response")
+            attempts, rework, escalations = response["attempts"], response["rework"], response["escalations"]
+            if isinstance(attempts, list) and len(attempts) == 1 and attempts[0].get("duration_seconds") is None:
+                attempts[0]["duration_seconds"] = wall
+            telemetry_valid = True
+        except (ValueError, TypeError, AttributeError):
+            attempts, rework, escalations = [{"disposition": "inconclusive"}], None, None
+    checks = "not-run"
+    if pack["checks"]:
+        check_results = [invoke(cmd, workspace, pack["timeout_seconds"])[0] for cmd in pack["checks"]]
+        checks = "passed" if all(code == 0 for code in check_results) else "failed"
+    record = {"schema": 3, "task_id": unit["task_id"], "experiment": pack["experiment"],
+              "arm": unit["arm"], "kit_version": manifest["kit_version"], "outcome": "incomplete",
+              "checks": checks, "attempts": attempts, "rework": rework, "escalations": escalations,
+              "metadata": {"case_id": unit["case_id"], "stack": task["stack"], "task_class": task["operation"],
+                           "level": router.classify_task(task["prompt"], operation=task["operation"],
+                                                        risks=tuple(task["risks"]))["level"],
+                           "revision": pack["revision"], "repetition": unit["repetition"],
+                           "review": "pending", "capabilities": task["capabilities"]}}
+    try:
+        record = metrics.validate_record(record)
+    except (ValueError, TypeError):
+        record.update(attempts=[{"disposition": "inconclusive"}], rework=None, escalations=None)
+        record = metrics.validate_record(record)
+        telemetry_valid = False
+    matches = telemetry_valid and all(all(a.get(k) == unit["route"][k] for k in ("provider", "model", "effort"))
+                                      for a in record["attempts"])
+    return {"unit_id": unit["unit_id"], "record": record, "worker_exit_code": status,
+            "worker_wall_seconds": wall, "telemetry_valid": telemetry_valid,
+            "requested": unit["route"], "observed_matches_request": matches,
+            "context_bytes": context_report["total_bytes"]}
+
+
+def failure_result(manifest: dict, unit: dict, task: dict, message: str) -> dict:
+    """Record an infrastructure failure without hiding it as an executed attempt."""
+    return {"unit_id": unit["unit_id"],
+            "record": {"schema": 3, "task_id": unit["task_id"], "experiment": manifest["experiment"],
+                       "arm": unit["arm"], "kit_version": manifest["kit_version"], "outcome": "incomplete",
+                       "checks": "not-run", "attempts": [{"disposition": "inconclusive"}],
+                       "rework": None, "escalations": None,
+                       "metadata": {"case_id": unit["case_id"], "stack": task["stack"],
+                                    "task_class": task["operation"],
+                                    "level": router.classify_task(task["prompt"], operation=task["operation"],
+                                                                  risks=tuple(task["risks"]))["level"],
+                                    "revision": manifest["revision"], "repetition": unit["repetition"],
+                                    "review": "pending", "capabilities": task["capabilities"]}},
+            "worker_exit_code": None, "worker_wall_seconds": None, "telemetry_valid": False,
+            "requested": unit["route"], "observed_matches_request": False,
+            "context_bytes": 0, "error": message}
+
+
 def execute(plan: dict) -> Path:
     project, pack = plan["project"], plan["pack"]
     run = install.safe_path(project, plan["relative"] + "/plan.json").parent
-    run.parent.mkdir(parents=True, exist_ok=True)
-    run.mkdir()  # Exclusive ownership: never reuse another run or remove a workspace.
-    manifest = {"schema": 1, "experiment": pack["experiment"], "revision": pack["revision"],
-                "kit_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip(),
-                "pack_sha256": install.digest(json.dumps(pack, sort_keys=True).encode()),
-                "units": plan["units"], "complete": False}
-    install.atomic_write(install.safe_path(run, "plan.json"), json_bytes(manifest))
+    identity = install.digest(json.dumps({"experiment": pack["experiment"], "revision": pack["revision"],
+                                          "pack": pack, "units": plan["units"]}, sort_keys=True).encode())
+    manifest_path = install.safe_path(run, "plan.json")
+    if run.exists():
+        if not manifest_path.is_file():
+            raise ValueError("Interrupted run directory without a manifest; preserve it and use a new experiment ID")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest.get("identity_sha256") != identity:
+            raise ValueError("Existing run has a different plan; preserve it and use a new experiment ID")
+    else:
+        run.parent.mkdir(parents=True, exist_ok=True)
+        run.mkdir()  # Exclusive ownership: never remove a workspace.
+        manifest = {"schema": 1, "experiment": pack["experiment"], "revision": pack["revision"],
+                    "kit_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip(),
+                    "pack_sha256": install.digest(json.dumps(pack, sort_keys=True).encode()),
+                    "identity_sha256": identity,
+                    "units": plan["units"], "complete": False}
+        install.atomic_write(manifest_path, json_bytes(manifest))
     tasks = {task["task_id"]: task for task in pack["tasks"]}
+    finished = {path.parent.name for path in run.glob("unit-*/result.json")}
     for unit in plan["units"]:
-        workspace = install.safe_path(run, unit["unit_id"] + "/workspace/probe").parent
-        workspace.mkdir(parents=True)
-        for name, data, file_mode in plan["files"]:
-            destination = install.safe_path(workspace, name)
-            install.atomic_write(destination, data)
-            destination.chmod(file_mode)
-        task = tasks[unit["case_id"]]
-        context_report = {"selected": [], "total_bytes": 0}
-        if unit["arm"] != "baseline":
-            install_plan = install.build_plan(workspace, root=ROOT, agents=["codex"], preset="minimal")
-            if install_plan["conflicts"] or not install.apply_plan(install_plan):
-                raise ValueError("Kit installation conflict inside benchmark workspace")
-            context_report = context.select_context(workspace, path=task["path"],
-                budget=plan["context_budget"])
-            if task["stack"] != "unknown" and task["stack"] not in context_report["profiles"]:
-                raise ValueError("Task stack is not evidenced by its module; confirm the test fixture")
-        request = {"schema": 1, "protocol": "aikit-worker-v1", "task_id": unit["task_id"],
-                   "arm": unit["arm"], "revision": pack["revision"], "workspace": str(workspace),
-                   "prompt": task["prompt"], "rubric": task["rubric"], "requested": unit["route"],
-                   "context": context_report,
-                   "constraints": {"disposable_services_only": True, "no_commit_push": True,
-                                   "credentials_external": True}}
-        start = time.monotonic()
-        status, output = invoke(pack["worker"]["argv"], workspace, pack["timeout_seconds"], request=request)
-        wall = time.monotonic() - start
-        attempts, rework, escalations = [{"disposition": "inconclusive"}], None, None
-        telemetry_valid = False
-        if status == 0:
-            try:
-                response = json.loads(output)
-                if (not isinstance(response, dict) or set(response) != {"schema", "attempts", "rework", "escalations"} or
-                        type(response["schema"]) is not int or response["schema"] != 1):
-                    raise ValueError("Invalid worker response")
-                attempts, rework, escalations = response["attempts"], response["rework"], response["escalations"]
-                if isinstance(attempts, list) and len(attempts) == 1 and attempts[0].get("duration_seconds") is None:
-                    attempts[0]["duration_seconds"] = wall
-                telemetry_valid = True
-            except (ValueError, TypeError, AttributeError):
-                attempts, rework, escalations = [{"disposition": "inconclusive"}], None, None
-        checks = "not-run"
-        if pack["checks"]:
-            check_results = [invoke(cmd, workspace, pack["timeout_seconds"])[0] for cmd in pack["checks"]]
-            checks = "passed" if all(code == 0 for code in check_results) else "failed"
-        record = {"schema": 3, "task_id": unit["task_id"], "experiment": pack["experiment"],
-                  "arm": unit["arm"], "kit_version": manifest["kit_version"], "outcome": "incomplete",
-                  "checks": checks, "attempts": attempts, "rework": rework, "escalations": escalations,
-                  "metadata": {"case_id": unit["case_id"], "stack": task["stack"], "task_class": task["operation"],
-                               "level": router.classify_task(task["prompt"], operation=task["operation"],
-                                                            risks=tuple(task["risks"]))["level"],
-                               "revision": pack["revision"], "repetition": unit["repetition"],
-                               "review": "pending", "capabilities": task["capabilities"]}}
+        if unit["unit_id"] in finished:
+            continue  # Resume: never re-run paid work or rebuild an existing workspace.
         try:
-            record = metrics.validate_record(record)
-        except (ValueError, TypeError):
-            record.update(attempts=[{"disposition": "inconclusive"}], rework=None, escalations=None)
-            record = metrics.validate_record(record)
-            telemetry_valid = False
-        matches = telemetry_valid and all(all(a.get(k) == unit["route"][k] for k in ("provider", "model", "effort"))
-                                          for a in record["attempts"])
-        result = {"unit_id": unit["unit_id"], "record": record, "worker_exit_code": status,
-                  "worker_wall_seconds": wall, "telemetry_valid": telemetry_valid,
-                  "requested": unit["route"], "observed_matches_request": matches,
-                  "context_bytes": context_report["total_bytes"]}
+            result = run_unit(plan, manifest, run, unit, tasks)
+        except (OSError, ValueError) as exc:
+            result = failure_result(manifest, unit, tasks[unit["case_id"]], str(exc))
         install.atomic_write(install.safe_path(run, unit["unit_id"] + "/result.json"), json_bytes(result))
     manifest["complete"] = True
-    install.atomic_write(install.safe_path(run, "plan.json"), json_bytes(manifest))
+    install.atomic_write(manifest_path, json_bytes(manifest))
     write_report(run)
     return run
 
@@ -469,9 +515,15 @@ def main(arguments: list[str] | None = None) -> int:
     try:
         if args.command == "run":
             plan = prepare(args.project, args.pack)
+            run_dir = plan["project"] / plan["relative"]
+            finished = ({path.parent.name for path in run_dir.glob("unit-*/result.json")}
+                        if run_dir.is_dir() else set())
             value = {"preview": not args.apply, "experiment": plan["pack"]["experiment"],
                      "revision": plan["pack"]["revision"], "units": plan["units"],
-                     "tracked_files": len(plan["files"]), "run": str(plan["project"] / plan["relative"])}
+                     "tracked_files": len(plan["files"]), "run": str(run_dir),
+                     "existing_run": run_dir.is_dir(),
+                     "remaining_units": sum(1 for unit in plan["units"]
+                                              if unit["unit_id"] not in finished)}
             if args.apply:
                 execute(plan)
         elif args.command == "review":

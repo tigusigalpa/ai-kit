@@ -14,7 +14,7 @@
 - [Real-project evaluation protocol](docs/EVALUATION.md)
 - [Measurement-led development stages](docs/DEVELOPMENT_PLAN.md)
 - [Benchmark worker, review and export contract](docs/BENCHMARK.md)
-- [v0.11.0 verification and limits](docs/IMPLEMENTATION.md#measurement-led-development-verification)
+- [Measurement-led verification and limits](docs/IMPLEMENTATION.md#measurement-led-development-verification)
 - [v0.6.4 verification and limits](docs/V0_6_4.md)
 - [v0.5.0 verification and limits](docs/V0_5_0.md)
 - [Extras, presets, and generated client configuration](template/ai-kit/ADAPTERS.md#optional-install-extras)

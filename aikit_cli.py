@@ -28,6 +28,14 @@ _COMMANDS = {
 }
 
 
+def _load(module_name: str):
+    """Prefer the installed package so modules are not duplicated as bare names."""
+    try:
+        return __import__("aikit.scripts." + module_name, fromlist=["main"])
+    except ImportError:
+        return __import__(module_name)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="aikit", description=__doc__)
     parser.add_argument("command", nargs="?", choices=sorted(_COMMANDS),
@@ -40,7 +48,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 2
     module_name, prefix = _COMMANDS[args.command]
-    module = __import__(module_name)
+    module = _load(module_name)
     forwarded = ([prefix] + rest) if prefix else rest
     return module.main(forwarded)
 

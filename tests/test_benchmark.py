@@ -110,8 +110,13 @@ class BenchmarkTests(unittest.TestCase):
         self.assertEqual(benchmark.export_records(run, self.root, apply=True)["new_records"], 6)
         self.assertEqual(benchmark.export_records(run, self.root, apply=True)["new_records"], 0)
         self.assertEqual(len(metrics.read_records(self.root)), 6)
-        with self.assertRaisesRegex(ValueError, "already exists"):
-            self.prepare()
+        again = self.prepare()
+        self.assertEqual(benchmark.execute(again), run)
+        self.assertEqual(benchmark.report(run)["observed_units"], 6)
+        self.pack["repeats"] = 3
+        self.pack_file.write_text(json.dumps(self.pack), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "different plan"):
+            benchmark.execute(benchmark.prepare(self.root, self.pack_file, git=self.git))
 
     def test_failed_checks_cannot_be_reviewed_as_correct(self):
         self.pack["repeats"] = 1
@@ -166,7 +171,7 @@ class BenchmarkTests(unittest.TestCase):
         bad = copy.deepcopy(self.pack)
         bad["worker"]["argv"] = "python worker.py"
         with self.assertRaises(ValueError):
-            benchmark.validate_pack(bad)
+            benchmark.validate_pack(bad, self.root)
         self.assertFalse(benchmark.secret_path(".env.example", [".env.*", "!.env.example"]))
         self.assertTrue(benchmark.secret_path("secrets/test.txt", ["/secrets/"]))
         routing = self.root / "ai-kit/router/routing.json"
@@ -185,3 +190,52 @@ class BenchmarkTests(unittest.TestCase):
         with mock.patch.object(benchmark, "git_command", side_effect=[str(self.root).encode() + b"\n", self.revision.encode() + b"\n", listing]):
             with self.assertRaisesRegex(ValueError, "Case-colliding"):
                 benchmark.snapshot_files(self.root, self.revision)
+
+    def test_task_path_is_probed_against_the_project(self):
+        bad = copy.deepcopy(self.pack)
+        bad["tasks"][0]["path"] = "../outside"
+        with self.assertRaises(ValueError):
+            benchmark.validate_pack(bad, self.root)
+        benchmark.validate_pack(copy.deepcopy(self.pack), self.root)
+
+    def test_kit_arm_agents_and_preset_are_configurable_and_validated(self):
+        self.pack["repeats"] = 1
+        self.pack["kit_agents"] = ["not-a-client"]
+        with self.assertRaises(ValueError):
+            self.prepare()
+        self.pack["kit_agents"] = ["claude"]
+        self.pack["kit_preset"] = "unknown-preset"
+        with self.assertRaises(ValueError):
+            self.prepare()
+        self.pack["kit_preset"] = "strict"
+        run = benchmark.execute(self.prepare())
+        workspaces = sorted(run.glob("unit-*/workspace"))
+        kit_workspaces = [w for w in workspaces if (w / "ai-kit/CORE.md").exists()]
+        baseline_workspaces = [w for w in workspaces if not (w / "ai-kit/CORE.md").exists()]
+        self.assertEqual(len(kit_workspaces), 2)
+        self.assertEqual(len(baseline_workspaces), 1)
+        self.assertTrue(all((w / "CLAUDE.md").is_file() for w in kit_workspaces))
+        self.assertFalse((baseline_workspaces[0] / "CLAUDE.md").exists())
+
+    def test_unit_failures_are_recorded_and_runs_resume_without_retry(self):
+        self.pack["repeats"] = 1
+        # The fixture evidences PYTHON only, so both kit arms fail before any paid worker call.
+        self.pack["tasks"][0]["stack"] = "GO"
+        plan = self.prepare()
+        run = benchmark.execute(plan)
+        value = benchmark.report(run)
+        self.assertTrue(value["complete"])
+        self.assertEqual(value["observed_units"], 3)
+        failed = [r for r in value["results"] if not r["telemetry_valid"]]
+        self.assertEqual(len(failed), 2)
+        self.assertTrue(all(r["record"]["arm"] in {"kit-fixed", "kit-adaptive"} for r in failed))
+        self.assertTrue(all("error" in r for r in failed))
+        baseline = next(r for r in value["results"] if r["record"]["arm"] == "baseline")
+        self.assertTrue(baseline["telemetry_valid"])
+        self.assertTrue(all(c["savings_percent"] is None for c in value["comparisons"]))
+        self.assertEqual(benchmark.execute(plan), run)
+        self.assertEqual(benchmark.report(run)["observed_units"], 3)
+        self.pack["repeats"] = 2
+        self.pack_file.write_text(json.dumps(self.pack), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "different plan"):
+            benchmark.execute(benchmark.prepare(self.root, self.pack_file, git=self.git))

@@ -51,7 +51,7 @@ flowchart LR
 ### 🧠 Project memory that survives every chat
 
 - **Verified context.** `PROJECT_CONTEXT.md` holds purpose, contracts, stack, a per-module map, commands, and open questions; `ai-kit/project.json` keeps the same facts machine-readable.
-- **Smart drafts.** The installer reads `go.mod`, `composer.json` and `composer.lock`, `package.json` with its lockfile, `pyproject.toml` and requirements, and Moodle markers. It drafts versions and commands per module, such as `pnpm test` from a pnpm workspace or `uv run pytest` from a uv project, and marks them as suggestions until bootstrap confirms them.
+- **Smart drafts.** The installer reads `go.mod`, `composer.json` and `composer.lock`, `package.json` with its lockfile, `pyproject.toml` and requirements, and Moodle markers. It drafts versions and commands per module (`pnpm test` from a pnpm workspace, `uv run pytest` from a uv project) and marks them as suggestions until bootstrap confirms them.
 - **Context at session start.** An optional hook feeds the current context and `git status` into every new Claude Code session.
 - **Decisions that stick.** `docs/DECISIONS.md`, ADRs, and `CHANGELOG.md` record why things are the way they are; a continuity skill keeps facts, WIKI, and pointers in sync.
 
@@ -68,7 +68,7 @@ flowchart LR
 | [Frontend](template/ai-kit/stacks/FRONTEND.md) | Pinned package manager, type/lint/build checks, accessibility, public-config hygiene |
 | [Library/SDK](template/ai-kit/stacks/LIBRARY.md) | Public API stability, semantic versioning, consumer examples, compatibility matrices |
 
-Profiles combine per module, so a monorepo with a Laravel app in `web/` and a Go service in `api/` gets the right rules in each place. Opinionated **owner conventions** for Laravel are available, including no database foreign keys, a public UUID next to the internal id, Policy + Factory + Seeder for every model, one table per migration, and Filament 5+ for new panels. Use `--conventions standard` to follow your project's own conventions instead.
+Profiles combine per module, so a monorepo with a Laravel app in `web/` and a Go service in `api/` gets the right rules in each place. Opinionated **owner conventions** for Laravel (no database foreign keys, public UUID beside the internal id, Policy + Factory + Seeder per model, one table per migration, Filament 5+ for new panels) are available; use `--conventions standard` to follow your project's own conventions instead.
 
 ### 🐳 Docker-aware, Kubernetes-ready by default
 
@@ -93,7 +93,7 @@ Pay for intelligence only where it matters. The [routing policy](template/ai-kit
 | 3-5 | Hard debugging, concurrency, distributed or sensitive correctness | work / high to max |
 | 6 | Diagnosed capability shortfall | escalation |
 
-Provider configurations map the roles to OpenAI, Anthropic, Kimi, and Gemini models, and to your own local or Ollama models. The offline helper understands task descriptions in English and Russian and explains its choice:
+Provider configurations map roles to OpenAI, Anthropic, Kimi, and Gemini models, or your own local/Ollama models. The offline helper understands English and Russian task descriptions and explains its choice:
 
 ~~~sh
 python scripts/router.py route "debug a race condition in the queue worker"
@@ -145,7 +145,7 @@ In Codex, use `$ai-kit-bootstrap` and the other skills the same way.
 - **Language split:** files and code in English, chat in your language (Russian by default).
 - **Private or team mode:** keep AI-KIT local, or share it with the whole team through Git.
 - **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, stale provider data, and manifest/context drift; `--fix` restores baseline files without touching local edits.
-- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, cost, and optional schema-2 attempt dispositions from your own evidence; `metrics.py analyze` aggregates them per provider to inform `selection.json`, with no automatic telemetry. The lightweight evaluator checks baseline/kit pair coverage without inspecting task text.
+- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, cost, and attempt dispositions from your own evidence; `analyze` aggregates them per provider to inform `selection.json`, with no automatic telemetry. The evaluator checks baseline/kit pair coverage without inspecting task text.
 
 ## Install
 
@@ -164,7 +164,7 @@ Use a reviewed revision and an application path outside this directory.
 python scripts/install.py /path/to/my-app --preset solo --agent codex --agent claude
 ~~~
 
-On Windows, use a path such as `"C:\Projects\my-app"`. The preview lists writes, preserved files, conflicts, detected stacks, and detected AI clients. Add `--interactive` for a guided prompt.
+On Windows use a path like `"C:\Projects\my-app"`. The preview lists writes, preserved files, conflicts, and detected stacks/clients. Add `--interactive` for a guided prompt.
 
 **2. Apply** the same command with `--apply`; add `--check` to run the doctor right away:
 
@@ -172,11 +172,11 @@ On Windows, use a path such as `"C:\Projects\my-app"`. The preview lists writes,
 python scripts/install.py /path/to/my-app --preset solo --agent codex --agent claude --apply --check
 ~~~
 
-**3. Bootstrap.** Open your AI client in the project and run `/ai-kit-bootstrap` (Claude Code) or `$ai-kit-bootstrap` (Codex). For other clients, or to let an agent run the installation itself, give it [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md).
+**3. Bootstrap.** Open your AI client in the project and run `/ai-kit-bootstrap` (Claude Code) or `$ai-kit-bootstrap` (Codex). For other clients, give it [BOOTSTRAP_PROMPT.md](BOOTSTRAP_PROMPT.md).
 
 Existing project documents and context are never overwritten; customized instructions become reviewable conflicts.
 
-Every command also runs through one CLI: `python aikit_cli.py install|doctor|context|adapters|route|configure|providers|metrics|evaluate|adr|changelog|check|docker …` (or `aikit …` after `pip install -e .`).
+Every command also runs through one CLI: `python aikit_cli.py install|doctor|route|metrics|benchmark|check|…` (or `aikit …` after `pip install -e .`).
 
 ## Choose your defaults
 
@@ -194,7 +194,7 @@ Project choices live in `ai-kit/settings.json`; defaults are in [the settings te
 python scripts/install.py /path/to/project --mode team --chat-language English --conventions standard --agent codex --agent claude
 ~~~
 
-**Read [OWNER.md](template/ai-kit/profiles/OWNER.md) before adopting owner conventions for Laravel**; standard follows your project's established conventions.
+**Read [OWNER.md](template/ai-kit/profiles/OWNER.md) before adopting owner conventions for Laravel**; standard follows established project conventions.
 
 ### Presets
 
@@ -246,7 +246,7 @@ Routing recommends controls; confirm actual client activation. Permission rules 
 
 ## Measure, recommend and select context
 
-`aikit benchmark run TARGET --pack PRIVATE_PACK` previews isolated A/B/C trials. --apply invokes a reviewed worker; review/report/export produces private measured reports. Equal fixed A/B models and separate semantic review prevent tests alone from implying savings. [Worker contract and examples](docs/BENCHMARK.md).
+`aikit benchmark run TARGET --pack PRIVATE_PACK` previews isolated A/B/C trials. --apply invokes a reviewed worker; review/report/export produces private measured reports. Packs configure the kit arm (agents/preset, default codex/minimal); interrupted runs resume without re-running completed units, and per-unit infrastructure failures are recorded instead of aborting the run. Equal fixed A/B models and separate semantic review prevent tests alone from implying savings. [Worker contract and examples](docs/BENCHMARK.md).
 
 `aikit route "task" --project TARGET --mode adaptive` uses comparable actual-cost/quality history when sufficient; explicit pins win. Profiles: economy/balanced/quality. `metrics compare|stacks|propose|restore` analyzes evidence without automatically changing selection. [Routing policy](template/ai-kit/router/POLICY.md#modes-pins-and-optimization-profiles).
 
@@ -254,7 +254,7 @@ Routing recommends controls; confirm actual client activation. Permission rules 
 
 ## Teach any AI about AI-KIT
 
-The repository is itself a skill: [SKILL.md](SKILL.md) at its root packs everything an assistant needs to install, configure, upgrade, explain, or maintain AI-KIT. For Claude Code in every project, clone it into your skills directory and the installer comes along:
+The repository is itself a skill: [SKILL.md](SKILL.md) packs everything an assistant needs to install, configure, upgrade, explain, or maintain AI-KIT. For Claude Code in every project, clone it into your skills directory and the installer comes along:
 
 ~~~sh
 git clone https://github.com/tigusigalpa/ai-kit.git ~/.claude/skills/ai-kit

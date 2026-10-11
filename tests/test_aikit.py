@@ -4,6 +4,7 @@ import io
 from pathlib import Path
 import sys
 import unittest
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import aikit_cli
@@ -49,6 +50,14 @@ class AikitCliTests(unittest.TestCase):
         with contextlib.redirect_stdout(output):
             self.assertEqual(aikit_cli.main(["adapters", "report"]), 0)
         self.assertIn('"client": "codex"', output.getvalue())
+
+    def test_loader_prefers_installed_package_module(self):
+        import types
+        package_module = types.ModuleType("aikit.scripts.install")
+        package_module.main = lambda argv=None: 0
+        with mock.patch.dict(sys.modules, {"aikit.scripts.install": package_module}):
+            self.assertIs(aikit_cli._load("install"), package_module)
+        self.assertTrue(callable(aikit_cli._load("install").main))
 
 
 if __name__ == "__main__":

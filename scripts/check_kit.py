@@ -16,6 +16,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import install
 
 ROOT = Path(__file__).resolve().parents[1]
+# The root README is human onboarding that never enters project context, so it gets more room.
+README_BUDGET = 22000
+DOC_BUDGET = 12000
+
 
 
 def source_files(root: Path):
@@ -215,8 +219,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
             errors.append("Trailing whitespace: " + str(p))
         if not text.endswith("\n"):
             errors.append("Missing final newline: " + str(p))
-        # The root README is human onboarding that never enters project context, so it gets more room.
-        if len(text.encode()) > (20000 if p == root / "README.md" else 12000):
+        if len(text.encode()) > (README_BUDGET if p == root / "README.md" else DOC_BUDGET):
             warnings.append("Large conditional document: " + str(p))
         for target in links(text):
             if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):

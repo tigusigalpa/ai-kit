@@ -1,5 +1,14 @@
 # AI-KIT changelog
 
+## v0.12.0 (2026-10-11)
+
+- Benchmark packs accept optional `kit_agents`/`kit_preset` (default codex/minimal), so kit arms install the client's real adapter set and preset instead of a hard-coded arm; both are validated against the installer registry.
+- Benchmark task paths are now probed against the benchmark project instead of the process working directory.
+- Interrupted benchmark runs are resumable: re-running `benchmark run` with the identical pack skips completed units and continues missing ones, and a changed pack is refused against the existing run. Per-unit infrastructure failures are recorded as explicit failed units, so one bad unit neither aborts the run nor hides as an executed attempt; failed units still block savings and cannot be reviewed as correct.
+- The unified `aikit` dispatcher now prefers installed `aikit.scripts.*` package modules over bare script-path imports, avoiding duplicate module objects inside the wheel.
+- The checker document budgets are named constants; the root README budget rises to 22000 bytes (human onboarding that never enters project context), other documents keep 12000.
+- Verified locally (Windows/Python 3.14.6): 252 tests ran, all passed, 1 runtime skip; kit validation returned zero errors and zero warnings; Python 3.10 grammar was verified for the changed sources. Live workers, native client activation and hosted CI remain unverified.
+
 ## v0.11.0 (2026-10-11)
 
 - Fixed provider/model overrides carrying inherited effort; synchronized Gemini routing policy with the reviewed registry. Existing selection/settings defaults stay readable and unchanged.

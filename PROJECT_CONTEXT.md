@@ -5,7 +5,7 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The registry lives in integrations/agents.json. Router/adaptive/learning provide recommendations and analysis; benchmark executes configured protocol workers; context snapshots evidence and selects scoped instructions; adapters audit/retire clients; evaluate reports opaque pair coverage; adr/changelog scaffold records. A Makefile wraps the established commands.
-- Version source: [VERSION](VERSION), currently 0.11.0, locally prepared at the owner's request. Publishing/tagging remain separate; the last verified published source was v0.2.2.
+- Version source: [VERSION](VERSION), currently 0.12.0, locally prepared at the owner's request. Publishing/tagging remain separate; the last verified published source was v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
 
@@ -49,7 +49,7 @@
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
 - Local verified environment: Windows, bundled Python 3.12.14. The user supplied a Linux/Python 3.13.16 hosted-check failure; successful hosted matrix execution remains unverified.
 - Earlier release results remain in [the implementation record](docs/IMPLEMENTATION.md#verification) and linked history; they do not establish the current revision.
-- Current verification uses bundled Windows/Python 3.12.14; it is accessible even when the shell has no `python` command. Point disposable fixtures at a writable external root when sandbox TEMP is unavailable. Before release labeling, full discovery ran 248 tests (244 passed, four runtime skips); post-review checks passed. v0.11.0 CLI/version checks and rebuilt wheel installation passed. Results and limits are recorded in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI and native client activation remain separate.
+- Current verification uses bundled Windows/Python 3.12.14; it is accessible even when the shell has no `python` command. Point disposable fixtures at a writable external root when sandbox TEMP is unavailable. Before release labeling, full discovery ran 248 tests (244 passed, four runtime skips); post-review checks passed. v0.11.0 CLI/version checks and rebuilt wheel installation passed. v0.12.0 benchmark hardening revalidated with 252 tests on Windows/Python 3.14.6 (system runtime). Results and limits are recorded in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI and native client activation remain separate.
 
 ## Agreements
 

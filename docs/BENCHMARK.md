@@ -15,6 +15,8 @@ Store prompts, rubric and pack in a private directory. The prompt/rubric paths a
   "fixed": {"provider": "configured-provider", "model": "configured-model", "effort": null},
   "worker": {"protocol": "aikit-worker-v1", "argv": ["/absolute/path/to/reviewed-worker"]},
   "timeout_seconds": 900,
+  "kit_agents": ["codex"],
+  "kit_preset": "minimal",
   "checks": [["/absolute/path/to/python", "-m", "unittest", "discover", "-s", "tests", "-v"]],
   "tasks": [{
     "task_id": "parser-01",
@@ -29,7 +31,7 @@ Store prompts, rubric and pack in a private directory. The prompt/rubric paths a
 }
 ~~~
 
-`stack` is one of LARAVEL/FILAMENT/GO/MOODLE/PYTHON/unknown. It must match the kit arm's detected module profiles or remain unknown. `path` selects a directory/module, with `.` for the root. `operation` and `risks` use the router's existing names. Full Git object IDs, opaque unique task IDs and 1-100 repeats are required. Identical prompt/rubric/scope material under another ID is refused; use repeats. Baseline must start before AI-KIT is tracked. Tracked secret paths, symlinks, submodules and case-colliding paths are refused; untracked source/dependencies/services are not copied. Review the fixture contents as well: filename guards cannot detect every embedded secret.
+`stack` is one of LARAVEL/FILAMENT/GO/MOODLE/PYTHON/unknown. It must match the kit arm's detected module profiles or remain unknown. `path` selects a directory/module, with `.` for the root; it is validated against the benchmark project. `operation` and `risks` use the router's existing names. `kit_agents`/`kit_preset` are optional (default codex/minimal) and select which client adapters and preset the kit arms install, so the measured kit matches the client's real setup. Full Git object IDs, opaque unique task IDs and 1-100 repeats are required. Identical prompt/rubric/scope material under another ID is refused; use repeats. Baseline must start before AI-KIT is tracked. Tracked secret paths, symlinks, submodules and case-colliding paths are refused; untracked source/dependencies/services are not copied. Review the fixture contents as well: filename guards cannot detect every embedded secret.
 
 ~~~sh
 aikit benchmark run /path/to/test-project --pack /private/trial/pack.json
@@ -87,7 +89,7 @@ aikit metrics compare /path/to/test-project --experiment python-parser-trial-01 
 aikit metrics stacks /path/to/test-project
 ~~~
 
-The run has per-unit results, a completeness manifest, `results.json` and `report.md`. Interrupted runs retain completed units; reporting them shows incomplete coverage, with no savings claim. There is no automatic resume or cleanup. Export waits for complete execution and semantic reviews, preserves existing journal records, refuses differing duplicates and is idempotent. Include incorrect/incomplete reviewed outcomes, not just successes.
+The run has per-unit results, a completeness manifest, `results.json` and `report.md`. Interrupted runs retain completed units; reporting them shows incomplete coverage, with no savings claim. Re-running `benchmark run` with the identical pack resumes: units with an existing `result.json` are never re-executed or rebuilt, missing units continue, and a changed pack is refused against the existing run. Infrastructure failures inside one unit (kit install conflict, unevidenced stack, workspace errors) are recorded as failed units with an explicit `error`, so one bad unit neither aborts the run nor hides as an executed attempt; such units still block savings and cannot be reviewed as correct. Export waits for complete execution and semantic reviews, preserves existing journal records, refuses differing duplicates and is idempotent. Include incorrect/incomplete reviewed outcomes, not just successes.
 
 Cost per correct result includes **all** actual attempt cost divided by correct results. Savings = (baseline spend - candidate spend) / baseline spend * 100%. Savings stay unknown for unmatched cases, different starting/task strata, unreviewed outcomes, actual execution mismatch, estimated/missing/mixed-currency cost, zero baseline spend or lower candidate correctness. Fixed A/B also requires matching observed provider/model/effort. These are observed paired differences; sample size and representativeness still matter.
 
