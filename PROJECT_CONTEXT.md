@@ -7,7 +7,7 @@
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The registry lives in integrations/agents.json. Router/adaptive/learning provide recommendations and analysis; benchmark executes configured protocol workers; context snapshots evidence and selects scoped instructions; adapters audit/retire clients; evaluate reports opaque pair coverage; adr/changelog scaffold records. A Makefile wraps the established commands.
 - Version source: [VERSION](VERSION), currently 1.1.0, locally prepared at the owner's request for security-audit and Strix integration. Publishing/tagging remain separate; last verified published source: v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
-- Onboarding: README maps installation and defaults; its security-workflow section covers both optional integrations, invocation, pins, lifecycle and execution prerequisites.
+- Onboarding: README covers installation, security workflows and proposed OpenRouter context/API/cache use; no adapter/profile is shipped. Root README budget: 32000 bytes; project budgets unchanged.
 
 ## Source verification
 
@@ -58,9 +58,9 @@
 - Adapter file parents: an existing `.clinerules` file is detected and preserved when Cline is unselected. Selecting its directory adapter refuses the blocked parent during planning; see [file-parent compatibility](docs/ADAPTER_PATH_FIX.md).
 - Optional adapters: gemini, windsurf, cline, roo; machine-readable client documentation/activation metadata lives in integrations/agents.json. Machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json. MCP posture is template/ai-kit/MCP.md; no MCP server is installed automatically.
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
-- Local verified environment: Windows, bundled Python 3.12.14. The supplied Linux/Python 3.13.16 failure is historical; current hosted check evidence is recorded under Source verification.
+- Current local checks (Windows/Python 3.12.14): clean kit validation, README JSON/archive preservation and 285 tests (281 passed/four skips). No OpenRouter calls/cache trials. Supplied Linux/Python 3.13.16 failure remains historical; hosted evidence is under Source verification.
 - Earlier release results remain in [the implementation record](docs/IMPLEMENTATION.md#verification) and linked history; they do not establish the current revision.
-- Use bundled Windows/Python 3.12.14 when the shell has no python command; point disposable fixtures at a writable external root when sandbox TEMP is unavailable. Earlier release checks and limits remain in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI and native client activation are separate.
+- Use bundled Windows/Python 3.12.14 and writable external fixtures when sandbox TEMP is unavailable. Earlier checks remain in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI/client activation are separate.
 
 ## Agreements
 

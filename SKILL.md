@@ -89,7 +89,7 @@ A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|
 
 1. Read the repository's `PROJECT_CONTEXT.md` and `AGENTS.md`; keep template rules in their canonical owner (see policy ownership in `docs/IMPLEMENTATION.md`).
 2. Run `python scripts/check_kit.py` and `python -m unittest discover -s tests -v` for affected behavior; build and smoke-install the wheel when packaging changes.
-3. Keep `template/` free of kit history and assumed stack facts. Byte budgets: template AGENTS 2500, CORE 3000, documents 12000, root README 22000. Manifest-verified upstream references are conditional assets; keep their entry point short.
+3. Keep `template/` free of kit history and assumed stack facts. Byte budgets: template AGENTS 2500, CORE 3000, documents 12000, root README 32000. Manifest-verified upstream references are conditional assets; keep their entry point short.
 4. Verify client formats and model facts against primary vendor documentation before changing them.
 5. Update the root CHANGELOG, maintainer context, the continuity skill, and this skill when commands or features change.
 

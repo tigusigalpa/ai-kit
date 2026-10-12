@@ -17,7 +17,7 @@ import install
 
 ROOT = Path(__file__).resolve().parents[1]
 # The root README is human onboarding that never enters project context, so it gets more room.
-README_BUDGET = 22000
+README_BUDGET = 32000
 DOC_BUDGET = 12000
 
 
