@@ -4,7 +4,7 @@
 
 The [changelog](../CHANGELOG.md) records kit evolution. v0.13.0 adds Rust/.NET/Java/infra stack profiles; v0.12.0 hardens benchmarks (resumable runs, per-unit failure records, configurable kit arms); v0.11.0 extends local v0.10.0 with isolated benchmarks, conservative measured routing and scoped context; [current verification](#measurement-led-development-verification) records limits. Earlier results remain in [v0.6.4 verification](V0_6_4.md), [v0.5.0 verification](V0_5_0.md), and the [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
-Assessments were reconciled against actual files and official documentation; reviewer claims about their own executions are not test evidence.
+Assessments use actual files and official docs; reviewers' execution claims are not test evidence.
 
 | Recommendation | Implemented treatment |
 | --- | --- |
@@ -23,8 +23,7 @@ Assessments were reconciled against actual files and official documentation; rev
 | Dogfooding and source accuracy | Root context describes AI-KIT itself; checker validates reference boundaries, anchors, skills, and Git visibility |
 | ADR/change history | Kit ADRs stay under root docs/; clean project ADR/decision templates; CHANGELOG updates remain required after tasks changing files |
 
-The owner's English project/Russian chat split, Laravel conventions, no-commit/no-push agreement, Docker availability checks, Kubernetes-ready contract, and cleanup threshold remain applicable.
-Installation can explicitly select another chat language or standard conventions for another project. No automatic conversion of existing conventions occurs.
+Owner defaults remain: English files/Russian chat, Laravel conventions, explicit commits/pushes, Docker preflight, Kubernetes readiness and cleanup threshold. Installation can select another chat language or standard conventions without converting existing code.
 
 ## Policy ownership
 
@@ -34,6 +33,7 @@ Installation can explicitly select another chat language or standard conventions
 | User/project selections | [Settings](../template/ai-kit/settings.json) |
 | Work cycle, tests/review/docs/migrations | [Engineering](../template/ai-kit/ENGINEERING.md) |
 | Security implementation checks | [Security baseline](../template/ai-kit/SECURITY.md) |
+| Optional security workflows | [Cloudflare](../template/ai-kit/SECURITY-AUDIT.md), [Strix](../template/ai-kit/STRIX.md) |
 | Container design and cleanup threshold | [Containers](../template/ai-kit/CONTAINERS.md) |
 | Owner Laravel conventions | [Owner profile](../template/ai-kit/profiles/OWNER.md) |
 | Stack practices | [Stack directory](../template/ai-kit/stacks), including Filament |
@@ -60,12 +60,13 @@ Entry points and skills link to policy owners. Historical ADRs explain prior dec
 - Additional model/client mappings: unsupported provider IDs and runtime settings remain unknown; no speculative model names or fake activation.
 - Codex nested AGENTS.md and config.toml: Codex reads AGENTS.md only from the root to its working directory, and approval/sandbox settings are user decisions; Roo has no documented path-scoped rules.
 - Topics, homepage, hosted publication, tags/releases: these require remote changes; local work does not authorize them. The current repository description and MIT were independently confirmed; a homepage is unnecessary for the first usable bundle.
-- Portable wheel/PyPI packaging: local Windows wheel checks are recorded below; hosted matrix results remain unverified. PyPI publication stays deferred (remote changes are not authorized locally).
+- PyPI publication needs explicit authorization. [Hosted CI/main protection](../PROJECT_CONTEXT.md#repository-maintenance).
 - Real-project trials and Linux execution: temporary project fixtures exercise preservation and mixed manifests. These do not replace trials on actual applications or hosted CI.
 
 ## Verification
 
-Historical links apply only to their recorded revisions.
+Historical links are revision-specific.
+Optional integration checks: [security-audit](SECURITY_AUDIT.md), [Strix](STRIX.md).
 
 ### Measurement-led development verification
 

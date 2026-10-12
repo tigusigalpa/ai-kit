@@ -26,6 +26,19 @@ class CheckerTests(unittest.TestCase):
     def test_clean_distribution(self):
         self.assertEqual(self.check(), [])
 
+    def test_modified_pinned_package_is_reported(self):
+        path = self.root / "template/ai-kit/vendor/security-audit/SKILL.md"
+        path.write_bytes(path.read_bytes() + b"\nUnexpected edit.\n")
+        self.assertTrue(any("integrity mismatch" in error for error in self.check()))
+
+    def test_upstream_fixture_language_exception_does_not_cover_authored_files(self):
+        (self.root / "scripts/unreviewed.txt").write_text("\u043f\u0440\u0438\u0432\u0435\u0442\n", encoding="utf-8")
+        self.assertTrue(any("Unexpected Cyrillic" in error for error in self.check()))
+
+    def test_missing_pinned_manifest_is_reported(self):
+        (self.root / "integrations/security-audit.json").unlink()
+        self.assertTrue(any("pinned security-audit package" in error for error in self.check()))
+
     def test_git_checkout_binary_metadata_is_excluded(self):
         path = self.root / ".git/objects/binary"
         path.parent.mkdir(parents=True)
@@ -52,6 +65,15 @@ class CheckerTests(unittest.TestCase):
         with path.open("a", encoding="utf-8") as stream:
             stream.write("\n[Repeated](../.agents/skills/go-work/SKILL.md)\n")
         self.assertTrue(any("registry differs" in error for error in self.check()))
+
+    def test_corrupted_strix_reference_is_reported(self):
+        path = self.root / "template/ai-kit/vendor/strix/penetration-testing-with-strix/SKILL.md"
+        path.write_bytes(path.read_bytes() + b"\nChanged reference.\n")
+        self.assertTrue(any("Invalid pinned strix package" in error for error in self.check()))
+
+    def test_missing_strix_manifest_is_reported(self):
+        (self.root / "integrations/strix.json").unlink()
+        self.assertTrue(any("Missing: integrations/strix.json" in error for error in self.check()))
 
     def test_history_is_not_installable_project_fact(self):
         path = self.root / "template/PROJECT_CONTEXT.md"

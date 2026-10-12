@@ -4,14 +4,14 @@
 
 **Stop re-explaining your project to every new AI chat.**
 
-AI-KIT drops a complete working environment for AI coding agents into your repository: project memory that survives every session, expert rules for **Go, PHP, Laravel, Filament 5, Moodle, Python, Rust, .NET, Java, and Terraform/Helm**, a **Kubernetes-ready** container standard, safety guardrails, **adaptive model routing**, and native configuration for **11 AI clients**. One installer, zero dependencies, nothing written until you approve the preview.
+AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-[Features](#features-at-a-glance) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
+[Features](#features-at-a-glance) · [Security workflows](#security-workflows) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
 ## Features at a glance
 
@@ -24,18 +24,19 @@ AI-KIT drops a complete working environment for AI coding agents into your repos
 | 🤖 | **11 AI clients** | Codex, Claude Code, Cursor, Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi, Manus — with documentation evidence and lifecycle reporting |
 | 🎯 | **Native client configuration** | Your real test commands run without prompts; module rules load only where they apply |
 | 🛡️ | **Guardrails** | No commits without your request, confirmation before destructive commands, secret files off-limits |
+| 🔐 | **Optional security workflows** | Cloudflare's audit method and nine Strix skills, pinned and invoked explicitly in Codex or Claude Code |
 | 🔁 | **Engineering loop** | Plan → implement → test → review → document, with honest reporting of what was really checked |
 | ⚡ | **One-command workflows** | `/ai-kit-bootstrap`, `/ai-kit-review`, `/ai-kit-sync-context` |
 | 📦 | **Safe installer and upgrades** | Preview first, offline, backups, conflict candidates, explicit unchanged-adapter retirement, your local edits preserved |
 
 ## Why AI-KIT
 
-AI-KIT preserves verified facts and decisions across sessions, points agents at real project checks and records explicit authorization boundaries:
+AI-KIT preserves facts and decisions, points agents at real checks and records authorization boundaries:
 
-- **They know the project.** Purpose, module map, versions, commands, and open questions live in `PROJECT_CONTEXT.md` and `ai-kit/project.json`, drafted by the installer from your manifests and confirmed by the agent at bootstrap.
-- **They follow your stack's rules.** Laravel transactions and queues, Go context and cancellation, Moodle capabilities and privacy, Filament authorization, Rust ownership and error boundaries, Terraform plan review: the right profile applies to the files being changed.
-- **They stay inside the lines.** Commits and pushes need your explicit request; risky commands ask first; secrets stay unread.
-- **They tell the truth.** An unavailable check is reported as unverified, never as passed.
+- **Project knowledge:** manifests draft module facts and commands; bootstrap verifies them.
+- **Stack depth:** relevant profiles cover framework authorization, transactions, cancellation, privacy and infrastructure review.
+- **Your authority:** explicit commits/pushes, optional risky-command guards and secret exclusions.
+- **Visible evidence:** unavailable checks remain unverified.
 
 ```mermaid
 flowchart LR
@@ -50,10 +51,10 @@ flowchart LR
 
 ### 🧠 Project memory that survives every chat
 
-- **Verified context.** `PROJECT_CONTEXT.md` holds purpose, contracts, stack, a per-module map, commands, and open questions; `ai-kit/project.json` keeps the same facts machine-readable.
-- **Smart drafts.** The installer reads `go.mod`, `composer.json` and `composer.lock`, `package.json` with its lockfile, `pyproject.toml` and requirements, and Moodle markers. It drafts versions and commands per module (`pnpm test` from a pnpm workspace, `uv run pytest` from a uv project) and marks them as suggestions until bootstrap confirms them.
-- **Context at session start.** An optional hook feeds the current context and `git status` into every new Claude Code session.
-- **Decisions that stick.** `docs/DECISIONS.md`, ADRs, and `CHANGELOG.md` record why things are the way they are; a continuity skill keeps facts, WIKI, and pointers in sync.
+- **Verified context:** PROJECT_CONTEXT and project.json hold contracts, module facts, commands and unknowns.
+- **Manifest drafts:** Go, Composer, Node, Python and Moodle evidence suggests versions and module commands until bootstrap confirms them.
+- **Session start:** an optional Claude hook reads context and Git status.
+- **Continuity:** decisions, ADRs and changelog preserve reasons; the continuity skill keeps context and pointers synchronized.
 
 ### 🧩 Built for your stack
 
@@ -76,15 +77,12 @@ Profiles combine per module, so a monorepo with a Laravel app in `web/` and a Go
 
 ### 🐳 Docker-aware, Kubernetes-ready by default
 
-Every new Dockerfile, container, and microservice follows the [Kubernetes-ready contract](template/ai-kit/CONTAINERS.md) from day one, even for a local Docker Compose project:
+New containers follow the [Kubernetes-ready contract](template/ai-kit/CONTAINERS.md), including local Docker Compose projects:
 
-- **Images:** multi-stage builds, pinned minimal base images, immutable release references, `.dockerignore`, and build secrets kept out of layers.
-- **Runtime security:** non-root user with explicit UID/GID, read-only root filesystem, exec-form entrypoints, and no privileged mode or Docker socket.
-- **Health and lifecycle:** real readiness, liveness, and startup probes; `SIGTERM` handling with graceful drain; migrations as separate Jobs, never at every replica start.
-- **Configuration and state:** ConfigMap and Secret, stdout logs, stateless replicas, and PVCs for databases and `moodledata`.
-- **Manifests:** minimal Deployment, StatefulSet, or Job with `runAsNonRoot`, dropped capabilities, `seccompProfile`, and resource requests.
-- **Docker preflight:** the agent checks the client and daemon, asks you to start Docker when needed, and keeps doing independent work meanwhile.
-- **Disk hygiene:** after tests it cleans only verified disposable test volumes and build cache, only above 10 GB, and never with an unscoped prune. `scripts/docker_test_usage.py` collects read-only evidence.
+- **Images/runtime:** pinned multi-stage images, build secrets outside layers, non-root execution, read-only root, exec entrypoints; no privileged mode or Docker socket.
+- **Lifecycle:** startup/readiness/liveness probes, SIGTERM drain, migrations in separate Jobs.
+- **Deployment:** ConfigMap/Secret, stdout logs, stateless replicas, PVCs where needed, dropped capabilities, seccomp and resource requests.
+- **Preflight/cleanup:** verify Docker client and daemon. Cleanup needs verified disposable ownership and the 10 GB threshold; `scripts/docker_test_usage.py` collects evidence.
 
 ### 🧭 Adaptive model routing
 
@@ -122,10 +120,10 @@ Scoped rules, ignore files, and settings come with the native-settings and scope
 
 ### 🎯 Native configuration from your project facts
 
-- **No permission fatigue:** Claude Code runs your recorded test, lint, and build commands without asking.
-- **Secrets off-limits:** agents are denied reads of `.env`, private keys, Composer `auth.json`, Laravel storage keys, Moodle `config.php`, and `.pypirc`; the same list goes into the Cursor, Aider, and Gemini ignore files.
-- **Rules where they belong:** each module gets a path-scoped rule, so Laravel guidance loads for `web/` files and Go guidance for `api/` files in Claude Code, Cursor, Copilot, Windsurf, and Cline.
-- **Your settings stay yours:** AI-KIT owns only its own entries, uses `.claude/settings.local.json` in private mode, and moves only its entries when you switch to team mode.
+- **Recorded checks:** Claude allow rules cover test/lint/build commands.
+- **Secret exclusions:** shared lists cover env files, keys, Composer auth, Laravel/Moodle credentials and .pypirc through selected client deny/ignore controls.
+- **Module scope:** native rules select relevant guidance by file path.
+- **Owned entries:** Claude settings merge by key, using local settings in private mode and moving only kit entries on mode switches.
 
 ### 🛡️ Guardrails you can trust
 
@@ -144,12 +142,45 @@ Every task follows **plan → implement → test → review → document**, with
 
 In Codex, use `$ai-kit-bootstrap` and the other skills the same way.
 
+### Security workflows
+
+**v1.1.0 brings established security methods into your coding workflow.** Give your agent a structured audit method for understanding risk, and a separate workflow for testing exploitability with Strix. Choose the capability your task needs; enable either or both.
+
+| Integration | What it adds | Install flag | Codex / Claude Code |
+| --- | --- | --- | --- |
+| **Cloudflare security-audit** | Security guidance and focused review; a full audit method with reconnaissance, hunting, evidence validation, coverage and reporting | `--with-security-audit` | `$security-audit` / `/security-audit` |
+| **Strix** | Workflows for code, web application, API and OWASP testing, findings review and requested remediation; separate CI/cloud references | `--with-strix` | `$strix` / `/strix` |
+
+**Cloudflare: a method for evidence-based review.** The complete upstream skill includes attack-class references, report schemas and Node.js validators. The short entry point loads only relevant material and distinguishes focused guidance from a separately requested full audit. Independent verification, execution isolation and safe evidence handling remain part of that full-audit contract. [Usage and prerequisites](template/ai-kit/SECURITY-AUDIT.md).
+
+**Strix: a path from source review to active testing.** Nine original skills cover local code and deployed targets, API/web testing, OWASP coverage, fixing findings and verification. The AI-KIT entry point prepares scoped local CLI work, checks prerequisites and reviews proof-of-concept evidence, usage and actual coverage. CI and managed-cloud guidance is available when specifically requested. [Runtime and scan contract](template/ai-kit/STRIX.md).
+
+Preview both integrations in an application project:
+
+~~~sh
+python scripts/install.py /path/to/my-app --agent codex --agent claude --with-security-audit --with-strix
+~~~
+
+Review the preview, then repeat with `--apply --check`. Use either flag alone to select one integration; the `aikit install` command accepts the same flags. Invoke the installed skill with a concrete scope, for example in Codex:
+
+~~~text
+$security-audit Review authentication and tenant isolation in api/. Use guidance mode and report evidence and validation gaps.
+$strix Prepare a local scan of a disposable copy of api/. Agree the model, scope, budget and time limit before execution.
+~~~
+
+In Claude Code use `/security-audit` and `/strix`. Other clients can explicitly follow the installed source entry points.
+
+- **Controlled discovery:** both are off by default and outside presets. Explicit selections persist; Codex/Claude metadata prevents implicit invocation. Supporting references stay outside native skill discovery.
+- **Traceable inputs:** Cloudflare is pinned at `c1c8a8c…` ([manifest](integrations/security-audit.json), MIT); Strix at `f7a32ae…` ([manifest](integrations/strix.json), Apache-2.0). The installer checks file coverage, sizes, Git blobs and SHA-256 and preserves original bytes/licenses.
+- **Preserved customization:** existing backup/conflict rules protect local adaptations; private/team visibility follows the kit's instruction policy.
+
+Installation stays offline and copies files only. A Strix scan requires a separately configured CLI, Docker and model access, plus authorized targets and limits; local code mounts are writable, so use an isolated copy. Cloudflare's pinned validator CLI needs OS no-follow/nonblocking input protection and refuses unsupported native Windows inputs. Installation establishes neither a running audit nor complete vulnerability coverage; [integration verification](docs/STRIX.md#verification) records what was tested.
+
 ### More built in
 
-- **Language split:** files and code in English, chat in your language (Russian by default).
-- **Private or team mode:** keep AI-KIT local, or share it with the whole team through Git.
-- **Health check:** `scripts/doctor.py` reports modified or missing managed files, broken links, stale provider data, and manifest/context drift; `--fix` restores baseline files without touching local edits.
-- **Optional measurements:** `scripts/metrics.py` records attempts, tokens, cost, and attempt dispositions from your own evidence; `analyze` aggregates them per provider to inform `selection.json`, with no automatic telemetry. The evaluator checks baseline/kit pair coverage without inspecting task text.
+- **Language/sharing:** English files, Russian chat by default; private or team instructions.
+- **Health:** `scripts/doctor.py` reports managed-file, link, provider and context drift; `--fix` preserves local edits.
+- **Measurements:** `scripts/metrics.py` records supplied attempt/token/cost evidence and analyzes provider results. No automatic telemetry; evaluation checks opaque pair coverage.
 
 ## Install
 
@@ -209,7 +240,7 @@ python scripts/install.py /path/to/project --mode team --chat-language English -
 | team | team | solo plus Git commit/push confirmation |
 | strict | unchanged | team plus confirmation before destructive and migration commands |
 
-Explicit `--mode` and `--with-*` flags (`--with-session-start`, `--with-guards`, `--with-data-guards`, `--with-native-settings`, `--with-scoped-rules`, `--with-ci`) override a preset, and the preview warns when a preset turns an enabled extra off. Details: [extras, presets, and client formats](template/ai-kit/ADAPTERS.md#optional-install-extras).
+Explicit `--mode` and `--with-*` flags override presets; previews report disabled extras. CI and both security workflows remain explicit choices outside presets. [All extras and client formats](template/ai-kit/ADAPTERS.md#optional-install-extras).
 
 ## What lands in your project
 
@@ -250,21 +281,19 @@ Routing recommends controls; confirm actual client activation. Permission rules 
 
 ## Measure, recommend and select context
 
-`aikit benchmark run TARGET --pack PRIVATE_PACK` previews isolated A/B/C trials. --apply invokes a reviewed worker; review/report/export produces private measured reports. Packs configure the kit arm (agents/preset, default codex/minimal); interrupted runs resume without re-running completed units, and per-unit infrastructure failures are recorded instead of aborting the run. Equal fixed A/B models and separate semantic review prevent tests alone from implying savings. [Worker contract and examples](docs/BENCHMARK.md).
-
-`aikit route "task" --project TARGET --mode adaptive` uses comparable actual-cost/quality history when sufficient; explicit pins win. Profiles: economy/balanced/quality. `metrics compare|stacks|propose|restore` analyzes evidence without automatically changing selection. [Routing policy](template/ai-kit/router/POLICY.md#modes-pins-and-optimization-profiles).
-
-`aikit context select TARGET --path api --budget 32000` selects module rules, detects duplicates and measures bytes while retaining critical requirements/ADRs above budget. No token savings or client loading is inferred. [Development stages](docs/DEVELOPMENT_PLAN.md).
+- `aikit benchmark run TARGET --pack PRIVATE_PACK`: isolated, resumable A/B/C trials through a reviewed worker, configurable kit arms and private reports. Fixed models, actual telemetry and semantic review underpin comparisons. [Contract](docs/BENCHMARK.md).
+- `aikit route "task" --project TARGET --mode adaptive`: recommendations from sufficient comparable cost/quality history; explicit pins win. `metrics compare|stacks|propose|restore` analyzes without automatic selection changes. [Policy](template/ai-kit/router/POLICY.md#modes-pins-and-optimization-profiles).
+- `aikit context select TARGET --path api --budget 32000`: module rules, duplicate detection and byte accounting; critical requirements survive budgets. [Development stages](docs/DEVELOPMENT_PLAN.md).
 
 ## Teach any AI about AI-KIT
 
-The repository is itself a skill: [SKILL.md](SKILL.md) packs everything an assistant needs to install, configure, upgrade, explain, or maintain AI-KIT. For Claude Code in every project, clone it into your skills directory and the installer comes along:
+The repository is a skill: [SKILL.md](SKILL.md) covers installation, configuration, upgrades and maintenance. For Claude Code, clone into your skills directory:
 
 ~~~sh
 git clone https://github.com/tigusigalpa/ai-kit.git ~/.claude/skills/ai-kit
 ~~~
 
-For any other assistant, give it the repository or paste SKILL.md into the chat.
+For other assistants, share the repository or SKILL.md.
 
 ## For maintainers
 
@@ -279,4 +308,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [updating a reference repository](CONTRI
 
 ## License
 
-AI-KIT is released under [MIT](LICENSE). The kit's license covers the kit; choose and verify your application's license separately.
+AI-KIT is released under [MIT](LICENSE); bundled Cloudflare references retain MIT and Strix references retain Apache-2.0. Choose and verify your application's license separately.

@@ -1,5 +1,17 @@
 # AI-KIT changelog
 
+## Unreleased
+
+## v1.1.0 (2026-10-12)
+
+- Prepared v1.1.0 for security-audit and Strix. Expanded README capabilities/examples, pins, lifecycle and execution prerequisites; behavioral results below preceded release labeling.
+- Release labeling verified on Windows/Python 3.12.14: eight CLI tests, 1.1.0 wheel metadata/install/rerun, preserved 0.13.0 upgrade and clean kit checks.
+- Added --with-strix: one explicit-only entry point and nine original Strix skills plus Apache-2.0 license pinned at f7a32ae62d94872631bc8415073868d02a6ffdaf. Offline installation verifies bounded nested trees, Git blobs/SHA-256 and newline bytes; choices persist independently outside presets. Documented external runtime setup, writable target copies, explicit scope/budget, findings and separate cloud/CI/fix authorization. Added preservation/conflict/path/client/checker/wheel tests; [contract and results](docs/STRIX.md).
+- Strix verification on Windows/Python 3.12.14: 285 tests (281 passed, four runtime skips), clean kit validation, original-byte/skill checks, installed private/team visibility and offline fresh-environment wheel smoke with both optional skills and stable rerun. External Strix runtime and real scans remain unverified.
+- Added opt-in --with-security-audit: a short explicit-only Codex/Claude entry point and the complete Cloudflare skill pinned at c1c8a8c1471069fb0e188eeaff69b8e8db6564a8, with MIT license, Git blob/SHA-256 integrity checks and preserved newline bytes. Offline installation persists the choice outside presets, preserves local adaptations/conflicts, and runs no audit or upstream code. Added installation/checker/wheel coverage and documented native Windows validator limitations; [contract and results](docs/SECURITY_AUDIT.md).
+- Prior security-audit verification: 271 Windows/Python tests (267 passed/four skips), clean kit/skill/wheel checks. Cloudflare's native Windows suite had seven CLI platform failures; 44 in-memory checks passed separately. [Details](docs/SECURITY_AUDIT.md); full audits/native activation remain deferred.
+- Enabled main protection through gh: pull requests, 15 GitHub Actions checks, current branches and resolved conversations; blocked force pushes/deletion, including for admins. Zero mandatory approvals permit solo maintenance. Verified by API read-back; updated maintainer guidance.
+
 ## v0.13.0 (2026-10-11)
 
 - Added Rust, .NET, Java (Maven/Gradle), and Terraform/Helm stack profiles with evidence-based per-module detection: Cargo.toml (rust-version, cargo test/build/clippy), *.csproj/*.fsproj/*.vbproj and global.json (TargetFramework, dotnet test/build), pom.xml/mvnw/build.gradle(.kts)/gradlew (language level, wrapper-aware commands), and .tf files or Chart.yaml (fmt/validate, helm lint). Drafts remain suggestions until bootstrap confirms them.
@@ -27,16 +39,6 @@
 - Added read-only module context selection, duplicate detection and byte-budget reporting while preserving critical requirements and architectural decisions. Added staged acceptance plan and orchestration research in ADR 0012.
 - Expanded wheel resources and smoke checks outside the source checkout, including installed validation, new command imports and context selection. Windows/Python 3.12.14 full discovery ran 248 tests (244 passed, four runtime skips); post-review checks and offline wheel installation passed; kit validation returned zero errors/warnings. [Results and limits](docs/IMPLEMENTATION.md#measurement-led-development-verification).
 
-## v0.10.0 (2026-10-10)
-
-- Fixed `metrics.py analyze` task attribution: the identity is now `(experiment, arm, task_id)`, so baseline and kit rows with the same task ID no longer collapse. Added backward-readable measurement schema 2 with required per-attempt `succeeded`/`failed`/`inconclusive` disposition, coverage, and decisive-attempt rate; schema 1 journals remain valid with unknown disposition.
-- Added manifest evidence snapshots in `ai-kit/project.json`, `aikit context snapshot TARGET [--apply]`, and doctor warnings for new/removed modules, profile drift, and changed manifest evidence. The snapshot is preview-first and changes only evidence after explicit apply.
-- Added client documentation metadata in `integrations/agents.json`, `aikit adapters report`, and conservative `aikit adapters retire TARGET --agent NAME [--apply]`. Retirement backs up and removes only unchanged tracked adapter files, then deselects that client; local edits, untracked files, native directories, settings fragments, and ignore blocks remain untouched.
-- Added the private `aikit evaluate scaffold|coverage` harness for opaque baseline/kit task packs and measurement-pair coverage. It reports missing pairs and unexpected records but does not inspect prompts or infer semantic correctness.
-- Added MCP posture and an indirect-instruction boundary: untrusted repository/remote content cannot authorize commands, integrations, credentials, or permission changes; MCP servers remain opt-in, least-privilege, and project-recorded.
-- Packaged the `aikit` console command with bundled templates/resources for a portable wheel and added a six-cell Windows/macOS/Linux, Python 3.10/3.14 CI smoke-install job. The hosted job has not run on this revision.
-- Initial release preparation established no checker, unit, build or wheel-smoke result because the shell did not expose Python. Later bundled-runtime checks cover v0.11.0 preparation; see [current verification](docs/IMPLEMENTATION.md#measurement-led-development-verification). The hosted job and pristine v0.10.0 reconstruction remain unverified.
-
 ## v0.6.4 (2026-10-10)
 
 - Added `--with-native-settings`: Claude Code allow rules for recorded single-command checks, Read deny rules for secrets from [one list](templates/agent-secrets.ignore) plus detected Laravel/Moodle/Composer/Python secrets, and a marked secret block in `.cursorignore`, `.aiderignore`, and `.geminiignore` for selected clients. Private mode now keeps all AI-KIT Claude entries in `.claude/settings.local.json`, team mode in `.claude/settings.json`; owned entries move with the mode and user entries stay.
@@ -61,5 +63,5 @@
 
 ## Earlier kit
 
-The [archived v0.6.5-v0.9 entries](docs/history/v0.6.5-v0.9-changelog.md) preserve later local releases. The [archived v0.4 changelog](docs/history/v0.4-changelog.md) preserves the v0.4.5-v0.4.7 entries verbatim. The [archived v0.3 changelog](docs/history/v0.3-changelog.md) preserves the v0.3.3-v0.3.8 entries verbatim. The [archived v0.2 changelog](docs/history/v0.2-changelog.md) preserves the v0.2-v0.2.2 and Windows fixture entries verbatim. The [archived v0.1 changelog](docs/history/v0.1-changelog.txt) preserves the detailed pre-refactor record verbatim. Its old relative paths and past language/router agreements are historical data.
+Release history is preserved verbatim: [v0.10.0](docs/history/v0.10-changelog.md), [v0.6.5-v0.9](docs/history/v0.6.5-v0.9-changelog.md), [v0.4.5-v0.4.7](docs/history/v0.4-changelog.md), [v0.3.3-v0.3.8](docs/history/v0.3-changelog.md), [v0.2-v0.2.2 and Windows fixtures](docs/history/v0.2-changelog.md), and [v0.1](docs/history/v0.1-changelog.txt). Old paths and language/router agreements are historical data.
 [Prior routing decision](docs/adr/0001-adaptive-model-routing.md) records the accepted routing baseline; this changelog is not copied into projects.

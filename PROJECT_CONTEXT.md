@@ -5,18 +5,24 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The registry lives in integrations/agents.json. Router/adaptive/learning provide recommendations and analysis; benchmark executes configured protocol workers; context snapshots evidence and selects scoped instructions; adapters audit/retire clients; evaluate reports opaque pair coverage; adr/changelog scaffold records. A Makefile wraps the established commands.
-- Version source: [VERSION](VERSION), currently 0.13.0, locally prepared at the owner's request. Publishing/tagging remain separate; the last verified published source was v0.2.2.
+- Version source: [VERSION](VERSION), currently 1.1.0, locally prepared at the owner's request for security-audit and Strix integration. Publishing/tagging remain separate; last verified published source: v0.2.2.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
-- Onboarding: root README is the practical entry guide; its command examples match the installer CLI and distinguish application installation from reference-repository overlays.
+- Onboarding: README maps installation and defaults; its security-workflow section covers both optional integrations, invocation, pins, lifecycle and execution prerequisites.
 
 ## Source verification
 
 - Canonical repository: https://github.com/tigusigalpa/ai-kit, tracking main.
-- Last checked: 2026-10-08; main resolved to 5b487824e3c6f5ab697981f4f3b19f59f5d16af4. Relevant published test source matched the local pre-fix file; this revision was not rebuilt in full.
+- Remote administration check: 2026-10-11; main resolved to b62e409cb4f8d9fbb2299ff2eed667f7fe628451. All 15 distinct GitHub Actions checks on that commit reported success; the remote CI workflow matched the local file. This was not a full source reconstruction or a new CI run.
+- Earlier source check: 2026-10-08; main resolved to 5b487824e3c6f5ab697981f4f3b19f59f5d16af4. Relevant published test source matched the local pre-fix file; this revision was not rebuilt in full.
 - Earlier snapshot: published v0.2 at 73707036c1098d8c1c81ab2c51d723c3d521f6b8 overlaid on v0.1. All 91 tracked blobs were rebuilt with verified Git object hashes, reproducing the five missing-heading errors.
 - Compatibility pointers replace known old rule documents; application installation uses template/ exclusively. Current local fixture correction: [Windows CI regression](docs/WINDOWS_CI_FIX.md).
 - Independently reproduced three Manus installer findings against v0.2.1: candidate overwrite, lost adapter tracking, and unsupported/mixed-type state failure. Patch 0.2.2 preserves candidates, blocks unresolved adapter retirement, and validates inputs before planning; [audit disposition](docs/MANUS_REVIEW.md).
-- Earlier run 37810446904 failed at the v0.2 snapshot. Latest checked run 37819777582 failed on Windows/Python 3.10 and 3.13; its Ubuntu/Python 3.10 and 3.13 jobs succeeded. The supplied Windows traceback exposes unresolved versus canonical fixture-path comparisons; current correction resolves the root before deriving paths.
+- Earlier runs: 37810446904 failed at the v0.2 snapshot; 37819777582 failed on Windows/Python 3.10 and 3.13 while its Ubuntu jobs succeeded. The supplied Windows traceback exposes unresolved versus canonical fixture-path comparisons; current correction resolves the root before deriving paths.
+
+## Repository maintenance
+
+- Main protection was enabled through gh at the owner's request and independently read back on 2026-10-11. Changes require a pull request, all 15 current validation/wheel checks from GitHub Actions, an up-to-date branch, and resolved review conversations. Force pushes and branch deletion are disabled; administrators follow the same rules. Required approving reviews: zero, allowing solo maintenance.
+- Validation covers Linux/Windows/macOS with Python 3.10/3.13/3.14; wheel checks cover those systems with Python 3.10/3.14. When changing CI job names or matrix cells, synchronize required check names under explicit remote authorization. Existing Core commit/push authorization still applies.
 
 ## Working commands
 
@@ -42,14 +48,19 @@
 - Decision record scaffold: python scripts/adr.py new "title" --root TARGET
 - Changelog entry: python scripts/changelog.py add "message" --root TARGET
 - Optional install extras: --with-session-start, --with-guards, --with-data-guards, --with-native-settings, --with-scoped-rules, --with-ci (persist in ai-kit/settings.json), or --preset minimal|solo|team|strict for the managed set (CI stays explicit). Claude wiring merges owned entries (managed_json in installer state) into .claude/settings.local.json in private mode and .claude/settings.json in team mode; guards are ask rules.
+- Optional security audit: --with-security-audit persists security_audit=true outside presets; pinned Cloudflare identity is in integrations/security-audit.json. Offline explicit-only entry points create no reports. Native Windows validator CLI lacks required OS input-open protections; [contract/results](docs/SECURITY_AUDIT.md).
+- Prior security-audit verification: 271 Windows/Python tests (267 passed/four skips), clean kit/wheel checks. Upstream Windows Node CLI: seven platform failures; 44 in-memory checks passed. Details above.
+- Optional Strix: --with-strix persists strix=true outside presets, independently of security-audit. integrations/strix.json pins nine skills and Apache-2.0 license at f7a32ae62d94872631bc8415073868d02a6ffdaf. One explicit-only source/Claude entry point; offline installation runs no runtime/scan. External CLI, Docker/image, model, writable target copy, scope and budget are separate; [contract/results](docs/STRIX.md).
+- Strix verification: Windows/Python 3.12.14, 285 tests (281 passed/four runtime skips), clean kit validation, original blobs/skill metadata and offline wheel smoke. External runtime/scans remain unverified.
+- v1.1.0 labeling: eight CLI tests, CLI version source/wheel metadata 1.1.0, clean kit check and rebuilt offline wheel install/rerun passed. Synthetic 0.13.0 upgrade preserved facts, settings, local skill edits and both pins. The 285-test run preceded labeling.
 - Generated client configuration derives from ai-kit/project.json (detection fallback): secrets from templates/agent-secrets.ignore plus stack additions, client ignore files and scoped rule formats declared per agent in integrations/agents.json. Workflow skills ai-kit-bootstrap/review/sync-context install with source and Claude copies.
 - Client detection: detect markers per agent in integrations/agents.json; preview reports detected_agents/suggested_agents without changing the selection.
 - Adapter file parents: an existing `.clinerules` file is detected and preserved when Cline is unselected. Selecting its directory adapter refuses the blocked parent during planning; see [file-parent compatibility](docs/ADAPTER_PATH_FIX.md).
 - Optional adapters: gemini, windsurf, cline, roo; machine-readable client documentation/activation metadata lives in integrations/agents.json. Machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json. MCP posture is template/ai-kit/MCP.md; no MCP server is installed automatically.
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
-- Local verified environment: Windows, bundled Python 3.12.14. The user supplied a Linux/Python 3.13.16 hosted-check failure; successful hosted matrix execution remains unverified.
+- Local verified environment: Windows, bundled Python 3.12.14. The supplied Linux/Python 3.13.16 failure is historical; current hosted check evidence is recorded under Source verification.
 - Earlier release results remain in [the implementation record](docs/IMPLEMENTATION.md#verification) and linked history; they do not establish the current revision.
-- Current verification uses bundled Windows/Python 3.12.14; it is accessible even when the shell has no `python` command. Point disposable fixtures at a writable external root when sandbox TEMP is unavailable. Before release labeling, full discovery ran 248 tests (244 passed, four runtime skips); post-review checks passed. v0.11.0 CLI/version checks and rebuilt wheel installation passed. v0.12.0 benchmark hardening revalidated with 252 tests on Windows/Python 3.14.6 (system runtime). Results and limits are recorded in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI and native client activation remain separate.
+- Use bundled Windows/Python 3.12.14 when the shell has no python command; point disposable fixtures at a writable external root when sandbox TEMP is unavailable. Earlier release checks and limits remain in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI and native client activation are separate.
 
 ## Agreements
 
@@ -57,4 +68,4 @@
 - User selected MIT on 2026-10-08; [LICENSE](LICENSE) applies to the kit.
 - Actual client activation, live model switching, Docker cleanup, and successful hosted CI are not established by local file checks.
 - Owner deferred real benchmark/application calls; current scope is code and synthetic tests, including orchestration research rather than a live orchestrator.
-- Last context synchronization: 2026-10-11.
+- Last context synchronization: 2026-10-12.

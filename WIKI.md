@@ -1,11 +1,16 @@
 # AI-KIT maintainer map
 
 - [README and installation](README.md)
+- [Security workflow capabilities and examples](README.md#security-workflows)
+- [v1.1.0 release](CHANGELOG.md#v110-2026-10-12)
 - [Installation examples](README.md#install)
 - [Default selections](README.md#choose-your-defaults)
 - [Sharing modes](README.md#sharing)
 - [Application updates](README.md#update-an-application-project)
 - [Current maintainer facts](PROJECT_CONTEXT.md)
+- [Repository protection and maintenance](PROJECT_CONTEXT.md#repository-maintenance)
+- [Optional security-audit integration and verification](docs/SECURITY_AUDIT.md)
+- [Optional Strix integration and verification](docs/STRIX.md)
 - [Repository skill for other assistants](SKILL.md)
 - [Implementation decisions and recommendation disposition](docs/IMPLEMENTATION.md)
 - [Manus audit findings and patch disposition](docs/MANUS_REVIEW.md)

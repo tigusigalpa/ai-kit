@@ -1,0 +1,135 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/cloudflare/security-audit-skill",
+  "revision": "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8",
+  "source_directory": "skills/security-audit",
+  "license": "MIT",
+  "files": {
+    "LICENSE": {
+      "sha256": "e598e694aa506650c7192d5ea3be0e50aca0d356ea00551c53429f0b01eb6391",
+      "git_blob": "6dbc9ecb3a5b9080e95b962869e8c7ab16cfdc20",
+      "git_mode": "100644",
+      "size": 1078
+    },
+    "AI-AND-LLM.md": {
+      "sha256": "7335a95c43554eadefcf03ece639291bb0e038c398a179299e3887ffe06bd2ef",
+      "git_blob": "02ba9039eca4cec811fefc77bce0d7349b379aae",
+      "git_mode": "100644",
+      "size": 10617
+    },
+    "ATTACK-CLASSES.md": {
+      "sha256": "3ee4f00c6e8c9dcf6dd02dd5ac2a4ceb322e2085f3e9fbe79cf0c6330bc7ef83",
+      "git_blob": "18a2beb4dbb554fb52b0a0293b8bd9108207f8fa",
+      "git_mode": "100644",
+      "size": 15695
+    },
+    "CLIENT-SIDE.md": {
+      "sha256": "613f6b98f86083e045525c5b60154ffdab122bac35f1e05eb17488e6e453370c",
+      "git_blob": "8ba673e9e7e3d02f5518aa0219bcbeec7957531b",
+      "git_mode": "100644",
+      "size": 8594
+    },
+    "CLOUD-AND-DEPLOYMENT.md": {
+      "sha256": "3c80f3088be22345e07b057c056d6ed99fe2b0304f794398964f7ccd5a496ca3",
+      "git_blob": "5569f76c7740744aa3f60aaa89eaefe275f2e6c9",
+      "git_mode": "100644",
+      "size": 8291
+    },
+    "DATA-ISOLATION-AND-LIFECYCLE.md": {
+      "sha256": "307dcb3e24d292715c4a041190e7bb135646a37eb6187619ae01d000a634a4ad",
+      "git_blob": "0cba1fa463b62c9b0caba710a201e29c1eecd0ec",
+      "git_mode": "100644",
+      "size": 7798
+    },
+    "DESKTOP-MOBILE-AND-LOCAL-IPC.md": {
+      "sha256": "58eae8ee0ca6a46611c501ec5a3ab47fdff88dd7db0d8d74789bbf8bb19d8cb2",
+      "git_blob": "d6230098651bff6348d3868c11f566bfb1306e7f",
+      "git_mode": "100644",
+      "size": 8739
+    },
+    "HUNTING.md": {
+      "sha256": "71c121decea1322c47c718f6e110f1a892980bb4266bd7ac55ef043a213ade09",
+      "git_blob": "377d4dcfbe88a049379448cd7892717185401597",
+      "git_mode": "100644",
+      "size": 22446
+    },
+    "MEMORY-SAFETY-AND-BINARY.md": {
+      "sha256": "7c8b0dccfb35315cca2455509674d49632b2fe37e1f3aac16c1a496a7e9924a7",
+      "git_blob": "86ff4920752661fc4a31a35ca4f962ace5dd5f48",
+      "git_mode": "100644",
+      "size": 10513
+    },
+    "PROTOCOLS-RPC-AND-MESSAGING.md": {
+      "sha256": "8b73816fa5b3697c9c40977f0c836b40f01d6e81929ff2720fe83ce089e9a619",
+      "git_blob": "b04ab88f852224838fdc9683d9fcccd858b0778a",
+      "git_mode": "100644",
+      "size": 7483
+    },
+    "RECONNAISSANCE.md": {
+      "sha256": "02ca887aca84de8ae137f1891bd2f0a54f28d3fa6da92a27f54734382b3381a2",
+      "git_blob": "1a170a93ab76b93dc5ac268a5b690beb423a8aa9",
+      "git_mode": "100644",
+      "size": 15902
+    },
+    "report-schema.json": {
+      "sha256": "6575c9de4a62255699ea052ebf9a49ebfb373a32891bcd89af6f55cc84b35519",
+      "git_blob": "55815a3687a45fff63d8ebf20068611bd6ad6d9a",
+      "git_mode": "100644",
+      "size": 14494
+    },
+    "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md": {
+      "sha256": "4326fab5c92a0b4c420a70196254040105cd794026562130b59bf1a6db3e4baa",
+      "git_blob": "6cbbd1e2cfa482068c8279c2f7da9db43d3f54b8",
+      "git_mode": "100644",
+      "size": 7476
+    },
+    "SKILL.md": {
+      "sha256": "5e3e96a1e438d8f35fef0a1e38f02d4f00e2bdf910401b7dfe00e6779c6dac85",
+      "git_blob": "92178dad304d3f63e37582a297026a7874e12c62",
+      "git_mode": "100644",
+      "size": 22026
+    },
+    "SUPPLY-CHAIN-AND-RELEASE.md": {
+      "sha256": "f372e919940e335468ba1ae09f99026c3986a345f7fe26f8068f132e199f52a5",
+      "git_blob": "bf96aed0803bc07471483ab129dea86759c3e305",
+      "git_mode": "100644",
+      "size": 7258
+    },
+    "validate-coverage-ledger.cjs": {
+      "sha256": "2eb280bd2e33c002916f86db9b29f9edfedb6454e5db973c766290465b868ac8",
+      "git_blob": "0ef58657bef18b26a92321df6c8e3d31bc8e6659",
+      "git_mode": "100755",
+      "size": 33522
+    },
+    "validate-coverage-ledger.test.cjs": {
+      "sha256": "cfb9df26b03469a4279a70e7664a2a5434dd6f8c2c204e91f9b0aeb9dd71e648",
+      "git_blob": "b1444f57e1b021a61175733b8c356171861c8701",
+      "git_mode": "100644",
+      "size": 28483
+    },
+    "validate-findings.cjs": {
+      "sha256": "e85f232e36bfac0f866f244da50376692d6b45c690beadcb00608b0e6c8b5283",
+      "git_blob": "2843feceddb7e30bf10d6e4f7bbe6640e4c57799",
+      "git_mode": "100755",
+      "size": 28806
+    },
+    "validate-findings.test.cjs": {
+      "sha256": "b92001117a92c4161d43777a0ba2fa182a8a4d97f2304cc8c0cee5331497b73b",
+      "git_blob": "8d245b226bbe2fdf28b46b3203b99c2824039d2d",
+      "git_mode": "100644",
+      "size": 26384
+    },
+    "VALIDATION-AND-REPORTING.md": {
+      "sha256": "b892470cb89bb31f33403e050d4bdfbe2cdaef940ade1496fa65e32b2e129449",
+      "git_blob": "5e200d7387e665e53e0e4190fa4a5814c334c507",
+      "git_mode": "100644",
+      "size": 17843
+    },
+    "WEB-PROTOCOL-AND-AUTH.md": {
+      "sha256": "4f3066dffa23c5635859187be9b96c32f2aff29a688186b91ff0c63e47d62b5c",
+      "git_blob": "1a099fa575cf52a61e9a627f91b61015120fa517",
+      "git_mode": "100644",
+      "size": 12300
+    }
+  }
+}

@@ -1,0 +1,3 @@
+# Pinned third-party bytes must survive Windows checkout without newline conversion.
+template/ai-kit/vendor/security-audit/** -text
+template/ai-kit/vendor/strix/** -text

@@ -25,13 +25,31 @@ PROFILE_MANIFESTS = {
 }
 FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
                      "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
-EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci"}
+EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci", "security-audit", "strix"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
 EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "data-guards": "data_guards",
-                       "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci"}
+                       "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci",
+                       "security-audit": "security_audit", "strix": "strix"}
+SECURITY_AUDIT_SKILL = ".agents/skills/security-audit/"
+SECURITY_AUDIT_PACKAGE = "ai-kit/vendor/security-audit/"
+SECURITY_AUDIT_MANIFEST = "integrations/security-audit.json"
+STRIX_SKILLS = ("api-security-testing", "application-security-testing", "ci-security-scanning-with-strix",
+                "find-security-vulnerabilities-in-code", "fix-security-vulnerabilities-with-strix",
+                "managed-pentesting-with-strix", "owasp-top-10-testing", "penetration-testing-with-strix",
+                "web-app-penetration-testing")
+OPTIONAL_SKILLS = {
+    "security-audit": {"repository": "https://github.com/cloudflare/security-audit-skill",
+                       "source_directory": "skills/security-audit", "license": "MIT", "depth": 1,
+                       "required": {"SKILL.md", "LICENSE", "RECONNAISSANCE.md", "HUNTING.md", "ATTACK-CLASSES.md",
+                                    "VALIDATION-AND-REPORTING.md", "report-schema.json", "validate-findings.cjs",
+                                    "validate-coverage-ledger.cjs"}},
+    "strix": {"repository": "https://github.com/usestrix/strix", "source_directory": "skills",
+              "license": "Apache-2.0", "depth": 2,
+              "required": {"LICENSE", *(name + "/SKILL.md" for name in STRIX_SKILLS)}},
+}
 # Presets set every extra they manage on or off; explicit --with-* flags add on top. CI is left
-# to an explicit choice. A preset mode of None keeps the recorded or explicit sharing mode.
+# to an explicit choice, as are upstream skills. A preset mode of None keeps the sharing mode.
 PRESET_EXTRAS = ("session-start", "guards", "data-guards", "native-settings", "scoped-rules")
 PRESETS = {
     "minimal": {"mode": None, "extras": ()},
@@ -255,6 +273,89 @@ def validate_settings(settings: dict) -> None:
         for field in ("url", "ref", "source_directory"):
             if field in upstream and not isinstance(upstream[field], str):
                 raise ValueError(f"Settings upstream.{field} must be a string")
+
+
+def security_audit_files(root: Path = ROOT) -> dict[str, bytes]:
+    """Return the verified Cloudflare payload (retained for existing callers)."""
+    return upstream_skill_files("security-audit", root)
+
+
+def upstream_skill_files(name: str, root: Path = ROOT) -> dict[str, bytes]:
+    """Verify a bounded upstream reference tree and return its offline install payload."""
+    spec = OPTIONAL_SKILLS[name]
+    package_prefix = "ai-kit/vendor/" + name + "/"
+    with safe_path(root, "integrations/" + name + ".json").open("rb") as stream:
+        manifest_bytes = stream.read(1024 * 1024 + 1)
+    if len(manifest_bytes) > 1024 * 1024:
+        raise ValueError(f"Oversized {name} upstream manifest")
+    manifest = json.loads(manifest_bytes)
+    if (not isinstance(manifest, dict) or type(manifest.get("schema")) is not int
+            or manifest["schema"] != 1
+            or manifest.get("repository") != spec["repository"]
+            or not isinstance(manifest.get("revision"), str)
+            or not re.fullmatch(r"[0-9a-f]{40}", manifest["revision"])
+            or manifest.get("source_directory") != spec["source_directory"]
+            or manifest.get("license") != spec["license"]):
+        raise ValueError(f"Invalid {name} upstream identity")
+    files = manifest.get("files")
+    if not isinstance(files, dict) or not spec["required"] <= files.keys() or len(files) > 100:
+        raise ValueError(f"Incomplete {name} upstream manifest")
+    prefixes: dict[str, str] = {}
+    reserved = {"con", "prn", "aux", "nul", *("com" + str(i) for i in range(1, 10)),
+                *("lpt" + str(i) for i in range(1, 10))}
+    for filename in files:
+        parts = filename.split("/") if isinstance(filename, str) else []
+        if (not parts or len(parts) > spec["depth"] or filename.casefold() == "upstream.json"
+                or any(not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}", part)
+                       or part.endswith(".") or part.split(".")[0].casefold() in reserved for part in parts)):
+            raise ValueError(f"Unsafe {name} upstream filename")
+        for i in range(1, len(parts) + 1):
+            prefix = "/".join(parts[:i])
+            folded = prefix.casefold()
+            if folded in prefixes and prefixes[folded] != prefix:
+                raise ValueError(f"Unsafe {name} upstream filename alias")
+            prefixes[folded] = prefix
+    package = safe_path(root, "template/" + package_prefix + "LICENSE").parent
+    actual = set()
+    pending = [package]
+    while pending:
+        directory = pending.pop()
+        for path in directory.iterdir():
+            relative = path.relative_to(package).as_posix()
+            if is_link(path):
+                raise ValueError(f"Linked {name} upstream entry: {relative}")
+            if path.is_dir() and len(path.relative_to(package).parts) < spec["depth"]:
+                if not any(filename.startswith(relative + "/") for filename in files):
+                    raise ValueError(f"{name} upstream directories differ from the manifest")
+                pending.append(path)
+            elif path.is_file():
+                actual.add(relative)
+            else:
+                raise ValueError(f"Non-regular {name} upstream entry: {relative}")
+    if actual != set(files):
+        raise ValueError(f"{name} upstream files differ from the manifest")
+    incoming: dict[str, bytes] = {}
+    total = 0
+    for filename, record in sorted(files.items()):
+        if (not isinstance(record, dict) or type(record.get("size")) is not int
+                or not 0 <= record["size"] <= 1024 * 1024
+                or record.get("git_mode") not in ("100644", "100755")
+                or any(not isinstance(record.get(field), str)
+                       or not re.fullmatch(r"[0-9a-f]{" + str(length) + "}", record[field])
+                       for field, length in (("sha256", 64), ("git_blob", 40)))):
+            raise ValueError(f"Invalid {name} upstream record: {filename}")
+        source = safe_path(root, "template/" + package_prefix + filename)
+        with source.open("rb") as stream:
+            data = stream.read(1024 * 1024 + 1)
+        total += len(data)
+        blob = hashlib.sha1(b"blob " + str(len(data)).encode("ascii") + b"\0" + data,
+                            usedforsecurity=False).hexdigest()
+        if (total > 5 * 1024 * 1024 or len(data) != record["size"]
+                or digest(data) != record["sha256"] or blob != record["git_blob"]):
+            raise ValueError(f"{name} upstream integrity mismatch: {filename}")
+        incoming[package_prefix + filename] = data
+    incoming[package_prefix + "UPSTREAM.json"] = manifest_bytes
+    return incoming
 
 
 def validate_state(state: dict, target: Path, agents: set[str] | None = None, *, allow_obstructions: bool = False) -> None:
@@ -995,6 +1096,10 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     facts = detect_facts(target)
     detected = profiles_from_facts(facts)
     modules, module_warnings = project_modules(target, facts)
+    upstream_files = {}
+    for name in OPTIONAL_SKILLS:
+        if name in enabled_extras:
+            upstream_files.update(upstream_skill_files(name, root))
     incoming: dict[str, bytes] = {}
     for src in sorted((root / "template").rglob("*")):
         if is_link(src):
@@ -1002,11 +1107,24 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if not src.is_file():
             continue
         relative = src.relative_to(root / "template").as_posix()
+        if any(relative.startswith("ai-kit/vendor/" + name + "/") for name in OPTIONAL_SKILLS):
+            # Only the manifest-verified bytes may enter an optional upstream payload.
+            continue
+        if any(relative.startswith(".agents/skills/" + name + "/") and name not in enabled_extras
+               for name in OPTIONAL_SKILLS):
+            continue
         if relative in registry["entries"] and registry["entries"][relative] not in agents:
             continue
         if any(relative in paths for paths in EXTRA_TEMPLATE.values()):
             continue
         incoming[relative] = src.read_bytes()
+    incoming.update(upstream_files)
+    for name in OPTIONAL_SKILLS:
+        if name not in enabled_extras:
+            registry_path = "ai-kit/SKILLS.md"
+            incoming[registry_path] = b"\n".join(
+                line for line in incoming[registry_path].split(b"\n")
+                if ("(../.agents/skills/" + name + "/SKILL.md)").encode() not in line)
     incoming["ai-kit/settings.json"] = (json.dumps(settings, indent=2) + "\n").encode()
     incoming["ai-kit/VERSION"] = (root / "VERSION").read_bytes()
     incoming["ai-kit/LICENSE"] = (root / "LICENSE").read_bytes()
@@ -1014,6 +1132,13 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if agent in agents:
             for relative, data in list(incoming.items()):
                 if relative.startswith(".agents/skills/"):
+                    if agent == "claude" and relative in {
+                            ".agents/skills/" + name + "/SKILL.md" for name in OPTIONAL_SKILLS}:
+                        newline = b"\r\n" if data.startswith(b"---\r\n") else b"\n"
+                        header = b"---" + newline
+                        if not data.startswith(header):
+                            raise ValueError("Optional upstream entry point lacks frontmatter")
+                        data = header + b"disable-model-invocation: true" + newline + data[len(header):]
                     incoming[relative.replace(".agents/skills/", prefix, 1)] = data
     for agent, items in registry["optional"].items():
         if agent in agents:
@@ -1370,6 +1495,10 @@ def main(argv: list[str] | None = None) -> int:
                         help="Allow recorded checks, deny secret reads, and write client ignore files")
     parser.add_argument("--with-scoped-rules", action="store_true",
                         help="Generate path-scoped rules per module for clients that support them")
+    parser.add_argument("--with-security-audit", action="store_true",
+                        help="Install the pinned, user-invoked security-audit skill without running an audit")
+    parser.add_argument("--with-strix", action="store_true",
+                        help="Install pinned Strix skills and a user-invoked entry point without installing or running Strix")
     parser.add_argument("--preset", choices=list(PRESETS),
                         help="Apply a selection bundle; explicit --mode and --with-* flags take precedence")
     args = parser.parse_args(argv)
@@ -1378,7 +1507,8 @@ def main(argv: list[str] | None = None) -> int:
                                       ("ci", args.with_ci),
                                       ("data-guards", args.with_data_guards),
                                       ("native-settings", args.with_native_settings),
-                                      ("scoped-rules", args.with_scoped_rules)) if flag]
+                                      ("scoped-rules", args.with_scoped_rules),
+                                      ("security-audit", args.with_security_audit), ("strix", args.with_strix)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
     preset = args.preset
     if args.interactive:

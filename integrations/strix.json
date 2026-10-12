@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/usestrix/strix",
+  "revision": "f7a32ae62d94872631bc8415073868d02a6ffdaf",
+  "source_directory": "skills",
+  "license": "Apache-2.0",
+  "files": {
+    "LICENSE": {
+      "sha256": "7db9697134251e314bd8d39257fe170c98b3e2ad9b2ed67e97acaf9613e7b9e3",
+      "git_blob": "65c4e8f58a00552cc29f6bd1dcaf1c4ef10012b8",
+      "git_mode": "100644",
+      "size": 11345
+    },
+    "api-security-testing/SKILL.md": {
+      "sha256": "bd04c90d87be2353ebefee33363af0818746345e25c80ed36f63fcdd2b25509c",
+      "git_blob": "d21a25da6167f79c3caff745abc142b2118c2691",
+      "git_mode": "100644",
+      "size": 6331
+    },
+    "application-security-testing/SKILL.md": {
+      "sha256": "b3041c800a9a1d34e04164c5f700b6d12bbc237f098d760c09ec076c92d2a654",
+      "git_blob": "0c27bd5df4a346abfc1e81efc62f49b066637f52",
+      "git_mode": "100644",
+      "size": 4557
+    },
+    "ci-security-scanning-with-strix/SKILL.md": {
+      "sha256": "f8e1dd61721dc302bd64155f80a2a3b16a5bf5bca598ae23d98aad8fefebea91",
+      "git_blob": "69ae726776b8c1dbc667f18a9f972a66e4656c4e",
+      "git_mode": "100644",
+      "size": 9019
+    },
+    "find-security-vulnerabilities-in-code/SKILL.md": {
+      "sha256": "e7c25f1a0aea437d011d96dd306736b644597b07aa5a6dbc5588eefaab248e0a",
+      "git_blob": "b1829e9cba9db38d6d76e9fa274da3caa188ac75",
+      "git_mode": "100644",
+      "size": 4386
+    },
+    "fix-security-vulnerabilities-with-strix/SKILL.md": {
+      "sha256": "bb1b351fd60c91e4875207f3fe4f35774ff5194261a00aea9f4752e459f24a9f",
+      "git_blob": "6912cb542b3e5c46e99fa196cd29039de9a8e574",
+      "git_mode": "100644",
+      "size": 5997
+    },
+    "managed-pentesting-with-strix/SKILL.md": {
+      "sha256": "45e1432ea897e59e67a5102513a4b9aac7372a5666d68d620ee867bbfa8b290b",
+      "git_blob": "246aa882580962a89aaef2ad89d5d3c6e150a793",
+      "git_mode": "100644",
+      "size": 23639
+    },
+    "owasp-top-10-testing/SKILL.md": {
+      "sha256": "02b1cbe60d40c44493309418c7824f1f681d9f32bf0299ca246892c46cb130af",
+      "git_blob": "328e217f7e0ab0fe43f448de49c1b2fb2897a6a7",
+      "git_mode": "100644",
+      "size": 6245
+    },
+    "penetration-testing-with-strix/SKILL.md": {
+      "sha256": "8051d93f1ccc96c7268ca7b3d3d589c56997c620164773617ceb53af8832692c",
+      "git_blob": "afd56cea3920da1f5092f90244c3db7519b8b0ae",
+      "git_mode": "100644",
+      "size": 10131
+    },
+    "web-app-penetration-testing/SKILL.md": {
+      "sha256": "2e8df0b9233971c496d0c0c7660808fc717c08d4165455a0423229045389608a",
+      "git_blob": "99331fa8bb83315a3bce4449592bb77504421d30",
+      "git_mode": "100644",
+      "size": 4320
+    }
+  }
+}

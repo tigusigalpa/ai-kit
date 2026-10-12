@@ -664,7 +664,7 @@ class InstallerTests(unittest.TestCase):
         plan = self.plan(agents=["codex", "copilot"])
         self.assertIn("CLAUDE.md", plan["adapter_conflicts"])
         native_skills = {".claude/skills/" + path.parent.name + "/SKILL.md"
-                         for path in (self.source / "template/.agents/skills").glob("*/SKILL.md")}
+                         for path in (self.target / ".agents/skills").glob("*/SKILL.md")}
         self.assertEqual(set(plan["adapter_conflicts"]), {"CLAUDE.md", *native_skills})
         self.assertTrue(install.needs_review(plan))
         self.assertFalse(install.apply_plan(plan))

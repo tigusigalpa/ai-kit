@@ -5,6 +5,8 @@ Maintenance: [continuity skill](.agents/skills/project-continuity/SKILL.md), [bo
 Checks: [engineering](ai-kit/ENGINEERING.md), [security](ai-kit/SECURITY.md), and [containers](ai-kit/CONTAINERS.md) when applicable.
 Adapters: [integration notes](ai-kit/ADAPTERS.md). Full routing: [optional router](ai-kit/router/POLICY.md) with [provider selection](ai-kit/router/selection.json).
 Evaluation only when requested: [local measurement contract](ai-kit/METRICS.md). Review [MCP posture](ai-kit/MCP.md) before enabling a tool server.
+Optional security review: [security-audit contract](ai-kit/SECURITY-AUDIT.md); install and invoke explicitly.
+Optional active testing: [Strix contract](ai-kit/STRIX.md); install and invoke explicitly.
 
 ## Available profiles
 

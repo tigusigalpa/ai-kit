@@ -10,6 +10,8 @@ Workflow skills run on an explicit request: /ai-kit-bootstrap in Claude Code, $a
 | [ai-kit-bootstrap](../.agents/skills/ai-kit-bootstrap/SKILL.md) | Workflow: first-session bootstrap (user-invoked) |
 | [ai-kit-review](../.agents/skills/ai-kit-review/SKILL.md) | Workflow: change review (user-invoked) |
 | [ai-kit-sync-context](../.agents/skills/ai-kit-sync-context/SKILL.md) | Workflow: context sync after work (user-invoked) |
+| [security-audit](../.agents/skills/security-audit/SKILL.md) | Optional workflow: security review (user-invoked, --with-security-audit) |
+| [strix](../.agents/skills/strix/SKILL.md) | Optional workflow: local Strix scans and findings (user-invoked, --with-strix) |
 | [php-work](../.agents/skills/php-work/SKILL.md) | PHP |
 | [laravel-work](../.agents/skills/laravel-work/SKILL.md) | LARAVEL |
 | [filament-work](../.agents/skills/filament-work/SKILL.md) | FILAMENT |

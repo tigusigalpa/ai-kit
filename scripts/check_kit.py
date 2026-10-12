@@ -113,6 +113,13 @@ def visibility(root: Path, git: str) -> list[str]:
             (scratch / ".gitignore").write_bytes(merged.encode("utf-8"))
             for path in ("AGENTS.md", "PROJECT_CONTEXT.md", "ai-kit/CORE.md", "GEMINI.md",
                          ".agents/skills/go-work/SKILL.md", ".claude/skills/go-work/SKILL.md",
+                         ".agents/skills/security-audit/SKILL.md",
+                         ".agents/skills/security-audit/agents/openai.yaml",
+                         ".claude/skills/security-audit/SKILL.md",
+                         "ai-kit/vendor/security-audit/LICENSE", "ai-kit/vendor/security-audit/UPSTREAM.json",
+                         ".agents/skills/strix/SKILL.md", ".agents/skills/strix/agents/openai.yaml",
+                         ".claude/skills/strix/SKILL.md", "ai-kit/vendor/strix/LICENSE",
+                         "ai-kit/vendor/strix/UPSTREAM.json",
                          ".agents/hooks/session-start.md", ".agents/hooks/session-start.sh",
                          ".agents/skills/ai-kit-bootstrap/SKILL.md", ".claude/rules/ai-kit-web.md",
                          ".cursor/rules/ai-kit-web.mdc", ".github/instructions/ai-kit-web.instructions.md",
@@ -175,7 +182,11 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "template/ai-kit/router/providers/gemini.json",
                 "templates/gitignore.private", "templates/gitignore.team",
                 "aikit_cli.py", "__init__.py", "MANIFEST.in", "pyproject.toml", "tests/wheel_smoke.py",
-                ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md"]
+                ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md",
+                ]
+    for name in install.OPTIONAL_SKILLS:
+        required.extend(["integrations/" + name + ".json", "template/.agents/skills/" + name + "/SKILL.md",
+                         "template/.agents/skills/" + name + "/agents/openai.yaml"])
     for relative in required:
         if not (root / relative).is_file():
             errors.append("Missing: " + relative)
@@ -188,6 +199,14 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
             errors.append("pyproject.toml must derive its version from VERSION")
     elif not (root / "aikit_cli.py").is_file():
         errors.append("Missing unified CLI entry point")
+    vendored_files: set[Path] = set()
+    for name in install.OPTIONAL_SKILLS:
+        try:
+            package_files = install.upstream_skill_files(name, root)
+            vendored_files.update(root / "template" / path for path in package_files
+                                 if path != "ai-kit/vendor/" + name + "/UPSTREAM.json")
+        except (OSError, ValueError) as exc:
+            errors.append(f"Invalid pinned {name} package: " + str(exc))
     for p in source_files(root):
         if p.is_symlink():
             errors.append("Linked source: " + str(p))
@@ -197,7 +216,8 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         except UnicodeError:
             errors.append("Not UTF-8 text: " + str(p))
             continue
-        if re.search(r"[\u0400-\u04ff]", text):
+        # Pinned upstream Unicode fixtures are external data, not authored project language.
+        if p not in vendored_files and re.search(r"[\u0400-\u04ff]", text):
             errors.append("Unexpected Cyrillic project content: " + str(p))
         if p.suffix == ".json":
             try:
@@ -219,7 +239,8 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
             errors.append("Trailing whitespace: " + str(p))
         if not text.endswith("\n"):
             errors.append("Missing final newline: " + str(p))
-        if len(text.encode()) > (README_BUDGET if p == root / "README.md" else DOC_BUDGET):
+        # Immutable upstream references are conditional assets; the entry point retains its budget.
+        if p not in vendored_files and len(text.encode()) > (README_BUDGET if p == root / "README.md" else DOC_BUDGET):
             warnings.append("Large conditional document: " + str(p))
         for target in links(text):
             if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):
@@ -319,6 +340,9 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         errors.append("Invalid agent registry: " + str(exc))
     for p in (root / "template").rglob("*.md"):
+        if p in vendored_files:
+            # Upstream examples are immutable external data, not active routing selections.
+            continue
         text = p.read_text()
         if re.search(r"gpt-[0-9]", text) or any(model_id in text for model_id in model_ids):
             errors.append("Active model IDs duplicated outside provider configuration: " + str(p))

@@ -51,12 +51,22 @@ Opt-in flags add machinery beyond the standard entries; accepted choices persist
 | Data guards | --with-data-guards | Claude Code ask rules for rm -rf, git reset --hard, git clean, Docker prune/volume removal, and migrations of detected Laravel/Moodle modules (integrations/claude-settings.data-ask.json) | Command-prefix confirmation, not a security boundary; requires the claude selection |
 | Native settings | --with-native-settings | Claude Code allow rules for recorded test/lint/build commands and Read deny rules for secrets; a marked secret block in .cursorignore, .aiderignore, and .geminiignore for selected clients | Secrets come from templates/agent-secrets.ignore plus detected stacks (auth.json, Laravel storage keys, Moodle config.php, .pypirc). Commands with shell operators are not allowed |
 | Scoped rules | --with-scoped-rules | One path-scoped rule per module with stack profiles, pointing to its profiles and recorded commands | Generated managed files: rerun the installer after project.json changes; edited files become conflicts |
+| Security audit | --with-security-audit | Explicit-only skill, pinned Cloudflare method and validators | [Contract](SECURITY-AUDIT.md); files only |
+| Strix | --with-strix | Explicit-only skill, nine pinned upstream skills and license/provenance | [Contract](STRIX.md); no runtime installation or scan |
 
 Client wiring for guards, data guards, session start, and native settings requires the claude agent selection; without it only shared files are installed. MCP servers stay project-specific: choose read-only servers and declare them in .mcp.json manually; no server is installed by default.
 
+### Optional security audit
+
+Use --with-security-audit for the explicit-only workflow. Read its [contract](SECURITY-AUDIT.md) for invocation, execution prerequisites, Windows limitations and retirement.
+
+### Optional Strix
+
+Use --with-strix for the explicit-only workflow. Read its [contract](STRIX.md) for local CLI setup, writable target copies, scope/budget, findings and retirement.
+
 ### Presets
 
---preset sets every extra it manages on or off and may set the sharing mode; explicit --mode and --with-* flags take precedence. The preview warns when a preset turns off an enabled extra. CI stays an explicit choice.
+--preset sets its extras on or off and may set the sharing mode; explicit --mode and --with-* flags win. The preview reports disabled extras. CI and upstream skills stay explicit choices.
 
 | Preset | Mode | Extras |
 | --- | --- | --- |
