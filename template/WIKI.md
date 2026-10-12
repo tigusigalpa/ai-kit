@@ -7,6 +7,7 @@ Adapters: [integration notes](ai-kit/ADAPTERS.md). Full routing: [optional route
 Evaluation only when requested: [local measurement contract](ai-kit/METRICS.md). Review [MCP posture](ai-kit/MCP.md) before enabling a tool server.
 Optional security review: [security-audit contract](ai-kit/SECURITY-AUDIT.md); install and invoke explicitly.
 Optional active testing: [Strix contract](ai-kit/STRIX.md); install and invoke explicitly.
+Optional library documentation: [Context7 contract](ai-kit/CONTEXT7.md); workflow installation and MCP activation are separate.
 
 ## Available profiles
 

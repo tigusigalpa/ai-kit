@@ -4,7 +4,7 @@
 
 The [changelog](../CHANGELOG.md) records kit evolution. v0.13.0 adds Rust/.NET/Java/infra stack profiles; v0.12.0 hardens benchmarks (resumable runs, per-unit failure records, configurable kit arms); v0.11.0 extends local v0.10.0 with isolated benchmarks, conservative measured routing and scoped context; [current verification](#measurement-led-development-verification) records limits. Earlier results remain in [v0.6.4 verification](V0_6_4.md), [v0.5.0 verification](V0_5_0.md), and the [audit disposition](MANUS_REVIEW.md).
 The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
-Assessments use actual files and official docs; reviewers' execution claims are not test evidence.
+Execution claims require test evidence.
 
 | Recommendation | Implemented treatment |
 | --- | --- |
@@ -44,7 +44,7 @@ Owner defaults remain: English files/Russian chat, Laravel conventions, explicit
 | Benchmark execution, telemetry and semantic acceptance | [benchmark contract](BENCHMARK.md), [benchmark helper](../scripts/benchmark.py), [Metrics](../template/ai-kit/METRICS.md) |
 | Client evidence and conservative adapter retirement | [agent registry](../integrations/agents.json), [adapters helper](../scripts/adapters.py), [Adapters](../template/ai-kit/ADAPTERS.md) |
 | Project-fact evidence and pair-coverage evaluation | [context helper](../scripts/context.py), [evaluation helper](../scripts/evaluate.py), [Metrics](../template/ai-kit/METRICS.md) |
-| MCP trust boundary | [MCP posture](../template/ai-kit/MCP.md) and [Security baseline](../template/ai-kit/SECURITY.md) |
+| MCP trust boundary and documentation workflow | [MCP](../template/ai-kit/MCP.md), [Security](../template/ai-kit/SECURITY.md), [Context7](../template/ai-kit/CONTEXT7.md) |
 | Installation/upstream reconciliation | [Bootstrap](../template/ai-kit/BOOTSTRAP.md), [upstream](../template/ai-kit/UPSTREAM.md), installer state |
 | Current project facts and navigation | Installed PROJECT_CONTEXT, WIKI, and ai-kit/project.json |
 | Context maintenance procedure | [Continuity skill](../template/.agents/skills/project-continuity/SKILL.md) |

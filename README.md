@@ -6,12 +6,14 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
+**[v1.2.0](CHANGELOG.md#v120-2026-10-12)** adds optional Context7 documentation lookup and a detailed OpenRouter context/API/caching guide.
+
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-[Features](#features-at-a-glance) · [Security workflows](#security-workflows) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
+[Features](#features-at-a-glance) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
 ## Features at a glance
 
@@ -284,6 +286,20 @@ Routing recommends controls; confirm actual client activation. Permission rules 
 - `aikit benchmark run TARGET --pack PRIVATE_PACK`: isolated, resumable A/B/C trials through a reviewed worker, configurable kit arms and private reports. Fixed models, actual telemetry and semantic review underpin comparisons. [Contract](docs/BENCHMARK.md).
 - `aikit route "task" --project TARGET --mode adaptive`: recommendations from sufficient comparable cost/quality history; explicit pins win. `metrics compare|stacks|propose|restore` analyzes without automatic selection changes. [Policy](template/ai-kit/router/POLICY.md#modes-pins-and-optimization-profiles).
 - `aikit context select TARGET --path api --budget 32000`: module rules, duplicate detection and byte accounting; critical requirements survive budgets. [Development stages](docs/DEVELOPMENT_PLAN.md).
+
+## Library documentation with Context7
+
+**Bring version-relevant library documentation into coding tasks.** The optional Context7 workflow checks the dependency version, resolves the library, retrieves focused examples and records source/coverage gaps. Retrieved documentation complements AI-KIT's project facts and checks. [Upstream Context7](https://github.com/upstash/context7).
+
+Preview installation from this checkout:
+
+```text
+python scripts/install.py /path/to/my-app --agent codex --agent claude --with-context7
+```
+
+Review, then repeat with `--apply --check`; `aikit install` accepts the same flag. The choice persists independently outside presets. It adds the short `context7-docs` skill with normal discovery; invoke `$context7-docs` in Codex or `/context7-docs` in Claude when needed. Send sanitized public library/version questions and verify returned examples against your project's checks.
+
+**Connection setup is separate.** AI-KIT installs no server/package, provisions no account and writes no MCP credentials/configuration. The [connection and usage guide](template/ai-kit/CONTEXT7.md) includes Codex, Claude Code and Cursor HTTP examples with environment-based credentials, an OAuth alternative, activation checks and fallback behavior. Reuse an existing Context7 connection. [Source review and integration verification](docs/CONTEXT7.md); the hosted service is not revision-pinned.
 
 ## Working with OpenRouter
 

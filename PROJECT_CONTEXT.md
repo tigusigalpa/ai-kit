@@ -5,9 +5,9 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The registry lives in integrations/agents.json. Router/adaptive/learning provide recommendations and analysis; benchmark executes configured protocol workers; context snapshots evidence and selects scoped instructions; adapters audit/retire clients; evaluate reports opaque pair coverage; adr/changelog scaffold records. A Makefile wraps the established commands.
-- Version source: [VERSION](VERSION), currently 1.1.0, locally prepared at the owner's request for security-audit and Strix integration. Publishing/tagging remain separate; last verified published source: v0.2.2.
+- Version source: [VERSION](VERSION), currently 1.2.0, locally prepared for Context7 and OpenRouter documentation. Publishing/tagging remain separate.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
-- Onboarding: README covers installation, security workflows and proposed OpenRouter context/API/cache use; no adapter/profile is shipped. Root README budget: 32000 bytes; project budgets unchanged.
+- Onboarding: README covers installation, security workflows, Context7 and proposed OpenRouter context/API/cache use; no OpenRouter adapter/profile is shipped. Root README budget: 32000 bytes; project budgets unchanged.
 
 ## Source verification
 
@@ -49,16 +49,17 @@
 - Changelog entry: python scripts/changelog.py add "message" --root TARGET
 - Optional install extras: --with-session-start, --with-guards, --with-data-guards, --with-native-settings, --with-scoped-rules, --with-ci (persist in ai-kit/settings.json), or --preset minimal|solo|team|strict for the managed set (CI stays explicit). Claude wiring merges owned entries (managed_json in installer state) into .claude/settings.local.json in private mode and .claude/settings.json in team mode; guards are ask rules.
 - Optional security audit: --with-security-audit persists security_audit=true outside presets; pinned Cloudflare identity is in integrations/security-audit.json. Offline explicit-only entry points create no reports. Native Windows validator CLI lacks required OS input-open protections; [contract/results](docs/SECURITY_AUDIT.md).
-- Prior security-audit verification: 271 Windows/Python tests (267 passed/four skips), clean kit/wheel checks. Upstream Windows Node CLI: seven platform failures; 44 in-memory checks passed. Details above.
+- Prior security-audit checks and Windows validator limits: [results](docs/SECURITY_AUDIT.md).
 - Optional Strix: --with-strix persists strix=true outside presets, independently of security-audit. integrations/strix.json pins nine skills and Apache-2.0 license at f7a32ae62d94872631bc8415073868d02a6ffdaf. One explicit-only source/Claude entry point; offline installation runs no runtime/scan. External CLI, Docker/image, model, writable target copy, scope and budget are separate; [contract/results](docs/STRIX.md).
-- Strix verification: Windows/Python 3.12.14, 285 tests (281 passed/four runtime skips), clean kit validation, original blobs/skill metadata and offline wheel smoke. External runtime/scans remain unverified.
-- v1.1.0 labeling: eight CLI tests, CLI version source/wheel metadata 1.1.0, clean kit check and rebuilt offline wheel install/rerun passed. Synthetic 0.13.0 upgrade preserved facts, settings, local skill edits and both pins. The 285-test run preceded labeling.
+- Optional Context7: --with-context7 persists context7=true outside presets; source/Claude context7-docs uses normal discovery. HTTP client examples and sanitized version-aware lookup: [contract](template/ai-kit/CONTEXT7.md). MCP setup/activation stays separate; [source and checks](docs/CONTEXT7.md).
+- Strix verification and unavailable scans: [results](docs/STRIX.md#verification).
+- Earlier release labeling: [v1.1.0](CHANGELOG.md#v110-2026-10-12). Current 293-test discovery preceded v1.2.0 labeling; release checks are recorded with [Context7 results](docs/CONTEXT7.md#release-labeling).
 - Generated client configuration derives from ai-kit/project.json (detection fallback): secrets from templates/agent-secrets.ignore plus stack additions, client ignore files and scoped rule formats declared per agent in integrations/agents.json. Workflow skills ai-kit-bootstrap/review/sync-context install with source and Claude copies.
 - Client detection: detect markers per agent in integrations/agents.json; preview reports detected_agents/suggested_agents without changing the selection.
 - Adapter file parents: an existing `.clinerules` file is detected and preserved when Cline is unselected. Selecting its directory adapter refuses the blocked parent during planning; see [file-parent compatibility](docs/ADAPTER_PATH_FIX.md).
 - Optional adapters: gemini, windsurf, cline, roo; machine-readable client documentation/activation metadata lives in integrations/agents.json. Machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json. MCP posture is template/ai-kit/MCP.md; no MCP server is installed automatically.
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
-- Current local checks (Windows/Python 3.12.14): clean kit validation, README JSON/archive preservation and 285 tests (281 passed/four skips). No OpenRouter calls/cache trials. Supplied Linux/Python 3.13.16 failure remains historical; hosted evidence is under Source verification.
+- Current local checks: 293 Windows/Python 3.12.14 tests (289 passed/four skips), clean kit/config/skill checks, all-client private/team fixtures and offline wheel smoke. No live Context7/OpenRouter calls; [details](docs/CONTEXT7.md#verification). Hosted evidence remains under Source verification.
 - Earlier release results remain in [the implementation record](docs/IMPLEMENTATION.md#verification) and linked history; they do not establish the current revision.
 - Use bundled Windows/Python 3.12.14 and writable external fixtures when sandbox TEMP is unavailable. Earlier checks remain in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI/client activation are separate.
 

@@ -50,7 +50,7 @@ def main(argv: list[str] | None = None) -> int:
         run([aikit, "adapters", "report", "--project", project])
         run([aikit, "context", "select", project])
         audit_project = root / "audit project"
-        run([aikit, "install", audit_project, "--with-security-audit", "--with-strix", "--agent", "codex",
+        run([aikit, "install", audit_project, "--with-security-audit", "--with-strix", "--with-context7", "--agent", "codex",
              "--agent", "claude", "--apply", "--check"])
         from_manifest = audit_project / "ai-kit/vendor/security-audit/UPSTREAM.json"
         if not from_manifest.is_file() or not (audit_project / ".agents/skills/security-audit/agents/openai.yaml").is_file():
@@ -60,6 +60,9 @@ def main(argv: list[str] | None = None) -> int:
         if not strix_manifest.is_file() or not strix_reference.is_file() \
                 or not (audit_project / ".claude/skills/strix/SKILL.md").is_file():
             raise RuntimeError("Wheel did not install the optional Strix references and native entry point")
+        if not (audit_project / "ai-kit/CONTEXT7.md").is_file() \
+                or not (audit_project / ".claude/skills/context7-docs/SKILL.md").is_file():
+            raise RuntimeError("Wheel did not install the Context7 guide and native documentation skill")
         run([aikit, "install", audit_project, "--apply", "--check"])
     return 0
 

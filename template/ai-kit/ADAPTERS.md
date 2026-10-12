@@ -53,20 +53,21 @@ Opt-in flags add machinery beyond the standard entries; accepted choices persist
 | Scoped rules | --with-scoped-rules | One path-scoped rule per module with stack profiles, pointing to its profiles and recorded commands | Generated managed files: rerun the installer after project.json changes; edited files become conflicts |
 | Security audit | --with-security-audit | Explicit-only skill, pinned Cloudflare method and validators | [Contract](SECURITY-AUDIT.md); files only |
 | Strix | --with-strix | Explicit-only skill, nine pinned upstream skills and license/provenance | [Contract](STRIX.md); no runtime installation or scan |
+| Context7 | --with-context7 | Optional context7-docs skill, source/Claude copies | [Contract](CONTEXT7.md); MCP setup/authentication separate |
 
 Client wiring for guards, data guards, session start, and native settings requires the claude agent selection; without it only shared files are installed. MCP servers stay project-specific: choose read-only servers and declare them in .mcp.json manually; no server is installed by default.
 
 ### Optional security audit
 
-Use --with-security-audit for the explicit-only workflow. Read its [contract](SECURITY-AUDIT.md) for invocation, execution prerequisites, Windows limitations and retirement.
+Read the [contract](SECURITY-AUDIT.md).
 
 ### Optional Strix
 
-Use --with-strix for the explicit-only workflow. Read its [contract](STRIX.md) for local CLI setup, writable target copies, scope/budget, findings and retirement.
+Read the [contract](STRIX.md).
 
 ### Presets
 
---preset sets its extras on or off and may set the sharing mode; explicit --mode and --with-* flags win. The preview reports disabled extras. CI and upstream skills stay explicit choices.
+--preset sets its extras on or off and may set the sharing mode; explicit --mode and --with-* flags win. The preview reports disabled extras. CI, upstream skills and Context7 stay outside presets.
 
 | Preset | Mode | Extras |
 | --- | --- | --- |

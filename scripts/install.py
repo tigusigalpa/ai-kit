@@ -25,12 +25,13 @@ PROFILE_MANIFESTS = {
 }
 FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
                      "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
-EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci", "security-audit", "strix"}
+EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci", "security-audit", "strix",
+          "context7"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
 EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "data-guards": "data_guards",
                        "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci",
-                       "security-audit": "security_audit", "strix": "strix"}
+                       "security-audit": "security_audit", "strix": "strix", "context7": "context7"}
 SECURITY_AUDIT_SKILL = ".agents/skills/security-audit/"
 SECURITY_AUDIT_PACKAGE = "ai-kit/vendor/security-audit/"
 SECURITY_AUDIT_MANIFEST = "integrations/security-audit.json"
@@ -48,8 +49,10 @@ OPTIONAL_SKILLS = {
               "license": "Apache-2.0", "depth": 2,
               "required": {"LICENSE", *(name + "/SKILL.md" for name in STRIX_SKILLS)}},
 }
+# Local documentation workflows share selection/preservation behavior, without an upstream payload.
+OPTIONAL_ENTRY_POINTS = {**{name: name for name in OPTIONAL_SKILLS}, "context7": "context7-docs"}
 # Presets set every extra they manage on or off; explicit --with-* flags add on top. CI is left
-# to an explicit choice, as are upstream skills. A preset mode of None keeps the sharing mode.
+# to an explicit choice, as are optional integrations. A preset mode of None keeps the sharing mode.
 PRESET_EXTRAS = ("session-start", "guards", "data-guards", "native-settings", "scoped-rules")
 PRESETS = {
     "minimal": {"mode": None, "extras": ()},
@@ -1110,8 +1113,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if any(relative.startswith("ai-kit/vendor/" + name + "/") for name in OPTIONAL_SKILLS):
             # Only the manifest-verified bytes may enter an optional upstream payload.
             continue
-        if any(relative.startswith(".agents/skills/" + name + "/") and name not in enabled_extras
-               for name in OPTIONAL_SKILLS):
+        if any(relative.startswith(".agents/skills/" + skill + "/") and name not in enabled_extras
+               for name, skill in OPTIONAL_ENTRY_POINTS.items()):
             continue
         if relative in registry["entries"] and registry["entries"][relative] not in agents:
             continue
@@ -1119,12 +1122,12 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             continue
         incoming[relative] = src.read_bytes()
     incoming.update(upstream_files)
-    for name in OPTIONAL_SKILLS:
+    for name, skill in OPTIONAL_ENTRY_POINTS.items():
         if name not in enabled_extras:
             registry_path = "ai-kit/SKILLS.md"
             incoming[registry_path] = b"\n".join(
                 line for line in incoming[registry_path].split(b"\n")
-                if ("(../.agents/skills/" + name + "/SKILL.md)").encode() not in line)
+                if ("(../.agents/skills/" + skill + "/SKILL.md)").encode() not in line)
     incoming["ai-kit/settings.json"] = (json.dumps(settings, indent=2) + "\n").encode()
     incoming["ai-kit/VERSION"] = (root / "VERSION").read_bytes()
     incoming["ai-kit/LICENSE"] = (root / "LICENSE").read_bytes()
@@ -1499,6 +1502,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Install the pinned, user-invoked security-audit skill without running an audit")
     parser.add_argument("--with-strix", action="store_true",
                         help="Install pinned Strix skills and a user-invoked entry point without installing or running Strix")
+    parser.add_argument("--with-context7", action="store_true",
+                        help="Install the Context7 documentation skill; MCP connection/authentication stays separate")
     parser.add_argument("--preset", choices=list(PRESETS),
                         help="Apply a selection bundle; explicit --mode and --with-* flags take precedence")
     args = parser.parse_args(argv)
@@ -1508,7 +1513,8 @@ def main(argv: list[str] | None = None) -> int:
                                       ("data-guards", args.with_data_guards),
                                       ("native-settings", args.with_native_settings),
                                       ("scoped-rules", args.with_scoped_rules),
-                                      ("security-audit", args.with_security_audit), ("strix", args.with_strix)) if flag]
+                                      ("security-audit", args.with_security_audit), ("strix", args.with_strix),
+                                      ("context7", args.with_context7)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
     preset = args.preset
     if args.interactive:

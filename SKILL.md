@@ -40,6 +40,7 @@ Existing project documents and context are preserved; customized instructions be
 | `--with-ci` | Project health workflow (needs installer state in Git, which both modes ignore by default) |
 | `--with-security-audit` | Pinned Cloudflare references and an explicit-only skill; installs files without running an audit |
 | `--with-strix` | Pinned Strix references and explicit-only skill; installs no runtime and starts no scan |
+| `--with-context7` | Documentation lookup skill; MCP setup/authentication is separate |
 | `--interactive`, `--check`, `--dry-run` | Guided prompts, doctor after apply, explicit preview |
 | `--accept-local PATH` | Record a reviewed semantic merge of a managed file |
 
@@ -51,7 +52,7 @@ Existing project documents and context are preserved; customized instructions be
 | strict | unchanged | session-start, guards, data-guards, native-settings, scoped-rules |
 
 Presets set their extras on or off; explicit flags win. Defaults: English project files, Russian chat, private mode, owner conventions, codex.
-CI and upstream skills stay outside presets. For explicit `$security-audit` / `/security-audit` or `$strix` / `/strix`, read the [audit](template/ai-kit/SECURITY-AUDIT.md) or [Strix](template/ai-kit/STRIX.md) contract. Execution is separate from installation.
+CI and optional integrations stay outside presets. Read the [audit](template/ai-kit/SECURITY-AUDIT.md), [Strix](template/ai-kit/STRIX.md) or [Context7](template/ai-kit/CONTEXT7.md) contract; installation establishes no live execution.
 
 ## Upgrades, conflicts, and health
 
@@ -89,7 +90,7 @@ A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|
 
 1. Read the repository's `PROJECT_CONTEXT.md` and `AGENTS.md`; keep template rules in their canonical owner (see policy ownership in `docs/IMPLEMENTATION.md`).
 2. Run `python scripts/check_kit.py` and `python -m unittest discover -s tests -v` for affected behavior; build and smoke-install the wheel when packaging changes.
-3. Keep `template/` free of kit history and assumed stack facts. Byte budgets: template AGENTS 2500, CORE 3000, documents 12000, root README 32000. Manifest-verified upstream references are conditional assets; keep their entry point short.
+3. Keep `template/` free of kit history/assumed facts. Byte budgets: template AGENTS 2500, CORE 3000, docs 12000, root README 32000. Verified upstream assets are conditional; keep entries short.
 4. Verify client formats and model facts against primary vendor documentation before changing them.
 5. Update the root CHANGELOG, maintainer context, the continuity skill, and this skill when commands or features change.
 

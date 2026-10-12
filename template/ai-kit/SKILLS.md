@@ -2,7 +2,7 @@
 
 Source skills live in .agents/skills; metadata selects relevant work and the body points to one maintained profile.
 Read a skill explicitly when needed and automatic selection has not occurred. Stack discovery is evidence-based; wrappers do not prove the stack.
-Workflow skills run on an explicit request: /ai-kit-bootstrap in Claude Code, $ai-kit-bootstrap or /skills in Codex; clients without skill support can follow the same file.
+Bootstrap, review and context-sync workflows run on an explicit request: /ai-kit-bootstrap in Claude Code, $ai-kit-bootstrap or /skills in Codex; clients without skill support can follow the same file.
 
 | Skill | Profile |
 | --- | --- |
@@ -12,6 +12,7 @@ Workflow skills run on an explicit request: /ai-kit-bootstrap in Claude Code, $a
 | [ai-kit-sync-context](../.agents/skills/ai-kit-sync-context/SKILL.md) | Workflow: context sync after work (user-invoked) |
 | [security-audit](../.agents/skills/security-audit/SKILL.md) | Optional workflow: security review (user-invoked, --with-security-audit) |
 | [strix](../.agents/skills/strix/SKILL.md) | Optional workflow: local Strix scans and findings (user-invoked, --with-strix) |
+| [context7-docs](../.agents/skills/context7-docs/SKILL.md) | Optional library documentation lookup (--with-context7; normal discovery) |
 | [php-work](../.agents/skills/php-work/SKILL.md) | PHP |
 | [laravel-work](../.agents/skills/laravel-work/SKILL.md) | LARAVEL |
 | [filament-work](../.agents/skills/filament-work/SKILL.md) | FILAMENT |
