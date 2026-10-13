@@ -6,14 +6,14 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
-**[v1.2.0](CHANGELOG.md#v120-2026-10-12)** adds optional Context7 documentation lookup and a detailed OpenRouter context/API/caching guide.
+**[v1.3.0](CHANGELOG.md#v130-2026-10-13)** adds optional Web Design: a brief/reference-to-interface workflow, dedicated Laravel/Blade guidance and detailed UI acceptance. The expanded README has no size quota.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-[Features](#features-at-a-glance) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
+[Features](#features-at-a-glance) · [Web Design](#web-design) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
 ## Features at a glance
 
@@ -27,6 +27,7 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 | 🎯 | **Native client configuration** | Your real test commands run without prompts; module rules load only where they apply |
 | 🛡️ | **Guardrails** | No commits without your request, confirmation before destructive commands, secret files off-limits |
 | 🔐 | **Optional security workflows** | Cloudflare's audit method and nine Strix skills, pinned and invoked explicitly in Codex or Claude Code |
+| 🎨 | **Optional Web Design** | Annotated references and a brief become a coherent visual system, stack-aware implementation and recorded UI acceptance; includes a dedicated Blade route |
 | 🔁 | **Engineering loop** | Plan → implement → test → review → document, with honest reporting of what was really checked |
 | ⚡ | **One-command workflows** | `/ai-kit-bootstrap`, `/ai-kit-review`, `/ai-kit-sync-context` |
 | 📦 | **Safe installer and upgrades** | Preview first, offline, backups, conflict candidates, explicit unchanged-adapter retirement, your local edits preserved |
@@ -286,6 +287,445 @@ Routing recommends controls; confirm actual client activation. Permission rules 
 - `aikit benchmark run TARGET --pack PRIVATE_PACK`: isolated, resumable A/B/C trials through a reviewed worker, configurable kit arms and private reports. Fixed models, actual telemetry and semantic review underpin comparisons. [Contract](docs/BENCHMARK.md).
 - `aikit route "task" --project TARGET --mode adaptive`: recommendations from sufficient comparable cost/quality history; explicit pins win. `metrics compare|stacks|propose|restore` analyzes without automatic selection changes. [Policy](template/ai-kit/router/POLICY.md#modes-pins-and-optimization-profiles).
 - `aikit context select TARGET --path api --budget 32000`: module rules, duplicate detection and byte accounting; critical requirements survive budgets. [Development stages](docs/DEVELOPMENT_PLAN.md).
+
+## Web Design
+
+**Give your agent the sites you like, a short brief and the target project.** The optional Web Design module organizes that material into a coherent visual direction, reusable components and a working interface with recorded checks. It supports new websites and existing interfaces, with a detailed Laravel/Blade route and conditional guidance for Tailwind, Bootstrap, Alpine, Livewire, daisyUI, Flowbite and Flux.
+
+AI-KIT supplies the workflow and project memory; the connected coding agent performs the work. TypeUI can supply a chosen design system, SkillUI can supply reference observations, and an available browser can verify the result. Those tools are separate, optional capabilities. Installing this module does not create an account, download npm/Composer packages, connect MCP, launch a browser, generate a site automatically or deploy it.
+
+The installed [Web Design contract](template/ai-kit/WEB-DESIGN.md) is the canonical agent workflow. This section explains how to use it, choose a route and understand the result. The root README has no size quota; compact agent entry points and conditional instruction budgets remain separate.
+
+```mermaid
+flowchart LR
+    A[Brief and annotated references] --> B[One coherent design system]
+    B --> C[Implementation in the project stack]
+    C --> D[Browser and application checks]
+    D --> E[Code, preview and evidence]
+    T[Optional TypeUI context] --> B
+    S[Optional reference extraction] --> B
+    D --> B
+```
+
+### Install Web Design
+
+Use a target application outside the AI-KIT checkout. Preview first:
+
+```bash
+python scripts/install.py /path/to/client-site --with-web-design --agent codex --agent claude
+```
+
+For a Windows target with spaces, the equivalent is:
+
+```powershell
+python scripts/install.py 'C:\Projects\Client Site' --with-web-design --agent codex --agent claude
+```
+
+Review the reported writes, preserved files, conflicts and warnings. When the requested installation is approved, repeat the same command with `--apply --check`. An installed wheel exposes the same option:
+
+```bash
+aikit install /path/to/client-site --with-web-design --agent codex --agent claude --apply --check
+```
+
+Select only the clients you actually use. The module's four skills use normal relevant discovery; Codex receives source skills and selecting Claude also creates native copies. Other supported clients can follow the same canonical documents even when their skill discovery differs. File installation does not prove discovery in the running client: start/reload the client as needed and verify that the intended skill is available.
+
+`--with-web-design` persists `web_design=true` in `ai-kit/settings.json`. It is independent of presets, security-audit, Strix and Context7. None of the presets enables it for a fresh project; an already enabled choice survives a later preset change. Add `--with-context7` separately if you want that documentation workflow, then connect its MCP server separately when needed.
+
+### What the module installs
+
+| Project path | Purpose | Update behavior |
+| --- | --- | --- |
+| `ai-kit/WEB-DESIGN.md` | Shared brief/reference/design/implementation workflow | Managed instruction; local adaptations are preserved or become reviewed conflicts |
+| `ai-kit/web-design/LARAVEL.md` | Blade contracts, Tailwind/Bootstrap assets and Alpine/Livewire ownership | Conditional implementation reference |
+| `ai-kit/web-design/LIBRARIES.md` | Selecting and using daisyUI, Flowbite or Flux | Read only for the selected library |
+| `ai-kit/web-design/TOOLS.md` | TypeUI, external skills, browser analysis and SkillUI | Read only when that tool route applies |
+| `ai-kit/web-design/REVIEW.md` | Responsive, interaction and accessibility acceptance | Evidence protocol for changed screens |
+| `.agents/skills/web-design/` | Visual design from a brief/references or a requested redesign | Short skill with normal relevant discovery |
+| `.agents/skills/laravel-blade-ui/` | Implementation in confirmed Blade interfaces | Does not force all Laravel frontends to Blade |
+| `.agents/skills/ui-review/` | UI review and acceptance after changes | Uses available project/browser tools |
+| `.agents/skills/design-extract/` | Requested reference analysis/extraction | Does not run an external CLI automatically |
+| `docs/design/BRIEF.md` | Project audience, scope, content and annotated references | Created only when missing; existing bytes are preserved |
+| `docs/design/SYSTEM.md` | Chosen visual rules, components, tokens and tool provenance | Project-owned memory, preserved by upgrades |
+| `docs/design/ACCEPTANCE.md` | Required states, checks and actual evidence | Project-owned memory, preserved by upgrades |
+
+Selecting Claude adds matching `.claude/skills/` copies. The source and native wrappers point to the same canonical rules. The installer does not bundle upstream TypeUI, Anthropic, Vercel or daisyUI skills; it supplies local, bounded guidance and primary-source links.
+
+Fresh projects without the flag receive none of this module's skills, guides or design documents. Its registry/navigation entries are also omitted, so the default installation does not contain broken links to optional files. An existing project WIKI is preserved: during bootstrap, add pointers to the actual design documents rather than expecting the installer to rewrite your wiki.
+
+### Give the agent a useful brief
+
+You can start with a few paragraphs. Supply the information you know; unknowns need not block all work:
+
+| Input | A useful description |
+| --- | --- |
+| Subject and audience | What the site offers, who uses it and what they need to understand |
+| Main action | Contact the team, book a service, buy a product, read documentation or another concrete outcome |
+| Structure | Required pages and sections, their purpose and approximate content |
+| References | Links plus what you like about each: typography, composition, density, imagery or interaction |
+| Materials | Logo, brand colors, text, photographs, icons and the rights/provenance of supplied assets |
+| Behavior | Forms, search, account, CMS, payments, filters and other actual application requirements |
+| Existing project | Its path, current pages/components and known Laravel/frontend versions |
+| Language and constraints | User-facing language, device needs, accessibility, hosting or integration constraints |
+
+A reference list is much more useful when annotated: the first site may contribute its readable typography, the second its section rhythm and the third its navigation behavior. The agent should reconcile those observations into one system rather than assemble unrelated fragments. If a reference cannot be accessed, it records that gap and works from available evidence or supplied images; it must not invent the page's contents.
+
+AI-KIT keeps English authored project files and the configured chat language. State the required user-facing language explicitly when it differs, and preserve supplied user content. Do not place secrets, session cookies, private customer records or account credentials in a brief. Confidential raw material can remain in an agreed private location with sanitized pointers in the ordinary design documents.
+
+### Start the workflow in your coding agent
+
+After installation/bootstrap, invoke the main skill when useful:
+
+```text
+$web-design Build the website described in docs/design/BRIEF.md. Analyze the annotated references, reuse the project's confirmed stack, establish one design direction, implement the required pages and record actual acceptance evidence. Proceed within the requested local scope and resolve material unknowns as needed.
+```
+
+Claude Code uses `/web-design` instead of `$web-design`. Clients without this invocation form can be asked to read `ai-kit/WEB-DESIGN.md` and the project design documents directly. For an existing interface, narrow the request:
+
+```text
+$web-design Refine the pricing page using the existing design system. Improve hierarchy and mobile layout, preserve the current components and behavior, and check the changed page and form states.
+```
+
+The agent first inspects the actual project, reads existing design decisions and identifies material unknowns. It can propose a compact visual plan or a representative screen when the direction is new. A separate approval round is not imposed on every ordinary task; user preferences and the authorization needed for actual external actions determine where a pause is necessary.
+
+### Keep design memory in the project
+
+Use three documents with distinct responsibilities:
+
+- **BRIEF:** audience, outcome, pages, real content, functional requirements and annotated references.
+- **SYSTEM:** the chosen visual direction, token roles, responsive rules, component APIs and source/tool identity.
+- **ACCEPTANCE:** the required routes/states and observed checks, including failures and unavailable runtime coverage.
+
+If your project already has `docs/design-system.md`, a brand guide or a product specification, link those authoritative documents from the new files. Do not copy the same rules into every skill or create a second conflicting design system. For monorepos, record applicable paths/surfaces and link module-specific documents where needed.
+
+The installer creates missing scaffolds with unknown fields; it does not infer that your site is Laravel, Tailwind or a particular visual style. Later installs preserve existing design document bytes, including files written before AI-KIT was installed. `--accept-local` applies to selected managed instructions, not these project-owned documents.
+
+Private sharing mode hides kit/client configuration. Team mode shares the instructions. **The three design documents are ordinary project documentation visible in both modes.** Keep them suitable for the repository's audience. Working screenshots, reports and extraction data can stay in `ai-kit/.design/`, ignored in both modes; intended public website assets belong in the project's normal asset directories. Ignoring a path does not remove already tracked files.
+
+### Select design context without loading every tool
+
+The context helper can select the relevant workflow explicitly:
+
+```bash
+aikit context select /path/to/client-site --path web --workflow web-design --budget 32000
+aikit context select /path/to/client-site --path web --workflow ui-review
+aikit context select /path/to/client-site --path web --workflow design-extract
+```
+
+For a root project use `--path .`, or omit it. From the source checkout, prefix these commands with `python aikit_cli.py` instead of `aikit`.
+
+Ordinary `context select` continues to select stack/Core/architecture context without adding the Web Design module. A design workflow requires `web_design=true`, adds the workflow entry and all three project documents, and retains them even when the requested byte budget is small. Confirmed Laravel/Filament module profiles also select Blade implementation guidance for the main design workflow; actual Blade usage still needs verification. Other languages and plain HTML do not receive assumed Laravel facts.
+
+The helper returns paths, hashes and measured bytes, not an assembled model prompt or an API call. A plain HTML project may have no declared manifest-based module; the selected design workflow still works, while the report honestly leaves module coverage unestablished. Library/tool guides remain conditional reads selected by the agent from the actual task. No tokenizer or runtime-loaded-context savings is claimed.
+
+### Turn a reference set into one visual direction
+
+Ask the agent to identify the audience and the primary job of each page before choosing decoration. A useful plan covers:
+
+- Information hierarchy and the order of sections, grounded in real content.
+- A small semantic palette for brand, surface, text, border and functional states.
+- Typeface choices, supported scripts, type scale and readable line lengths.
+- Containers, grids, spacing rhythm and how composition changes on narrow screens.
+- Reusable component states and one or more deliberate visual accents that serve the brief.
+- Imagery, motion and reduced-motion behavior, with available assets and fallbacks.
+
+These are decision criteria, not a compulsory look. Rounded cards, gradients, serif type and a restrained layout can all be appropriate when the brief calls for them. Avoid replacing one generic style with another universal ban. For an established product, consistency may matter more than novelty.
+
+Anthropic's [frontend-design](https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md) supports this method: ground choices in the subject, plan against the brief, build and critique. AI-KIT applies the useful principles through its own workflow. It does not install that external skill or let its aesthetic defaults override the user.
+
+### Choose the implementation route from the actual project
+
+| Project situation | Recommended approach |
+| --- | --- |
+| New content/marketing website with a chosen Laravel backend | Blade with a selected CSS system; add only the interaction needed |
+| Existing Blade + Tailwind project | Reuse its version, tokens, layouts and component contracts |
+| Existing Bootstrap site | Keep Bootstrap and improve its tokens/layout/components unless a migration is requested |
+| Existing React/Vue/Inertia interface | Keep the actual frontend boundary and apply the design system there |
+| Livewire application | Reuse its state/lifecycle conventions and choose compatible controls |
+| Existing Filament panel | Follow the confirmed Filament profile, Resources/Pages and theme conventions |
+| Plain HTML/CSS website | Work directly with its files and available checks; no package manifest is required merely for this module |
+
+For a new Blade project, Tailwind is a useful starting choice when you want direct token and layout control. Alpine can handle local menus/tabs/disclosures; Livewire can handle server-reactive scenarios. Neither is mandatory for every page. Existing CSS and component systems take precedence over a default recommendation.
+
+One primary visual system per surface is a good default. Different surfaces can have different documented stacks: a marketing site and a Filament admin panel do not need identical component internals. A deliberate migration can cross boundaries, but adding Bootstrap, Tailwind, daisyUI, Flowbite and Flux to the same page by default creates unnecessary collisions.
+
+### Laravel: implement the design directly in Blade
+
+The `laravel-blade-ui` skill complements the existing Laravel/PHP/Frontend profiles. It does not replace their security, data or owner conventions. Inspect Composer/frontend manifests and locks, routes, layouts, components and the real asset pipeline before generating files.
+
+A possible project layout is:
+
+```text
+resources/
+  css/app.css
+  js/app.js
+  views/
+    layouts/app.blade.php
+    components/
+      ui/button.blade.php
+      ui/input.blade.php
+      ui/alert.blade.php
+      ui/empty-state.blade.php
+      marketing/feature-card.blade.php
+    pages/marketing/home.blade.php
+docs/design/
+  BRIEF.md
+  SYSTEM.md
+  ACCEPTANCE.md
+```
+
+This is an example, not a forced directory migration. Laravel supports anonymous components in `resources/views/components`, including dot notation such as `<x-ui.button>`. Define props, slots, variants and attribute forwarding so styling changes do not break consumers. Extract repeated semantics/behavior; a one-off fragment does not automatically deserve a component. [Official Blade components](https://laravel.com/docs/blade).
+
+The interface must use real routes and form methods, CSRF protection, escaped output, server validation and appropriate policies. Preserve input values and show actionable validation errors. Hidden buttons do not authorize server actions; a success toast does not prove persistence. Use the project's PHPUnit/Pest/Livewire checks for affected server behavior and a browser for interaction.
+
+For a design that starts in TypeUI or an HTML prototype, carry over the chosen tokens, hierarchy and component intent into the real Laravel implementation. A separate React generation-and-conversion stage is not required. If a supplied prototype already uses another framework, assess what can be reused and the cost of adaptation instead of claiming an automatic lossless export.
+
+### Tailwind with Laravel: source discovery and stable classes
+
+Confirm the installed Tailwind major version. The following example is for v4; existing v3 projects keep their version-specific configuration until an upgrade is requested. The official Laravel/Vite guide uses `@tailwindcss/vite`, a Tailwind import, source entries and Laravel's `@vite` asset inclusion. Preserve the project's chosen package manager, lock and plugin configuration. [Laravel installation guide](https://tailwindcss.com/docs/guides/laravel).
+
+An illustrative `resources/css/app.css` for a v4 Blade project:
+
+```css
+@import "tailwindcss";
+
+@source "../**/*.blade.php";
+@source "../**/*.js";
+@source "../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php";
+@source "../../storage/framework/views/*.php";
+
+@theme {
+  --color-brand: #155e75;
+  --color-brand-strong: #0e7490;
+  --color-surface: #f8fafc;
+  --color-ink: #0f172a;
+  --color-border: #cbd5e1;
+  --radius-control: 0.625rem;
+}
+```
+
+Choose values from the actual approved design, not this example. `@source` paths are relative to the stylesheet; verify source detection for the real directories and selected library. v4 also has automatic discovery, so the absence of one identical glob is not proof of a bug. Confirm that the production build emits the classes actually used.
+
+Tailwind scans text. A fragment such as `bg-{{ $color }}-600` will not reliably produce its eventual class. Use complete class strings or a deliberately bounded `@source inline()` set. For arbitrary runtime values, validated CSS custom properties may be more suitable. [Class detection](https://tailwindcss.com/docs/detecting-classes-in-source-files).
+
+For example, an anonymous `button.blade.php` can keep complete variant classes:
+
+```blade
+@props(['variant' => 'primary', 'type' => 'button'])
+
+@php
+    $variants = [
+        'primary' => 'bg-brand text-white hover:bg-brand-strong focus-visible:outline-brand',
+        'secondary' => 'bg-white text-ink ring-1 ring-border hover:bg-surface focus-visible:outline-ink',
+    ];
+@endphp
+
+<button type="{{ $type }}" {{ $attributes->class([
+    'inline-flex items-center rounded-control px-4 py-2 font-medium focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50',
+    $variants[$variant] ?? $variants['primary'],
+]) }}>
+    {{ $slot }}
+</button>
+```
+
+This shows a variant map and explicit button type; it is not a complete form component library. Add the actual project's loading, error, icon and accessibility contract where needed. Do not strip `aria-*`, `data-*`, Alpine or Livewire attributes when wrapping controls.
+
+### Bootstrap with Laravel: keep overrides and assets deliberate
+
+Bootstrap is a valid route for an existing project or a deliberately chosen component vocabulary. Verify its version and the actual Sass/JavaScript pipeline. For Sass variables, put overrides before the import that consumes them:
+
+```scss
+/* resources/scss/app.scss */
+$primary: #155e75;
+$border-radius: 0.625rem;
+
+@import "bootstrap/scss/bootstrap";
+
+/* Additional project CSS rules can follow the Bootstrap output. */
+```
+
+For partial imports, follow Bootstrap's dependency order, including functions before overrides that use them. CSS variable adjustments and ordinary selector overrides can be applied later; changing a Sass variable after compilation does not regenerate already emitted rules. [Bootstrap Sass customization](https://getbootstrap.com/docs/5.3/customize/sass/).
+
+If the confirmed asset entry is JavaScript, it can import the stylesheet and required plugins:
+
+```javascript
+// resources/js/app.js
+import '../scss/app.scss';
+import { Dropdown, Modal } from 'bootstrap';
+
+// Initialize or use the selected plugins according to the page lifecycle.
+```
+
+Use the corresponding Laravel Vite entry in the layout, and check the emitted manifest. Avoid adding both an independent stylesheet entry and a JavaScript import without considering the existing output contract. Include the needed Popper dependency for the selected plugins. A `modal` or `dropdown` class alone does not establish working behavior. [Bootstrap/Vite](https://getbootstrap.com/docs/5.3/getting-started/vite/), [Laravel/Vite](https://laravel.com/docs/vite).
+
+### daisyUI, Flowbite and Flux: select a library for a reason
+
+These are component libraries, not interchangeable design skills. Use the one that fits the actual project and required controls; installing Web Design chooses none of them.
+
+| Library | Useful when | What still needs attention |
+| --- | --- | --- |
+| **daisyUI** | You want concise component classes and semantic themes in Blade | Behavior, accessible markup, application contracts and theme contrast |
+| **Flowbite** | You want selected interactive widgets and supported blocks | Theme/plugin/source setup, JavaScript and initialization after navigation/DOM updates |
+| **Flux** | You are building a compatible Livewire interface | Supported package versions, resource ownership and free/Pro component availability |
+
+**daisyUI can live inside your own Blade components.** Its `btn`, `input` and other classes can implement a stable `<x-ui.button>` API. This gives the project reusable contracts without requiring every consumer to know library internals. daisyUI styling does not itself supply Laravel validation or every state transition. [Laravel fit](https://daisyui.com/laravel-component-library/).
+
+The official daisyUI agent skill exists, but its reviewed entry broadly tells the agent to use daisyUI for HTML/JSX even without an explicit request. AI-KIT therefore does not auto-install it or adopt that trigger universally. If you separately add a library skill, scope it to projects/surfaces where the library is selected, review its real files and retain the project's brief as the visual authority. [Official skill](https://github.com/saadeghi/daisyui/blob/master/skills/daisyui/SKILL.md).
+
+**Flowbite** requires its selected version's CSS/theme/plugin/source configuration and JavaScript for interactive components. The Laravel guide demonstrates the setup, but a static example does not prove correct behavior after Livewire updates or client navigation. Check repeated opening/closing, focus return, Escape, scrolling and listener cleanup. Use the existing asset pipeline rather than introducing an unrelated unpinned CDN. [Laravel setup](https://flowbite.com/docs/getting-started/laravel/).
+
+**Flux** is built for Livewire. Its current installation page lists Laravel 10+, Livewire 3.7+ and Tailwind 4.2+; verify compatibility against your actual locked versions when adopting it. Flux Pro is separate from the free package, and the available control set matters before choosing it. Keep Composer authentication/license credentials private. [Flux installation](https://fluxui.dev/docs/installation).
+
+Check each selected library's actual license for the components, blocks and assets you adopt. Avoid installing multiple component systems simply because they appeared in a recommendation list. The [conditional library reference](template/ai-kit/web-design/LIBRARIES.md) covers these decisions.
+
+### Alpine and Livewire: own the behavior once
+
+Alpine is useful for local disclosures, tabs and similar interactions. Livewire is useful when the interface needs server-reactive state. Ordinary Laravel forms can submit to controllers with server validation without adding Livewire.
+
+When Livewire is present, inspect its installed major version and resource strategy. Modern Livewire includes and initializes Alpine; a second standalone Alpine import or CDN copy can cause initialization errors. Manual bundling/plugins should use the supported integration. Resource directives and automatic injection depend on the actual version/layout/configuration; adding script tags by habit can create duplication. [Livewire installation](https://livewire.laravel.com/docs/installation).
+
+Check component roots, stable keys and DOM ownership. A third-party date picker/modal/dropdown must survive the relevant navigation and updates, initialize once and dispose correctly. On the server, validate inputs, authorize actions and scope queries. UI polish does not replace the existing Laravel/Filament security contract.
+
+### TypeUI: use its design context in the coding project
+
+TypeUI can be a useful source of the visual system in this workflow. Its documented role is to give a connected coding agent design context while that agent builds the interface. The site code belongs in your project; hosting/deployment is a separate capability. [TypeUI overview](https://www.typeui.sh/docs).
+
+For your own references and brief, the route is:
+
+1. Analyze the annotated references into concrete design observations.
+2. Choose one coherent direction and record it in the local design system.
+3. Select/adapt a TypeUI theme or prepare a custom Markdown ZIP in its supported format. Figma import is another documented route; check its current availability.
+4. Review the workspace draft and publish the intended system for MCP when that external action is authorized.
+5. Connect the account through your client's supported authentication flow, verify actual available resources, and select the intended system.
+6. Ask the coding agent to implement the brief in the confirmed project stack using that selected system.
+7. Verify the rendered pages and real behavior, then update local design memory with the system/package used.
+
+The documented MCP endpoint is:
+
+```text
+https://mcp.typeui.sh/mcp
+```
+
+Follow the service's current [MCP setup](https://www.typeui.sh/docs/overview/mcp-server) for the client you use. AI-KIT does not write this server configuration or authenticate an account. Reuse a working connection when present, and make a small retrieval before claiming activation. Keep account tokens outside repository docs/config examples.
+
+Custom design systems are editable Markdown files describing brand, colors, typography, layout and component rules. Use the current import format rather than assuming any ZIP will work. Arbitrary reference URL lists are not a documented automatic import; the coding agent must analyze them first. [Design systems](https://www.typeui.sh/docs/creative/design-systems).
+
+Use one selected visual system per surface. Keep AI-KIT's general engineering, Laravel and review rules active, while avoiding conflicting aesthetic prompts. Record the workspace system/version and a local export or identity of the exact retrieved package where available: remote saved content may change, and a source repository revision does not pin a hosted system. If TypeUI is unavailable, local tokens/components remain a workable route; report retrieval as unverified.
+
+An example request after a verified connection:
+
+```text
+$web-design Use the selected TypeUI design system for the public website described in docs/design/BRIEF.md. Implement it in this project's confirmed Blade/Tailwind stack, preserve Laravel form and route contracts, and record the retrieved design-system identity and actual UI checks.
+```
+
+### SkillUI: optional reference extraction with reviewed side effects
+
+[SkillUI](https://github.com/amaancoderx/npxskillui) can analyze URLs, directories and public repositories and produce design observations. It can help with colors, typography and layout, but it is not a Laravel UI generator. The reviewed component extractor recognizes TSX/JSX/Vue/Svelte, not Blade/PHP; use URL/CSS evidence and design the Blade component API in the application.
+
+An important implementation detail: Tailwind configuration loading can execute JavaScript via `jiti`. A branch or a copied directory is not a sandbox. Before processing untrusted directories/repositories, inspect executable configs and use a disposable environment without credentials, mounted personal home or unrelated writable paths, with an appropriate network boundary. The reviewed screenshot helper also uses Microlink; confirm the actual chosen path before submitting private or staging URLs. [Reviewed Tailwind loader](https://github.com/amaancoderx/npxskillui/blob/bc913a8d3503d6b2a683e4a3ac04ffe7304ac510/src/extractors/tokens/tailwind.ts), [screenshot helper](https://github.com/amaancoderx/npxskillui/blob/bc913a8d3503d6b2a683e4a3ac04ffe7304ac510/src/screenshot.ts).
+
+Default skill generation can copy a skill to the user's global Claude directory. For a separately authorized, reviewed run in an appropriate disposable environment, prefer design-data output. This illustrative command fixes the npm version and writes to a dedicated directory inside that environment:
+
+```bash
+npx --yes --package=skillui@1.3.4 skillui --url https://example.com --format design-md --no-skill --out ./reference-output
+```
+
+The flags suppress skill generation/global copying; they do not disable all executable configuration or network behavior. A fixed package version is not proof that its npm bytes match the reviewed source commit; review integrity/source correspondence before relying on it. AI-KIT does not execute this command or install the package. Check runtime/browser requirements and report partial/default extraction if a requested mode is unavailable.
+
+Use the result as observations to reconcile with the brief. Do not install generated `SKILL.md` or `CLAUDE.md` as authoritative project rules without review. Keep raw output private and promote only relevant sanitized rules into `docs/design/SYSTEM.md`. Manual browser analysis is a valid fallback when it is enough for the task.
+
+### Review the interface in the browser
+
+Use the project's actual browser/test tools or an available browser session. Playwright can support interactions, screenshots and regression checks; this module installs no browser/runtime and does not prescribe one tool for every environment.
+
+A useful acceptance pass checks:
+
+- The main route/action at a representative narrow, intermediate and wide viewport.
+- Real content, long headings, dense lists/tables and supported user-facing languages.
+- Layout overflow, reading order, typography, contrast and consistency with the chosen system.
+- Images, icons, fonts and production asset URLs; layout shift/performance where relevant and measurable.
+- Navigation, menus, tabs, drawers, dialogs, keyboard/focus and reduced motion.
+- Applicable initial, loading, empty, invalid, server-error, success, disabled and denied states.
+- Actual server validation, authorization and persistence for affected application scenarios.
+- Repeated navigation/DOM updates for Livewire or client-managed widgets, including duplicate initialization and stale state.
+
+Choose viewports from the real content/product. A 360-pixel screenshot is useful evidence, but not universal responsive coverage. Automated accessibility tools supplement keyboard/semantic checks. Screenshots show the captured state; they do not establish every interaction or backend effect.
+
+Record each check honestly:
+
+| Status | What it establishes |
+| --- | --- |
+| `source-reviewed` | Markup/code was inspected; behavior has not been exercised |
+| `build-verified` | The named build/static check passed in the recorded environment |
+| `browser-verified` | The specific route, viewport and state were exercised and observed |
+| `unverified` | A required check could not run or its result is unknown |
+| `failed` | A reproducible requirement is not met |
+
+Add route, environment, viewport/state, action/command, outcome and a useful evidence pointer to `ACCEPTANCE.md`. If visual regression tests are appropriate, stabilize browser/OS/fonts, viewport, data and animation, then review the baseline. [Playwright screenshot comparisons](https://playwright.dev/docs/test-snapshots).
+
+When no browser or Laravel runtime is available, complete the source/build work that can run and state the remaining acceptance explicitly. Do not mark a form working merely because it is visible. Full security-audit or Strix testing remains a separately requested workflow when needed.
+
+### Reusable starter requests
+
+**Design plan from references:**
+
+```text
+$web-design Analyze the annotated references in docs/design/BRIEF.md. Propose a coherent direction for the actual subject and audience, with semantic colors, typography, layout, responsive behavior and component states. Preserve established project constraints and record material assumptions before implementation.
+```
+
+**First Blade page:**
+
+```text
+$laravel-blade-ui Implement the first marketing page from the approved brief and system. Reuse the confirmed Laravel/CSS setup, create only useful reusable components, use complete Tailwind classes where applicable, and wire real routes and forms. Verify the available build, server and browser checks.
+```
+
+**Existing Bootstrap interface:**
+
+```text
+$laravel-blade-ui Improve this Bootstrap page using the existing visual system. Preserve the project's version and asset pipeline, place Sass overrides correctly, and verify navigation, form errors and narrow-screen layout. Keep the chosen Bootstrap route.
+```
+
+**Server-reactive form:**
+
+```text
+$laravel-blade-ui Implement the specified form in the existing Livewire application. Confirm the installed versions and Alpine ownership, preserve validation and policy checks, use the selected component system, and test loading, invalid, denied and successful persistence states.
+```
+
+**Reference analysis without installing a CLI:**
+
+```text
+$design-extract Analyze the supplied reference pages with available browser/source tools. Record observed typography, layout, component states and missing evidence. Reconcile useful principles with our brief; do not assume an external extractor or a global skill installation is required.
+```
+
+**UI acceptance:**
+
+```text
+$ui-review Review the changed routes against docs/design/BRIEF.md and SYSTEM.md. Exercise the relevant viewports and real interactions with available tools, fix issues within this task's scope, and record per-check evidence and unavailable coverage in ACCEPTANCE.md.
+```
+
+For a small change, specify the affected page/state and reuse the established system. The agent should not rerun reference extraction or redesign the product on every edit.
+
+### Updates, deactivation and troubleshooting
+
+Preview normal AI-KIT updates against the same target. Unchanged module instructions update; edited instructions stay local or produce conflict candidates when source rules change. Review/merge candidates and use the existing `--accept-local` flow for managed instructions. Project design documents remain project-owned and are preserved even when their template changes.
+
+To stop selecting Web Design, set `web_design=false` in the installed settings and preview/apply the installer. This makes workflow selection inactive and stops future module selection, but the installer preserves previously installed files. Their skills may remain visible in the client's catalog and their entry points check the setting. It does not disconnect a TypeUI account or uninstall a CLI/library. Remove retained files only as an explicit, reviewed maintenance action; retiring a client removes that client's unchanged tracked copies, not the project's design memory.
+
+| Symptom | Check |
+| --- | --- |
+| A fresh installation has no design skill | Was `--with-web-design` selected, and does the current client discover the installed skill path? |
+| Context selection says the workflow is disabled | Check `web_design=true`; changing a catalog entry does not enable the setting |
+| The project WIKI has no design links | Existing WIKI content is preserved; add pointers during bootstrap/context synchronization |
+| Tailwind styles are missing | Confirm the version, source paths, complete class strings and actual production output |
+| Alpine initializes twice | Check Livewire's bundled Alpine and the page's separate imports/CDN scripts |
+| A widget fails after navigation | Check supported initialization/disposal and DOM ownership after updates |
+| A TypeUI system changes unexpectedly | Check the selected system and exact saved/retrieved package; retain a local identity/export |
+| Extraction lacks Blade components | SkillUI's reviewed component scanner does not parse them; use CSS/URL evidence and project contracts |
+| A generated form looks complete but does nothing | Verify routes, methods, CSRF, server validation, authorization and persistence |
+| Browser checks cannot run | Record source/build evidence and the specific unverified acceptance; do not invent a passing result |
+
+Useful pilot tasks are a content landing page, a redesign of an existing page, and a form with real validation/error states. Compare the actual code, observed UI and maintenance effort before claiming any speed or quality improvement. The kit's integration tests establish installation/preservation behavior; they do not establish the quality of a generated website or a live TypeUI/SkillUI run.
+
+Maintainer source notes and actual integration results are recorded separately in [Web Design verification](docs/WEB_DESIGN.md). Canonical references: [workflow](template/ai-kit/WEB-DESIGN.md), [Laravel UI](template/ai-kit/web-design/LARAVEL.md), [libraries](template/ai-kit/web-design/LIBRARIES.md), [tools](template/ai-kit/web-design/TOOLS.md) and [review](template/ai-kit/web-design/REVIEW.md).
 
 ## Library documentation with Context7
 

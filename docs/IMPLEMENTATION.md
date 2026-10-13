@@ -3,8 +3,8 @@
 ## Scope and decisions
 
 The [changelog](../CHANGELOG.md) records kit evolution. v0.13.0 adds Rust/.NET/Java/infra stack profiles; v0.12.0 hardens benchmarks (resumable runs, per-unit failure records, configurable kit arms); v0.11.0 extends local v0.10.0 with isolated benchmarks, conservative measured routing and scoped context; [current verification](#measurement-led-development-verification) records limits. Earlier results remain in [v0.6.4 verification](V0_6_4.md), [v0.5.0 verification](V0_5_0.md), and the [audit disposition](MANUS_REVIEW.md).
-The original review checked 5dd530b9046fa09742f2ac13e22fabcbde70d749. The first overlay check read 73707036c1098d8c1c81ab2c51d723c3d521f6b8; current source evidence is in [the Windows CI record](WINDOWS_CI_FIX.md).
-Execution claims require test evidence.
+Historical source evidence: [Windows CI](WINDOWS_CI_FIX.md). Current facts: PROJECT_CONTEXT.
+Execution claims require evidence.
 
 | Recommendation | Implemented treatment |
 | --- | --- |
@@ -45,11 +45,12 @@ Owner defaults remain: English files/Russian chat, Laravel conventions, explicit
 | Client evidence and conservative adapter retirement | [agent registry](../integrations/agents.json), [adapters helper](../scripts/adapters.py), [Adapters](../template/ai-kit/ADAPTERS.md) |
 | Project-fact evidence and pair-coverage evaluation | [context helper](../scripts/context.py), [evaluation helper](../scripts/evaluate.py), [Metrics](../template/ai-kit/METRICS.md) |
 | MCP trust boundary and documentation workflow | [MCP](../template/ai-kit/MCP.md), [Security](../template/ai-kit/SECURITY.md), [Context7](../template/ai-kit/CONTEXT7.md) |
+| Optional visual workflow and UI implementation | [Web Design](../template/ai-kit/WEB-DESIGN.md), conditional [guides](../template/ai-kit/web-design); project-owned docs/design records actual choices/evidence |
 | Installation/upstream reconciliation | [Bootstrap](../template/ai-kit/BOOTSTRAP.md), [upstream](../template/ai-kit/UPSTREAM.md), installer state |
 | Current project facts and navigation | Installed PROJECT_CONTEXT, WIKI, and ai-kit/project.json |
 | Context maintenance procedure | [Continuity skill](../template/.agents/skills/project-continuity/SKILL.md) |
 
-Entry points and skills link to policy owners. Historical ADRs explain prior decisions and do not activate superseded rules.
+Entry points link to policy owners; historical ADRs do not activate superseded rules.
 
 ## Deferred with reasons
 
@@ -80,7 +81,7 @@ The [plan](DEVELOPMENT_PLAN.md), [benchmark contract](BENCHMARK.md) and [ADR 001
 - Release labeling: seven CLI checks passed; VERSION and wheel metadata agree at 0.11.0. The rebuilt wheel passed external install smoke; kit had zero errors/warnings.
 - Self-review covered boundaries/links, read-only obstructions, visibility, conflicts/locks, paired quality/cost, pins/provider availability and critical context. Synthetic workers establish no model result.
 
-Owner deferred real application/model calls. Hosted CI, other runtimes, native client/MCP activation, live switching and orchestration remain unverified. VERSION is 0.13.0, locally prepared without publication or a tag.
+Owner deferred application/model calls; native/MCP activation, live switching and orchestration remain unverified. This section records historical checks; current version/facts are in PROJECT_CONTEXT.
 
 ### v0.10.0 release preparation
 

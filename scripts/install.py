@@ -26,12 +26,13 @@ PROFILE_MANIFESTS = {
 FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
                      "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
 EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci", "security-audit", "strix",
-          "context7"}
+          "context7", "web-design"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
 EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "data-guards": "data_guards",
                        "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci",
-                       "security-audit": "security_audit", "strix": "strix", "context7": "context7"}
+                       "security-audit": "security_audit", "strix": "strix", "context7": "context7",
+                       "web-design": "web_design"}
 SECURITY_AUDIT_SKILL = ".agents/skills/security-audit/"
 SECURITY_AUDIT_PACKAGE = "ai-kit/vendor/security-audit/"
 SECURITY_AUDIT_MANIFEST = "integrations/security-audit.json"
@@ -50,7 +51,12 @@ OPTIONAL_SKILLS = {
               "required": {"LICENSE", *(name + "/SKILL.md" for name in STRIX_SKILLS)}},
 }
 # Local documentation workflows share selection/preservation behavior, without an upstream payload.
-OPTIONAL_ENTRY_POINTS = {**{name: name for name in OPTIONAL_SKILLS}, "context7": "context7-docs"}
+OPTIONAL_ENTRY_POINTS = {**{name: (name,) for name in OPTIONAL_SKILLS}, "context7": ("context7-docs",),
+                         "web-design": ("web-design", "laravel-blade-ui", "ui-review", "design-extract")}
+OPTIONAL_DOCUMENTS = {"web-design": ("docs/design/BRIEF.md", "docs/design/SYSTEM.md", "docs/design/ACCEPTANCE.md")}
+OPTIONAL_RESOURCES = {"web-design": ("ai-kit/WEB-DESIGN.md", "ai-kit/web-design/LARAVEL.md",
+                                    "ai-kit/web-design/LIBRARIES.md", "ai-kit/web-design/TOOLS.md",
+                                    "ai-kit/web-design/REVIEW.md")}
 # Presets set every extra they manage on or off; explicit --with-* flags add on top. CI is left
 # to an explicit choice, as are optional integrations. A preset mode of None keeps the sharing mode.
 PRESET_EXTRAS = ("session-start", "guards", "data-guards", "native-settings", "scoped-rules")
@@ -1042,6 +1048,12 @@ def merge_ignore(current: str, policy: str, extra: list[str]) -> tuple[str, str]
     return before + block + after, outside
 
 
+def project_documents(settings: dict) -> set[str]:
+    """Project-owned documents are created once, including those of enabled modules."""
+    return OWNED | {path for extra, paths in OPTIONAL_DOCUMENTS.items()
+                    if settings.get(EXTRA_SETTINGS_KEYS[extra]) is True for path in paths}
+
+
 def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                language: str | None = None, conventions: str | None = None,
                agents: list[str] | None = None, accept_local: list[str] | None = None,
@@ -1096,6 +1108,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             settings[key] = True
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
     validate_settings(settings)
+    owned_documents = project_documents(settings)
     facts = detect_facts(target)
     detected = profiles_from_facts(facts)
     modules, module_warnings = project_modules(target, facts)
@@ -1114,7 +1127,10 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             # Only the manifest-verified bytes may enter an optional upstream payload.
             continue
         if any(relative.startswith(".agents/skills/" + skill + "/") and name not in enabled_extras
-               for name, skill in OPTIONAL_ENTRY_POINTS.items()):
+               for name, skills in OPTIONAL_ENTRY_POINTS.items() for skill in skills):
+            continue
+        if any(relative in paths and name not in enabled_extras
+               for mapping in (OPTIONAL_RESOURCES, OPTIONAL_DOCUMENTS) for name, paths in mapping.items()):
             continue
         if relative in registry["entries"] and registry["entries"][relative] not in agents:
             continue
@@ -1122,12 +1138,17 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             continue
         incoming[relative] = src.read_bytes()
     incoming.update(upstream_files)
-    for name, skill in OPTIONAL_ENTRY_POINTS.items():
+    for name, skills in OPTIONAL_ENTRY_POINTS.items():
         if name not in enabled_extras:
             registry_path = "ai-kit/SKILLS.md"
             incoming[registry_path] = b"\n".join(
                 line for line in incoming[registry_path].split(b"\n")
-                if ("(../.agents/skills/" + skill + "/SKILL.md)").encode() not in line)
+                if not any(("(../.agents/skills/" + skill + "/SKILL.md)").encode() in line for skill in skills))
+    if "web-design" not in enabled_extras:
+        # These navigation lines only exist when their optional destinations are installed.
+        for navigation in ("WIKI.md", "ai-kit/ADAPTERS.md"):
+            incoming[navigation] = b"\n".join(line for line in incoming[navigation].split(b"\n")
+                                             if b"WEB-DESIGN.md)" not in line)
     incoming["ai-kit/settings.json"] = (json.dumps(settings, indent=2) + "\n").encode()
     incoming["ai-kit/VERSION"] = (root / "VERSION").read_bytes()
     incoming["ai-kit/LICENSE"] = (root / "LICENSE").read_bytes()
@@ -1157,7 +1178,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     if "scoped-rules" in enabled_extras:
         # Generated module rules are managed files: unchanged ones follow project.json, edited ones conflict.
         incoming.update(scoped_rule_files(root, registry, agents, modules))
-    if accept - incoming.keys() or accept & (OWNED | {"ai-kit/settings.json"}):
+    if accept - incoming.keys() or accept & (owned_documents | {"ai-kit/settings.json"}):
         raise ValueError("Accept-local paths must name selected managed instructions")
     records = state.get("files", {})
     if not isinstance(records, dict):
@@ -1171,7 +1192,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         previous = records.get(relative, {})
         if not isinstance(previous, dict):
             raise ValueError("Invalid baseline record")
-        if relative in OWNED:
+        if relative in owned_documents:
             if current is None:
                 if relative == "PROJECT_CONTEXT.md":
                     data = project_context_draft(data, facts)
@@ -1291,7 +1312,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             actions[relative] = {"data": new_text.encode("utf-8"), "old": old_text_bytes}
     retirements = []
     for relative, record in records.items():
-        if relative in incoming or relative in OWNED:
+        if relative in incoming or relative in owned_documents:
             continue
         if relative == CLAUDE_SETTINGS and "claude" in agents:
             # Earlier versions managed the whole file; its entries now migrate to managed_json.
@@ -1506,6 +1527,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Install the Context7 documentation skill; MCP connection/authentication stays separate")
     parser.add_argument("--preset", choices=list(PRESETS),
                         help="Apply a selection bundle; explicit --mode and --with-* flags take precedence")
+    parser.add_argument("--with-web-design", action="store_true",
+                        help="Install Web Design workflows and project documents; no external tool setup")
     args = parser.parse_args(argv)
     extras = [name for name, flag in (("session-start", args.with_session_start),
                                       ("guards", args.with_guards),
@@ -1514,7 +1537,8 @@ def main(argv: list[str] | None = None) -> int:
                                       ("native-settings", args.with_native_settings),
                                       ("scoped-rules", args.with_scoped_rules),
                                       ("security-audit", args.with_security_audit), ("strix", args.with_strix),
-                                      ("context7", args.with_context7)) if flag]
+                                      ("context7", args.with_context7),
+                                      ("web-design", args.with_web_design)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
     preset = args.preset
     if args.interactive:

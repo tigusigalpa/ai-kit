@@ -38,6 +38,7 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
     if not target.is_dir():
         errors.append("Target is not a directory")
         return report
+    settings = {}
     try:
         settings = install.read_json(target / "ai-kit" / "settings.json", {})
         install.validate_settings(settings)
@@ -85,8 +86,13 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
                         warnings.append(f"AI-KIT entry missing from {relative}: {key} {value}")
         except (OSError, ValueError, UnicodeError) as exc:
             warnings.append(f"Cannot read AI-KIT entries in {relative}: {exc}")
-    for relative in sorted(install.OWNED):
-        if not (target / relative).is_file():
+    for relative in sorted(install.project_documents(settings)):
+        try:
+            document = install.safe_path(target, relative)
+        except (OSError, ValueError) as exc:
+            errors.append(f"Unsafe project document {relative}: {exc}")
+            continue
+        if not document.is_file():
             warnings.append("Owned project document missing: " + relative)
     for relative, limit in BUDGETS.items():
         path = target / relative

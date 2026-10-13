@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v1.3.0 (2026-10-13)
+
+- Prepared v1.3.0 for optional Web Design and the expanded README guide. The 304-test behavioral discovery below preceded release labeling; publication/tagging remain separate. [Release checks](docs/WEB_DESIGN.md#release-labeling).
+- After labeling: eight CLI tests, version/wheel metadata 1.3.0, clean kit checks and offline fresh-venv wheel smoke passed. The pre-label 1.2.0 upgrade preserved facts, settings, local design/skill edits, MCP configuration and both security pins; rerun stayed stable.
+- Added optional Web Design: --with-web-design installs four short skills, conditional Blade/library/tool/review guides and created-once project design documents. Added scoped context workflows, source/Claude lifecycle and preservation tests; installation remains offline. [Guide](README.md#web-design), [integration record](docs/WEB_DESIGN.md).
+- Removed the root README size quota and added extensive reference-to-site instructions for Laravel, Tailwind, Bootstrap, Alpine/Livewire, daisyUI, Flowbite, Flux, TypeUI and SkillUI. Existing instruction budgets remain scoped; external setup and real application checks stay separate.
+- Verified on Windows/Python 3.12.14: 304 tests (300 passed/four runtime skips), clean kit/skill checks, all-client private/team visibility, preserved tracked 1.2.0 upgrade and fresh-venv wheel smoke. Live tools/sites remain unverified. Archived v0.6.4 history without losing its text; [details](docs/WEB_DESIGN.md#verification).
+
 ## v1.2.0 (2026-10-12)
 
 - Prepared v1.2.0 for optional Context7 documentation lookup and the OpenRouter integration guide. Version labeling is local; the full behavioral results below preceded labeling. Publication/tagging remain separate.
@@ -50,13 +58,7 @@
 
 ## v0.6.4 (2026-10-10)
 
-- Added `--with-native-settings`: Claude Code allow rules for recorded single-command checks, Read deny rules for secrets from [one list](templates/agent-secrets.ignore) plus detected Laravel/Moodle/Composer/Python secrets, and a marked secret block in `.cursorignore`, `.aiderignore`, and `.geminiignore` for selected clients. Private mode now keeps all AI-KIT Claude entries in `.claude/settings.local.json`, team mode in `.claude/settings.json`; owned entries move with the mode and user entries stay.
-- Added `--with-scoped-rules`: one managed rule per module with stack profiles for Claude Code (`paths`), Cursor (`globs`), Copilot (`applyTo`), Windsurf (`trigger: glob`), and Cline (`paths`), generated from `ai-kit/project.json`. Codex gets no nested AGENTS.md (it reads only root-to-working-directory files) and no config.toml.
-- Added `--with-data-guards`: ask rules before `rm -rf`, `git reset --hard`, `git clean`, Docker prune/volume removal, and detected Laravel/Moodle migrations.
-- Added `--preset minimal|solo|team|strict` (also in `--interactive`); explicit flags win and the preview names extras a preset turns off.
-- Added user-invoked workflow skills `ai-kit-bootstrap`, `ai-kit-review`, and `ai-kit-sync-context`, so the first session starts with `/ai-kit-bootstrap` instead of a pasted prompt.
-- Gave the root README its own 16000-byte budget; other documents keep 12000. Moved v0.3.x entries to [docs/history](docs/history/v0.3-changelog.md).
-- Verification: 185 tests ran, 184 passed, one Windows symlink skip; kit validation returned zero errors and one pending-Gemini warning; a real v0.5.0 installation upgraded without conflicts. Client activation remains unverified. [Results](docs/V0_6_4.md), [ADR 0007](docs/adr/0007-generated-client-configuration-and-presets.md).
+[Archived release entry](docs/history/v0.6.4-changelog.md#v064-2026-10-10).
 
 ## v0.5.0 (2026-10-10)
 

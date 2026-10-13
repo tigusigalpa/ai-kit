@@ -16,8 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import install
 
 ROOT = Path(__file__).resolve().parents[1]
-# The root README is human onboarding that never enters project context, so it gets more room.
-README_BUDGET = 32000
+# Human onboarding in the root README has no size quota; instruction budgets remain scoped.
 DOC_BUDGET = 12000
 
 
@@ -122,6 +121,11 @@ def visibility(root: Path, git: str) -> list[str]:
                          "ai-kit/vendor/strix/UPSTREAM.json",
                          ".agents/skills/context7-docs/SKILL.md", ".claude/skills/context7-docs/SKILL.md",
                          "ai-kit/CONTEXT7.md",
+                         "ai-kit/WEB-DESIGN.md", "ai-kit/web-design/LARAVEL.md",
+                         ".agents/skills/web-design/SKILL.md", ".claude/skills/web-design/SKILL.md",
+                         ".agents/skills/laravel-blade-ui/SKILL.md", ".claude/skills/laravel-blade-ui/SKILL.md",
+                         ".agents/skills/ui-review/SKILL.md", ".claude/skills/ui-review/SKILL.md",
+                         ".agents/skills/design-extract/SKILL.md", ".claude/skills/design-extract/SKILL.md",
                          ".agents/hooks/session-start.md", ".agents/hooks/session-start.sh",
                          ".agents/skills/ai-kit-bootstrap/SKILL.md", ".claude/rules/ai-kit-web.md",
                          ".cursor/rules/ai-kit-web.mdc", ".github/instructions/ai-kit-web.instructions.md",
@@ -133,6 +137,7 @@ def visibility(root: Path, git: str) -> list[str]:
                     errors.append(f"{mode}: wrong shared visibility: {path}")
             for path in (".env", ".claude/settings.local.json", "ai-kit/.upstream-cache/a",
                          "ai-kit/.metrics/tasks.jsonl", "ai-kit/.metrics/write.lock",
+                         "ai-kit/.design/screenshots/home.png", "ai-kit/.design/extractions/DESIGN.md",
                          "go-cache/a", "test.out", "__pycache__/a.pyc", ".idea/workspace.xml",
                          ".netrc", ".pypirc", ".aider.chat.history.md", ".aider.tags.cache.v4/a",
                          "AI-KIT-0.6.5/README.md", "web/.next/cache/a", "__debug_bin1234"):
@@ -143,6 +148,9 @@ def visibility(root: Path, git: str) -> list[str]:
                          ".github/workflows/ci.yml", ".aiderignore"):
                 if ignored(path):
                     errors.append(f"{mode}: intended project source ignored: {path}")
+            for path in install.OPTIONAL_DOCUMENTS["web-design"]:
+                if ignored(path):
+                    errors.append(f"{mode}: project design document ignored: {path}")
     return errors
 
 
@@ -189,6 +197,10 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     for name in install.OPTIONAL_SKILLS:
         required.extend(["integrations/" + name + ".json", "template/.agents/skills/" + name + "/SKILL.md",
                          "template/.agents/skills/" + name + "/agents/openai.yaml"])
+    required.extend("template/" + path for paths in install.OPTIONAL_RESOURCES.values() for path in paths)
+    required.extend("template/" + path for paths in install.OPTIONAL_DOCUMENTS.values() for path in paths)
+    required.extend("template/.agents/skills/" + name + "/SKILL.md"
+                    for name in install.OPTIONAL_ENTRY_POINTS["web-design"])
     for relative in required:
         if not (root / relative).is_file():
             errors.append("Missing: " + relative)
@@ -242,7 +254,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         if not text.endswith("\n"):
             errors.append("Missing final newline: " + str(p))
         # Immutable upstream references are conditional assets; the entry point retains its budget.
-        if p not in vendored_files and len(text.encode()) > (README_BUDGET if p == root / "README.md" else DOC_BUDGET):
+        if p != root / "README.md" and p not in vendored_files and len(text.encode()) > DOC_BUDGET:
             warnings.append("Large conditional document: " + str(p))
         for target in links(text):
             if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):

@@ -13,6 +13,7 @@ import install
 
 
 PROJECT_FACTS = "ai-kit/project.json"
+DESIGN_WORKFLOWS = {"web-design": "web-design", "ui-review": "ui-review", "design-extract": "design-extract"}
 
 
 def target_root(target: Path) -> Path:
@@ -57,11 +58,14 @@ def apply_snapshot(plan: dict) -> bool:
     return True
 
 
-def select_context(target: Path, *, path: str = ".", budget: int = 32000) -> dict:
+def select_context(target: Path, *, path: str = ".", budget: int = 32000,
+                   workflow: str | None = None) -> dict:
     """Select instructions by declared module scope; budgets cannot remove critical rules."""
     target = target_root(target)
     if type(budget) is not int or budget < 1:
         raise ValueError("Context budget must be a positive byte count")
+    if workflow is not None and workflow not in DESIGN_WORKFLOWS:
+        raise ValueError("Unknown context workflow: " + str(workflow))
     if path == ".":
         relative = ""
     else:
@@ -91,6 +95,19 @@ def select_context(target: Path, *, path: str = ".", budget: int = 32000) -> dic
     critical = ["AGENTS.md", "ai-kit/CORE.md", "ai-kit/settings.json", "PROJECT_CONTEXT.md",
                 "ai-kit/ENGINEERING.md", "ai-kit/SECURITY.md", "docs/DECISIONS.md"]
     settings = install.read_json(install.safe_path(target, "ai-kit/settings.json"), {})
+    workflow_files = []
+    if workflow is not None:
+        if settings.get("web_design") is not True:
+            raise ValueError("Web Design workflow is disabled; install with --with-web-design first")
+        workflow_files = ["ai-kit/WEB-DESIGN.md", ".agents/skills/" + DESIGN_WORKFLOWS[workflow] + "/SKILL.md",
+                          *install.OPTIONAL_DOCUMENTS["web-design"]]
+        if workflow == "ui-review":
+            workflow_files.append("ai-kit/web-design/REVIEW.md")
+        elif workflow == "design-extract":
+            workflow_files.append("ai-kit/web-design/TOOLS.md")
+        elif profiles & {"LARAVEL", "FILAMENT"}:
+            workflow_files.extend(["ai-kit/web-design/LARAVEL.md", ".agents/skills/laravel-blade-ui/SKILL.md"])
+        critical.extend(workflow_files)
     if settings.get("conventions") == "owner" and profiles & {"LARAVEL", "FILAMENT"}:
         critical.append("ai-kit/profiles/OWNER.md")
     # ADRs preserve architectural constraints between sessions; do not truncate them for a budget.
@@ -111,7 +128,7 @@ def select_context(target: Path, *, path: str = ".", budget: int = 32000) -> dic
         if not candidate.is_file():
             # Nested instructions and project decision records are optional; Core/settings are required.
             if name in {"AGENTS.md", "ai-kit/CORE.md", "ai-kit/settings.json", "PROJECT_CONTEXT.md",
-                        "ai-kit/ENGINEERING.md", "ai-kit/SECURITY.md"} or name in required_profiles:
+                        "ai-kit/ENGINEERING.md", "ai-kit/SECURITY.md"} or name in required_profiles or name in workflow_files:
                 missing.append(name)
             continue
         data = candidate.read_bytes()
@@ -125,6 +142,7 @@ def select_context(target: Path, *, path: str = ".", budget: int = 32000) -> dic
         raise ValueError("Missing required context: " + ", ".join(missing))
     total = sum(item["bytes"] for item in selected)
     return {"selected": selected, "duplicates": duplicates, "modules": matching, "profiles": sorted(profiles),
+            "workflow": workflow,
             "total_bytes": total, "budget_bytes": budget, "over_budget": total > budget,
             "selection_complete": bool(matching),
             "note": "Declared modules may still need bootstrap verification. Byte counts are not token counts. "
@@ -143,10 +161,13 @@ def main(argv: list[str] | None = None) -> int:
     select.add_argument("project", type=Path)
     select.add_argument("--path", default=".", help="Relative module/directory scope")
     select.add_argument("--budget", type=int, default=32000, help="Byte budget; critical context is never dropped")
+    select.add_argument("--workflow", choices=sorted(DESIGN_WORKFLOWS),
+                        help="Include the enabled design workflow and project design documents")
     args = parser.parse_args(argv)
     try:
         if args.command == "select":
-            print(json.dumps(select_context(args.project, path=args.path, budget=args.budget), indent=2))
+            print(json.dumps(select_context(args.project, path=args.path, budget=args.budget,
+                                            workflow=args.workflow), indent=2))
             return 0
         plan = snapshot_plan(args.project)
         print(json.dumps({"target": plan["target"], "preview": not args.apply, "changed": plan["changed"],

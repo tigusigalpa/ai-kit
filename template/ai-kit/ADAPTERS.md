@@ -45,15 +45,16 @@ Opt-in flags add machinery beyond the standard entries; accepted choices persist
 
 | Extra | Flag | Installed | Boundary |
 | --- | --- | --- | --- |
-| Session start | --with-session-start | .agents/hooks/session-start.md and session-start.sh; with claude also a SessionStart hook in .claude/settings.json that adds the instructions, current PROJECT_CONTEXT (first 8000 bytes), and Git status to the session | Needs POSIX sh, tr, and head (Git Bash on Windows); verify hook output reaches the session in the actual client |
+| Session start | --with-session-start | .agents/hooks/session-start.md and session-start.sh; selected Claude gets a hook with instructions, first 8000 context bytes and Git status | Needs POSIX sh/tr/head; verify actual session output; settings ownership below |
 | Guards | --with-guards | Ask rules for Git commit/push in .claude/settings.json from integrations/claude-settings.git-ask.json | Confirmation, not a universal ban: Core allows an explicitly requested commit; test in the client. Requires the claude selection |
 | Project CI | --with-ci | .github/workflows/ai-kit.yml self-contained health check (state validity, managed files, budgets, owned documents) | Team mode is the intended companion: private mode excludes installer state from Git. Pin referenced actions to reviewed SHAs |
 | Data guards | --with-data-guards | Claude Code ask rules for rm -rf, git reset --hard, git clean, Docker prune/volume removal, and migrations of detected Laravel/Moodle modules (integrations/claude-settings.data-ask.json) | Command-prefix confirmation, not a security boundary; requires the claude selection |
-| Native settings | --with-native-settings | Claude Code allow rules for recorded test/lint/build commands and Read deny rules for secrets; a marked secret block in .cursorignore, .aiderignore, and .geminiignore for selected clients | Secrets come from templates/agent-secrets.ignore plus detected stacks (auth.json, Laravel storage keys, Moodle config.php, .pypirc). Commands with shell operators are not allowed |
+| Native settings | --with-native-settings | Claude allow/secret rules and managed secret blocks in selected client ignores | Secret list plus detected stack additions; shell operators are not allowed; settings ownership below |
 | Scoped rules | --with-scoped-rules | One path-scoped rule per module with stack profiles, pointing to its profiles and recorded commands | Generated managed files: rerun the installer after project.json changes; edited files become conflicts |
 | Security audit | --with-security-audit | Explicit-only skill, pinned Cloudflare method and validators | [Contract](SECURITY-AUDIT.md); files only |
 | Strix | --with-strix | Explicit-only skill, nine pinned upstream skills and license/provenance | [Contract](STRIX.md); no runtime installation or scan |
 | Context7 | --with-context7 | Optional context7-docs skill, source/Claude copies | [Contract](CONTEXT7.md); MCP setup/authentication separate |
+| Web Design | --with-web-design | Four source/Claude skills, conditional guides and missing project design documents | [Contract](WEB-DESIGN.md); no runtime, account, package or deployment setup |
 
 Client wiring for guards, data guards, session start, and native settings requires the claude agent selection; without it only shared files are installed. MCP servers stay project-specific: choose read-only servers and declare them in .mcp.json manually; no server is installed by default.
 
@@ -67,7 +68,7 @@ Read the [contract](STRIX.md).
 
 ### Presets
 
---preset sets its extras on or off and may set the sharing mode; explicit --mode and --with-* flags win. The preview reports disabled extras. CI, upstream skills and Context7 stay outside presets.
+--preset sets its extras on or off and may set the sharing mode; explicit --mode and --with-* flags win. The preview reports disabled extras. CI, upstream skills, Context7 and Web Design stay outside presets.
 
 | Preset | Mode | Extras |
 | --- | --- | --- |

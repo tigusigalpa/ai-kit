@@ -8,6 +8,7 @@ Evaluation only when requested: [local measurement contract](ai-kit/METRICS.md).
 Optional security review: [security-audit contract](ai-kit/SECURITY-AUDIT.md); install and invoke explicitly.
 Optional active testing: [Strix contract](ai-kit/STRIX.md); install and invoke explicitly.
 Optional library documentation: [Context7 contract](ai-kit/CONTEXT7.md); workflow installation and MCP activation are separate.
+Optional Web Design: [workflow](ai-kit/WEB-DESIGN.md), [brief](docs/design/BRIEF.md), [system](docs/design/SYSTEM.md), [acceptance](docs/design/ACCEPTANCE.md); external tools remain separate.
 
 ## Available profiles
 

@@ -5,19 +5,16 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The registry lives in integrations/agents.json. Router/adaptive/learning provide recommendations and analysis; benchmark executes configured protocol workers; context snapshots evidence and selects scoped instructions; adapters audit/retire clients; evaluate reports opaque pair coverage; adr/changelog scaffold records. A Makefile wraps the established commands.
-- Version source: [VERSION](VERSION), currently 1.2.0, locally prepared for Context7 and OpenRouter documentation. Publishing/tagging remain separate.
+- Version source: [VERSION](VERSION), currently 1.3.0, locally prepared for Web Design. Publishing/tagging remain separate.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
-- Onboarding: README covers installation, security workflows, Context7 and proposed OpenRouter context/API/cache use; no OpenRouter adapter/profile is shipped. Root README budget: 32000 bytes; project budgets unchanged.
+- Onboarding: README covers Web Design, security, Context7 and proposed OpenRouter use; no OpenRouter runtime adapter is shipped. Root README has no size quota; project instruction budgets remain unchanged.
 
 ## Source verification
 
 - Canonical repository: https://github.com/tigusigalpa/ai-kit, tracking main.
 - Remote administration check: 2026-10-11; main resolved to b62e409cb4f8d9fbb2299ff2eed667f7fe628451. All 15 distinct GitHub Actions checks on that commit reported success; the remote CI workflow matched the local file. This was not a full source reconstruction or a new CI run.
-- Earlier source check: 2026-10-08; main resolved to 5b487824e3c6f5ab697981f4f3b19f59f5d16af4. Relevant published test source matched the local pre-fix file; this revision was not rebuilt in full.
-- Earlier snapshot: published v0.2 at 73707036c1098d8c1c81ab2c51d723c3d521f6b8 overlaid on v0.1. All 91 tracked blobs were rebuilt with verified Git object hashes, reproducing the five missing-heading errors.
-- Compatibility pointers replace known old rule documents; application installation uses template/ exclusively. Current local fixture correction: [Windows CI regression](docs/WINDOWS_CI_FIX.md).
-- Independently reproduced three Manus installer findings against v0.2.1: candidate overwrite, lost adapter tracking, and unsupported/mixed-type state failure. Patch 0.2.2 preserves candidates, blocks unresolved adapter retirement, and validates inputs before planning; [audit disposition](docs/MANUS_REVIEW.md).
-- Earlier runs: 37810446904 failed at the v0.2 snapshot; 37819777582 failed on Windows/Python 3.10 and 3.13 while its Ubuntu jobs succeeded. The supplied Windows traceback exposes unresolved versus canonical fixture-path comparisons; current correction resolves the root before deriving paths.
+- Earlier source/CI reconstruction and fixture-path corrections: [Windows record](docs/WINDOWS_CI_FIX.md). Compatibility pointers replace known old rules; installation uses template/ exclusively.
+- Reproduced older installer findings and preservation fixes: [Manus disposition](docs/MANUS_REVIEW.md). Temporary fixture roots resolve before guard/assertion paths are derived.
 
 ## Repository maintenance
 
@@ -52,14 +49,16 @@
 - Prior security-audit checks and Windows validator limits: [results](docs/SECURITY_AUDIT.md).
 - Optional Strix: --with-strix persists strix=true outside presets, independently of security-audit. integrations/strix.json pins nine skills and Apache-2.0 license at f7a32ae62d94872631bc8415073868d02a6ffdaf. One explicit-only source/Claude entry point; offline installation runs no runtime/scan. External CLI, Docker/image, model, writable target copy, scope and budget are separate; [contract/results](docs/STRIX.md).
 - Optional Context7: --with-context7 persists context7=true outside presets; source/Claude context7-docs uses normal discovery. HTTP client examples and sanitized version-aware lookup: [contract](template/ai-kit/CONTEXT7.md). MCP setup/activation stays separate; [source and checks](docs/CONTEXT7.md).
+- Optional Web Design: --with-web-design persists web_design=true outside presets; four normal-discovery source/Claude skills and conditional guides. docs/design/BRIEF.md, SYSTEM.md and ACCEPTANCE.md are created only when missing and preserved. Actual stack selection and external tools remain separate; [contract](template/ai-kit/WEB-DESIGN.md), [source/checks](docs/WEB_DESIGN.md).
+- Design context: context select --workflow web-design|ui-review|design-extract includes enabled project design memory; main workflow selects Blade guidance only for declared Laravel/Filament modules. Ordinary selection stays unchanged; reports are manifests, not prompts. Raw ai-kit/.design output is ignored in both modes; sanitized project design docs stay visible.
 - Strix verification and unavailable scans: [results](docs/STRIX.md#verification).
-- Earlier release labeling: [v1.1.0](CHANGELOG.md#v110-2026-10-12). Current 293-test discovery preceded v1.2.0 labeling; release checks are recorded with [Context7 results](docs/CONTEXT7.md#release-labeling).
+- Earlier release labeling: [v1.1.0](CHANGELOG.md#v110-2026-10-12), [Context7/v1.2.0](docs/CONTEXT7.md#release-labeling). Current labeling: [Web Design/v1.3.0](docs/WEB_DESIGN.md#release-labeling).
 - Generated client configuration derives from ai-kit/project.json (detection fallback): secrets from templates/agent-secrets.ignore plus stack additions, client ignore files and scoped rule formats declared per agent in integrations/agents.json. Workflow skills ai-kit-bootstrap/review/sync-context install with source and Claude copies.
 - Client detection: detect markers per agent in integrations/agents.json; preview reports detected_agents/suggested_agents without changing the selection.
 - Adapter file parents: an existing `.clinerules` file is detected and preserved when Cline is unselected. Selecting its directory adapter refuses the blocked parent during planning; see [file-parent compatibility](docs/ADAPTER_PATH_FIX.md).
 - Optional adapters: gemini, windsurf, cline, roo; machine-readable client documentation/activation metadata lives in integrations/agents.json. Machine-readable router providers live in template/ai-kit/router/providers/, with provider choice in template/ai-kit/router/selection.json. MCP posture is template/ai-kit/MCP.md; no MCP server is installed automatically.
 - Verification results and limitations: [implementation record](docs/IMPLEMENTATION.md#verification).
-- Current local checks: 293 Windows/Python 3.12.14 tests (289 passed/four skips), clean kit/config/skill checks, all-client private/team fixtures and offline wheel smoke. No live Context7/OpenRouter calls; [details](docs/CONTEXT7.md#verification). Hosted evidence remains under Source verification.
+- Pre-label checks: 304 Windows/Python 3.12.14 tests (300 passed/four skips), clean kit/skills, all-client visibility and tracked 1.2.0 upgrade; [results](docs/WEB_DESIGN.md#verification). Post-label: eight CLI tests, v1.3.0 wheel smoke and preserved pre-label upgrade passed; no live application result is implied.
 - Earlier release results remain in [the implementation record](docs/IMPLEMENTATION.md#verification) and linked history; they do not establish the current revision.
 - Use bundled Windows/Python 3.12.14 and writable external fixtures when sandbox TEMP is unavailable. Earlier checks remain in [implementation](docs/IMPLEMENTATION.md#measurement-led-development-verification); hosted CI/client activation are separate.
 
@@ -69,4 +68,4 @@
 - User selected MIT on 2026-10-08; [LICENSE](LICENSE) applies to the kit.
 - Actual client activation, live model switching, Docker cleanup, and successful hosted CI are not established by local file checks.
 - Owner deferred real benchmark/application calls; current scope is code and synthetic tests, including orchestration research rather than a live orchestrator.
-- Last context synchronization: 2026-10-12.
+- Last context synchronization: 2026-10-13.

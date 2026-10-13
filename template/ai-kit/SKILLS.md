@@ -13,6 +13,10 @@ Bootstrap, review and context-sync workflows run on an explicit request: /ai-kit
 | [security-audit](../.agents/skills/security-audit/SKILL.md) | Optional workflow: security review (user-invoked, --with-security-audit) |
 | [strix](../.agents/skills/strix/SKILL.md) | Optional workflow: local Strix scans and findings (user-invoked, --with-strix) |
 | [context7-docs](../.agents/skills/context7-docs/SKILL.md) | Optional library documentation lookup (--with-context7; normal discovery) |
+| [web-design](../.agents/skills/web-design/SKILL.md) | Optional brief/reference-to-interface workflow (--with-web-design) |
+| [laravel-blade-ui](../.agents/skills/laravel-blade-ui/SKILL.md) | Optional confirmed Blade implementation (--with-web-design) |
+| [ui-review](../.agents/skills/ui-review/SKILL.md) | Optional visual/interaction acceptance (--with-web-design) |
+| [design-extract](../.agents/skills/design-extract/SKILL.md) | Optional requested reference analysis (--with-web-design) |
 | [php-work](../.agents/skills/php-work/SKILL.md) | PHP |
 | [laravel-work](../.agents/skills/laravel-work/SKILL.md) | LARAVEL |
 | [filament-work](../.agents/skills/filament-work/SKILL.md) | FILAMENT |
