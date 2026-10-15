@@ -6,6 +6,7 @@ Use the [Core](template/ai-kit/CORE.md) for language, Git authorization, and fac
 Follow plan -> implement -> test -> review -> document. Keep template rules in their canonical owner; [policy ownership](docs/IMPLEMENTATION.md#policy-ownership) lists those owners.
 Project templates must contain no kit history, source-check snapshots, or assumed stack facts.
 After file changes update the root [CHANGELOG](CHANGELOG.md); update maintainer context and the [continuity skill](.agents/skills/project-continuity/SKILL.md) when facts/procedures change.
+For every task assess Docker image impact; follow [image refresh](docs/DOCKER.md#change-impact-and-image-refresh) and rebuild/test affected images before completion.
 
 Run python scripts/check_kit.py and python -m unittest discover -s tests -v for affected installer/checker behavior.
 Review file preservation, conflicts, symlinks/path boundaries, private/team visibility, links, registry, and upgrade behavior. Report unavailable runtime checks.

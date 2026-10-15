@@ -27,6 +27,16 @@ Verified 2026-10-14 against the [official Python image manifest](https://github.
 
 The [.dockerignore](../.dockerignore) is a closed allowlist with later sensitive/cache exclusions. Unknown root files are excluded. Included source directories still require review: a filename denylist cannot detect arbitrary credentials embedded in allowed source. Synthetic context tests verify actual Docker ignore behavior, including hidden source skill directories, without reading personal credentials. The `context-audit` scratch stage is a test export target, never the runtime image. Package-data and MANIFEST include image resources so the installed wheel can pass kit validation.
 
+## Change impact and image refresh
+
+Assess image impact on every maintenance task, including changes outside Dockerfile. Canonical policy: [image freshness](../template/ai-kit/CONTAINERS.md#image-freshness).
+
+- Rebuild when CLI/scripts, installed templates/skills, ignore policies, integration resources, defaults or runtime dependencies change. Inspect Dockerfile COPY steps, `.dockerignore`, wheel package-data and MANIFEST: changing a source file is ineffective if packaging omits it. VERSION, build tools, base image, entrypoint and runtime-contract changes also require rebuilding and relevant checks.
+- Descriptive README/maintainer edits or publication receipts may retain the prepared image when runtime behavior and installed guidance stay unchanged; record that its bundled documentation is an earlier snapshot. Changes only in a mounted application or private dialogue workspace do not update the kit distribution and normally need no kit rebuild.
+- Build from final sources as `ai-kit:dev`, passing the current VERSION through AIKIT_VERSION. Keep the published `tigusigalpa/ai-kit:1.4.0` identity intact. Use normal cache invalidation; editing Dockerfile or disabling all cache is unnecessary for ordinary source changes.
+- Run kit validation, affected behavior tests and `python tests/docker_smoke.py ai-kit:dev --context .`; compare the changed packaged resources with source. Follow the verification procedure below for scope, preflight and cleanup. Keep artifact binaries and per-run identity/results outside the source checkout. Record a reason when no rebuild is needed; report runtime checks that could not run.
+- Local refresh does not refresh Docker Hub. Publish only under explicit authorization for the intended tag; an earlier one-time release push does not authorize future replacements. A requested release version must agree across VERSION, wheel and image label. Verify the remote digest/configuration after an authorized push.
+
 ## Verification procedure
 
 1. Read the selected Docker context and both client/server versions; distinguish permissions from a stopped daemon. Build locally with the value from VERSION and record the tested architecture.

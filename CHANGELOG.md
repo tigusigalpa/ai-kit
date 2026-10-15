@@ -2,8 +2,11 @@
 
 ## Unreleased
 
+- Added mandatory [Docker impact/refresh](docs/DOCKER.md#change-impact-and-image-refresh): rebuild/test changed packaged code, rules and dependencies; document exceptions, use development tags and preserve separate registry authorization. Wired maintainer and canonical container rules.
+
 ## v1.4.0 (2026-10-15)
 
+- Published `tigusigalpa/ai-kit:1.4.0` to Docker Hub at the owner's request. Remote digest, linux/amd64 platform, version label and non-root entrypoint were read back and matched the prepared image; [publication record](docs/V1_4_0.md#docker-hub-publication). No `latest` tag was assigned.
 - Prepared v1.4.0 for the Docker CLI and local dialogue memory. VERSION, CLI/wheel metadata, image label and release pointers use the same version; [release checks and Docker Hub handoff](docs/V1_4_0.md). Registry publication and Git tagging remain separate.
 - Added offline `aikit memory import|merge|export`: three dialogue formats, selected ChatGPT branches, source-bound human review, explicit contradictions and ChatGPT/OpenRouter reference exports. Preserves immutable artifacts, refuses unreviewed normal exports and protects private memory across upgrades/builds. Added tests and detailed [workflow](README.md#shared-context-from-two-dialogues)/[contract](docs/DIALOGUE_MEMORY.md). Automatic sync and API execution remain separate. Archived v1.1.0 history without dropping its text.
 - Before release labeling, dialogue-memory verification passed: 336 Windows tests (329 passed/seven environment skips), 336 packaged Linux tests (334 passed/two skips), clean kit validation, offline wheel and private-package exclusion, README conflict-resolution flow and Docker smoke. [Coverage and limits](docs/DIALOGUE_MEMORY.md#verification).

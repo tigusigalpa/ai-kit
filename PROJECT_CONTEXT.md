@@ -5,7 +5,7 @@
 - Purpose: portable instructions, clean project templates, conservative installation and kit validation.
 - Stack: Markdown, JSON, and Python standard library; scripts require Python 3.10 or later.
 - Source layout: template/ contains installable files; templates/ contains ignore policies; scripts/ and tests/ maintain the distribution. The registry lives in integrations/agents.json. Router/adaptive/learning provide recommendations and analysis; benchmark executes configured protocol workers; context snapshots evidence and selects scoped instructions; adapters audit/retire clients; evaluate reports opaque pair coverage; adr/changelog scaffold records. A Makefile wraps the established commands.
-- Version source: [VERSION](VERSION), currently 1.4.0; Docker/dialogue memory release. Publication remains separate.
+- Version source: [VERSION](VERSION), currently 1.4.0. Docker Hub tigusigalpa/ai-kit:1.4.0 is published; Git release remains separate.
 - Project ownership: root documentation/history describe AI-KIT; template/ project context and history remain uninitialized.
 - Onboarding: README covers dialogue memory, Docker, Web Design, security, Context7 and OpenRouter; no HTTP/model adapter. Root README has no quota; instruction budgets remain scoped.
 
@@ -27,7 +27,7 @@
 - Behavioral tests: python -m unittest discover -s tests -v
 - Unified CLI: python aikit_cli.py --help lists commands; pip exposes `aikit`. Standalone scripts remain equivalent.
 - Dialogue memory: `aikit memory import|merge|export` handles two local JSON/text imports, selected branches, pending claims, explicit keyed conflicts and source-bound review. Immutable ChatGPT Markdown/OpenRouter user-message exports; no sync/API call or semantic model. Private workspace: ai-kit/.memory/; [workflow](README.md#shared-context-from-two-dialogues), [contract/checks](docs/DIALOGUE_MEMORY.md). Existing project context stays separate.
-- Docker CLI: AIKIT_VERSION must match VERSION; [usage](README.md#run-ai-kit-with-docker), [contract/checks](docs/DOCKER.md). UID/GID 10001, /workspace and writable /tmp; offline/read-only root. Smoke labels temporary containers, creates no volumes and uses a shared builder requiring ownership evidence before pruning. New Docker CI leaves required names unchanged.
+- Docker CLI: assess [image impact/refresh](docs/DOCKER.md#change-impact-and-image-refresh). Rebuild/test affected payloads as ai-kit:dev; VERSION/label must match. Publication needs authorization. UID/GID 10001, /workspace and /tmp; offline/read-only root. Smoke creates no volumes; shared-cache pruning needs ownership evidence. Existing required CI names stay unchanged.
 - Install preview: python scripts/install.py TARGET
 - Apply installation: python scripts/install.py TARGET --apply (add --check to run the doctor afterward, --interactive for a guided prompt)
 - Installed-project health check: python scripts/doctor.py TARGET (add --fix to restore missing managed files/owned documents); it reports module/profile/manifest-evidence drift.

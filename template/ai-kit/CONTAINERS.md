@@ -9,6 +9,12 @@ A missing client, stopped daemon, wrong context, and permission failure are diff
 Continue independent work while waiting, then repeat the relevant check after the user responds. Do not claim container tests passed before running them.
 If the agent cannot access the user's runtime, ask for the client/daemon check results and mark local container checks unavailable. Tasks without a Docker dependency need no startup request.
 
+## Image freshness
+
+- For every task, assess image impact: code, installed instructions/templates, assets, dependencies, configuration defaults, build context, entrypoint and runtime contracts. Source edits and restarting an old container do not update its image.
+- Rebuild affected images from final sources; fix build/packaging inputs when needed. Test the changed behavior inside the container, checking version/labels, resources, user and relevant mounts/signals. Descriptive documentation, publication receipts or mounted data alone may need no rebuild; record the reason and any bundled-document snapshot difference.
+- Use a development tag for unreleased work and preserve published release identities. Report local build/test status separately from registry freshness. Publishing or replacing registry tags requires user authorization; report unavailable runtime checks explicitly.
+
 ## Image and startup
 
 - Provide a Dockerfile and `.dockerignore` for each new microservice. Build a standalone runtime image containing its code and dependencies. It must run without source code mounted from the developer's machine or package installation at startup. Separate build and runtime through multi-stage builds when build tools or development dependencies are present.

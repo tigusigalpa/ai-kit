@@ -251,9 +251,9 @@ The build refuses a missing or mismatched `AIKIT_VERSION`. The Dockerfile pins t
 
 The closed `.dockerignore` includes distribution sources and excludes Git, personal client configuration, common credential files, private design output, journals and caches. Review new resources before extending its allowlist. Build from the kit checkout; application files enter through the runtime mount.
 
-### Prepare a Docker Hub release
+### Docker Hub image
 
-The v1.4.0 handoff uses `tigusigalpa/ai-kit:1.4.0`. Add the namespace to a reviewed local image with `docker tag ai-kit:1.4.0 tigusigalpa/ai-kit:1.4.0`. This creates another local name; uploading requires a separate `docker push`. [Release preparation](docs/V1_4_0.md#docker-hub-publication-handoff) gives the publication steps, version checks and verification limits. No `latest` tag or automated registry push is configured.
+**Published image:** [tigusigalpa/ai-kit:1.4.0](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.0), for `linux/amd64`. Download with `docker pull tigusigalpa/ai-kit:1.4.0`. The mount examples below use the local name `ai-kit:1.4.0`; give the downloaded image that alias with `docker tag tigusigalpa/ai-kit:1.4.0 ai-kit:1.4.0` and set the version variable to `1.4.0`, or use the full namespaced image name in your commands. [Publication record](docs/V1_4_0.md#docker-hub-publication) records the verified digest. No `latest` tag was assigned and no automated registry push is configured.
 
 ### Preview and apply on Windows
 
@@ -375,6 +375,8 @@ Explicit `--mode` and `--with-*` flags override presets; previews report disable
 
 ## What lands in your project
 
+![What lands in your project](https://i.postimg.cc/vZKjvVYs/06-what-lands-in-your-project.jpg)
+
 | File or directory | Purpose |
 | --- | --- |
 | AGENTS.md | Starting instructions and links to relevant rules |
@@ -398,6 +400,8 @@ Both modes exclude secrets, personal overrides, installer state, caches, IDE fol
 
 ## Update an application project
 
+![Update an application project](https://i.postimg.cc/qvFYG3Jr/08-update-an-application-project.jpg)
+
 Preview a newer bundle against the same path. Unchanged managed files update, while your context and history are preserved. Locally adapted files become candidates under `ai-kit/.upstream-cache/candidates/` for review, and changed files are backed up first. After merging a candidate, accept it:
 
 ~~~sh
@@ -408,15 +412,21 @@ Exit codes: 0 success, 1 refusal, 2 unresolved conflicts. The installer works of
 
 ## Honest boundaries
 
+![Honest boundaries](https://i.postimg.cc/kgHZybJq/09-honest-boundaries.jpg)
+
 Routing recommends controls; confirm actual client activation. Permission rules and ignores reduce risk without being a security boundary. The optional benchmark requires an explicitly configured worker; no live vendor adapter is shipped.
 
 ## Measure, recommend and select context
+
+![Measure, recommend and select context](https://i.postimg.cc/RZY8THS9/10-measure-recommend-select-context.jpg)
 
 - `aikit benchmark run TARGET --pack PRIVATE_PACK`: isolated, resumable A/B/C trials through a reviewed worker, configurable kit arms and private reports. Fixed models, actual telemetry and semantic review underpin comparisons. [Contract](docs/BENCHMARK.md).
 - `aikit route "task" --project TARGET --mode adaptive`: recommendations from sufficient comparable cost/quality history; explicit pins win. `metrics compare|stacks|propose|restore` analyzes without automatic selection changes. [Policy](template/ai-kit/router/POLICY.md#modes-pins-and-optimization-profiles).
 - `aikit context select TARGET --path api --budget 32000`: module rules, duplicate detection and byte accounting; critical requirements survive budgets. [Development stages](docs/DEVELOPMENT_PLAN.md).
 
 ## Web Design
+
+![Web Design](https://i.postimg.cc/LsZWQ852/11-web-design.jpg)
 
 **Give your agent the sites you like, a short brief and the target project.** The optional Web Design module organizes that material into a coherent visual direction, reusable components and a working interface with recorded checks. It supports new websites and existing interfaces, with a detailed Laravel/Blade route and conditional guidance for Tailwind, Bootstrap, Alpine, Livewire, daisyUI, Flowbite and Flux.
 
@@ -857,6 +867,8 @@ Maintainer source notes and actual integration results are recorded separately i
 
 ## Library documentation with Context7
 
+![Library documentation with Context7](https://i.postimg.cc/bv25Vwrc/12-library-documentation-context7.jpg)
+
 **Bring version-relevant library documentation into coding tasks.** The optional Context7 workflow checks the dependency version, resolves the library, retrieves focused examples and records source/coverage gaps. Retrieved documentation complements AI-KIT's project facts and checks. [Upstream Context7](https://github.com/upstash/context7).
 
 Preview installation from this checkout:
@@ -985,6 +997,8 @@ Files are created exclusively. Edited or conflicting existing artifacts are pres
 
 ## Working with OpenRouter
 
+![Working with OpenRouter](https://i.postimg.cc/BnzyCKSS/13-working-with-openrouter.jpg)
+
 **AI-KIT rules can travel with your API requests.** OpenRouter can provide model access while a client or adapter supplies selected AI-KIT instructions, project facts and task material. This makes the kit useful beyond native coding-client configuration.
 
 **Integration status:** AI-KIT ships offline instruction selection, [dialogue memory and messages export](#shared-context-from-two-dialogues), routing recommendations and opt-in measurements. It does not ship an OpenRouter HTTP adapter, provider profile or live model executor. The workflow below describes proposed API execution; local dialogue exports are already available. No API key, paid call or code upload is configured by installing AI-KIT.
@@ -1082,6 +1096,8 @@ This section describes compatibility and a future adapter design. Installer defa
 
 ## Teach any AI about AI-KIT
 
+![Teach any AI about AI-KIT](https://i.postimg.cc/nLQWShrf/14-teach-any-ai.jpg)
+
 The repository is a skill: [SKILL.md](SKILL.md) covers installation, configuration, upgrades and maintenance. For Claude Code, clone into your skills directory:
 
 ~~~sh
@@ -1091,6 +1107,8 @@ git clone https://github.com/tigusigalpa/ai-kit.git ~/.claude/skills/ai-kit
 For other assistants, share the repository or SKILL.md.
 
 ## For maintainers
+
+![For maintainers](https://i.postimg.cc/jjJ13S2b/15-for-maintainers.jpg)
 
 Applications install from `template/`; the root maintains AI-KIT itself (`scripts/`, `integrations/`, `templates/`, `docs/`). Before contributing, run:
 
