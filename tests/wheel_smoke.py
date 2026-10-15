@@ -41,10 +41,24 @@ def main(argv: list[str] | None = None) -> int:
         run([python, "-m", "pip", "install", "--no-index", "--no-deps", wheel])
         aikit = venv_aikit(env)
         run([aikit, "route", "implement a feature"])
-        for module in ("learning", "adaptive", "benchmark"):
+        for module in ("learning", "adaptive", "benchmark", "memory"):
             run([python, "-c", "from aikit.scripts import " + module])
         run([aikit, "benchmark", "--help"])
         run([aikit, "check"])
+        # Exercise the packaged offline dialogue pipeline, not only dispatcher help.
+        workspace = root / "private memory"
+        for name in ("chatgpt", "openrouter"):
+            source = root / (name + ".json")
+            source.write_text('{"messages":[{"role":"user","content":"Fact stack = Laravel"}]}', encoding="utf-8")
+            run([aikit, "memory", "import", workspace, source, "--name", name, "--apply"])
+        merged = subprocess.run([str(aikit), "memory", "merge", str(workspace), "--left", "chatgpt",
+                                 "--right", "openrouter", "--apply"], cwd=root, env=environment,
+                                capture_output=True, text=True, check=True)
+        import json
+        merge_id = json.loads(merged.stdout)["merge_id"]
+        run([aikit, "memory", "export", workspace, "--merge", merge_id, "--draft", "--apply"])
+        if not (workspace / "exports" / merge_id / "chatgpt-draft.md").is_file():
+            raise RuntimeError("Wheel dialogue export is missing")
         project = root / "project"
         run([aikit, "install", project, "--preset", "minimal", "--agent", "codex", "--apply", "--check"])
         run([aikit, "adapters", "report", "--project", project])

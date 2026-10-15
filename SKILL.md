@@ -86,7 +86,7 @@ CI and optional integrations stay outside presets. Read the audit, Strix, Contex
 
 ## Unified CLI
 
-A single `aikit` command wraps the scripts: `python aikit_cli.py install|doctor|context|adapters|route|configure|providers|metrics|evaluate|benchmark|adr|changelog|check|docker ...`. A `pyproject.toml` console script exposes it after pip installation; a portable wheel carries the same resources with a CI smoke-install job. Standalone scripts remain equivalent; the Makefile wraps common operations.
+`python aikit_cli.py --help` lists commands; pip exposes `aikit`. `memory import|merge|export` combines two local dialogues with explicit review and ChatGPT/OpenRouter reference exports; [contract](docs/DIALOGUE_MEMORY.md). [Docker CLI](README.md#run-ai-kit-with-docker) runs the packaged kit against a mounted application. Standalone scripts and Makefile remain available.
 
 ## Maintaining AI-KIT itself
 

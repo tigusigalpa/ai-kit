@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## v1.4.0 (2026-10-15)
+
+- Prepared v1.4.0 for the Docker CLI and local dialogue memory. VERSION, CLI/wheel metadata, image label and release pointers use the same version; [release checks and Docker Hub handoff](docs/V1_4_0.md). Registry publication and Git tagging remain separate.
+- Added offline `aikit memory import|merge|export`: three dialogue formats, selected ChatGPT branches, source-bound human review, explicit contradictions and ChatGPT/OpenRouter reference exports. Preserves immutable artifacts, refuses unreviewed normal exports and protects private memory across upgrades/builds. Added tests and detailed [workflow](README.md#shared-context-from-two-dialogues)/[contract](docs/DIALOGUE_MEMORY.md). Automatic sync and API execution remain separate. Archived v1.1.0 history without dropping its text.
+- Before release labeling, dialogue-memory verification passed: 336 Windows tests (329 passed/seven environment skips), 336 packaged Linux tests (334 passed/two skips), clean kit validation, offline wheel and private-package exclusion, README conflict-resolution flow and Docker smoke. [Coverage and limits](docs/DIALOGUE_MEMORY.md#verification).
+- Added standalone non-root Docker CLI, pinned build inputs, offline wheel resources, application mounts, Kubernetes preview Job, smoke tests, CI and [usage/results](docs/DOCKER.md). Earlier Docker-only Windows and packaged Linux runs passed 309 tests (307 passed/two skips each); actual image, preservation, signals, context exclusions, wheel and schema checks passed.
+- After labeling: nine CLI tests, 336 packaged Linux tests (334 passed/two Windows-only skips), clean kit validation, isolated Windows wheel/fresh-venv smoke and private-memory exclusion passed. The actual linux/amd64 image passed Docker smoke. Tracked 1.3.0 upgrades in private/team modes preserved data and pin identities, with explicit review of a local skill conflict; reruns stayed stable. [Release evidence](docs/V1_4_0.md#verification).
+
 ## v1.3.0 (2026-10-13)
 
 - Prepared v1.3.0 for optional Web Design and the expanded README guide. The 304-test behavioral discovery below preceded release labeling; publication/tagging remain separate. [Release checks](docs/WEB_DESIGN.md#release-labeling).
@@ -21,13 +29,7 @@
 
 ## v1.1.0 (2026-10-12)
 
-- Prepared v1.1.0 for security-audit and Strix. Expanded README capabilities/examples, pins, lifecycle and execution prerequisites; behavioral results below preceded release labeling.
-- Release labeling verified on Windows/Python 3.12.14: eight CLI tests, 1.1.0 wheel metadata/install/rerun, preserved 0.13.0 upgrade and clean kit checks.
-- Added --with-strix: one explicit-only entry point and nine original Strix skills plus Apache-2.0 license pinned at f7a32ae62d94872631bc8415073868d02a6ffdaf. Offline installation verifies bounded nested trees, Git blobs/SHA-256 and newline bytes; choices persist independently outside presets. Documented external runtime setup, writable target copies, explicit scope/budget, findings and separate cloud/CI/fix authorization. Added preservation/conflict/path/client/checker/wheel tests; [contract and results](docs/STRIX.md).
-- Strix verification on Windows/Python 3.12.14: 285 tests (281 passed, four runtime skips), clean kit validation, original-byte/skill checks, installed private/team visibility and offline fresh-environment wheel smoke with both optional skills and stable rerun. External Strix runtime and real scans remain unverified.
-- Added opt-in --with-security-audit: a short explicit-only Codex/Claude entry point and the complete Cloudflare skill pinned at c1c8a8c1471069fb0e188eeaff69b8e8db6564a8, with MIT license, Git blob/SHA-256 integrity checks and preserved newline bytes. Offline installation persists the choice outside presets, preserves local adaptations/conflicts, and runs no audit or upstream code. Added installation/checker/wheel coverage and documented native Windows validator limitations; [contract and results](docs/SECURITY_AUDIT.md).
-- Prior security-audit verification: 271 Windows/Python tests (267 passed/four skips), clean kit/skill/wheel checks. Cloudflare's native Windows suite had seven CLI platform failures; 44 in-memory checks passed separately. [Details](docs/SECURITY_AUDIT.md); full audits/native activation remain deferred.
-- Enabled main protection through gh: pull requests, 15 GitHub Actions checks, current branches and resolved conversations; blocked force pushes/deletion, including for admins. Zero mandatory approvals permit solo maintenance. Verified by API read-back; updated maintainer guidance.
+[Archived release entry](docs/history/v1.1.0-changelog.md#v110-2026-10-12).
 
 ## v0.13.0 (2026-10-11)
 

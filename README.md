@@ -6,14 +6,14 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
-**[v1.3.0](CHANGELOG.md#v130-2026-10-13)** adds optional Web Design: a brief/reference-to-interface workflow, dedicated Laravel/Blade guidance and detailed UI acceptance. The expanded README has no size quota.
+**[v1.4.0](CHANGELOG.md#v140-2026-10-15)** adds a standalone Docker CLI and shared context from two local dialogues: import, human review of contradictions, and exports for ChatGPT/OpenRouter. [Release preparation and verification](docs/V1_4_0.md). Optional Web Design and the extensive README guide remain available without a README size quota.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
-[Features](#features-at-a-glance) · [Web Design](#web-design) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
+[Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
 ## Features at a glance
 
@@ -31,6 +31,8 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 | 🔁 | **Engineering loop** | Plan → implement → test → review → document, with honest reporting of what was really checked |
 | ⚡ | **One-command workflows** | `/ai-kit-bootstrap`, `/ai-kit-review`, `/ai-kit-sync-context` |
 | 📦 | **Safe installer and upgrades** | Preview first, offline, backups, conflict candidates, explicit unchanged-adapter retirement, your local edits preserved |
+| 🐋 | **Docker CLI image** | Run the bundled installer and helpers without host Python; mount your project, preview changes and apply explicitly |
+| 🗂️ | **Shared dialogue context** | Import two conversations locally, review conflicting claims and export the same reference state for ChatGPT and OpenRouter |
 
 ## Why AI-KIT
 
@@ -215,6 +217,132 @@ python scripts/install.py /path/to/my-app --preset solo --agent codex --agent cl
 Existing project documents and context are never overwritten; customized instructions become reviewable conflicts.
 
 Every command also runs through one CLI: `python aikit_cli.py install|doctor|route|metrics|benchmark|check|…` (or `aikit …` after `pip install -e .`).
+
+## Run AI-KIT with Docker
+
+**Build AI-KIT once, then run its CLI against a mounted application folder.** The image contains Python, Git, the packaged kit and all optional integration resources. Installation and the ordinary offline helpers need no host Python or network access at runtime. Each command exits when it finishes; there is no server to keep running.
+
+This is an alternative way to run the same installer. Open your coding agent in the application afterward and bootstrap normally. The image supplies neither an AI agent nor a model API adapter. Web Design, Context7, Cloudflare security-audit and Strix remain opt-in instruction modules; their external tools and live execution require separate setup.
+
+### Build the local image
+
+Use Docker with Linux containers and a running daemon. Check the actual selected context before building:
+
+~~~sh
+docker context show
+docker version
+~~~
+
+From a reviewed AI-KIT checkout, build the version recorded in `VERSION`. In PowerShell:
+
+~~~powershell
+$kitVersion = (Get-Content -LiteralPath .\VERSION -Raw).Trim()
+docker build --build-arg "AIKIT_VERSION=$kitVersion" --tag "ai-kit:$kitVersion" .
+~~~
+
+On Linux or macOS:
+
+~~~sh
+kit_version="$(cat VERSION)"
+docker build --build-arg "AIKIT_VERSION=$kit_version" --tag "ai-kit:$kit_version" .
+~~~
+
+The build refuses a missing or mismatched `AIKIT_VERSION`. The Dockerfile pins the Python base by digest and build tools by version and wheel hash. Building downloads those tools and Debian packages; subsequent CLI execution can be offline. Git's Debian package is resolved at build time, so identical rebuilds are not promised. Record the resulting image identity when distributing a reviewed build. These commands create a local image; they do not upload it to a registry.
+
+The closed `.dockerignore` includes distribution sources and excludes Git, personal client configuration, common credential files, private design output, journals and caches. Review new resources before extending its allowlist. Build from the kit checkout; application files enter through the runtime mount.
+
+### Prepare a Docker Hub release
+
+The v1.4.0 handoff uses `tigusigalpa/ai-kit:1.4.0`. Add the namespace to a reviewed local image with `docker tag ai-kit:1.4.0 tigusigalpa/ai-kit:1.4.0`. This creates another local name; uploading requires a separate `docker push`. [Release preparation](docs/V1_4_0.md#docker-hub-publication-handoff) gives the publication steps, version checks and verification limits. No `latest` tag or automated registry push is configured.
+
+### Preview and apply on Windows
+
+Choose an existing application folder outside the AI-KIT distribution. Use its absolute path, including quotes when it contains spaces. In the same PowerShell session:
+
+~~~powershell
+$appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
+$image = "ai-kit:$kitVersion"
+$runtime = @('--rm', '--init', '--network', 'none', '--read-only',
+    '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
+    '--tmpfs', '/tmp:rw,nosuid,nodev,size=256m')
+
+# Preview: the project mount is read-only and the installer writes nothing.
+docker run @runtime --mount "type=bind,source=$appPath,target=/workspace,readonly" $image install /workspace --agent codex --with-web-design
+
+# After reviewing the preview, apply with a writable project mount.
+docker run @runtime --mount "type=bind,source=$appPath,target=/workspace" $image install /workspace --agent codex --with-web-design --apply --check
+
+# Later health checks can use a read-only project mount.
+docker run @runtime --mount "type=bind,source=$appPath,target=/workspace,readonly" $image doctor /workspace
+~~~
+
+Select the same agents, presets and `--with-*` options in preview and apply. Add `--agent claude`, `--with-context7`, `--with-security-audit` or `--with-strix` when wanted. Existing project documents, local settings, MCP configuration and edited managed files follow the normal preservation/conflict rules. Files written to `/workspace` persist in the host folder after the container is removed.
+
+### Preview and apply on Linux or macOS
+
+Run from an ordinary host user. Forward that user's UID/GID so the bind-mounted project and new files have usable ownership; the image's default UID/GID is `10001:10001`. In Bash:
+
+~~~sh
+app_path="$(cd /path/to/my-app && pwd)"
+image="ai-kit:$kit_version"
+runtime=(--rm --init --network none --read-only --cap-drop ALL
+  --security-opt no-new-privileges --tmpfs /tmp:rw,nosuid,nodev,size=256m
+  --user "$(id -u):$(id -g)")
+
+docker run "${runtime[@]}" --mount "type=bind,source=$app_path,target=/workspace,readonly" \
+  "$image" install /workspace --agent codex --with-web-design
+
+# Run after reviewing and approving the preview.
+docker run "${runtime[@]}" --mount "type=bind,source=$app_path,target=/workspace" \
+  "$image" install /workspace --agent codex --with-web-design --apply --check
+~~~
+
+Do not forward UID `0`; grant a chosen non-root UID access to the project instead. The container does not change host ownership automatically. Docker Desktop file-sharing permissions and remote-daemon paths must also permit the mount. If Git reports dubious ownership, use matching ownership and a narrowly reviewed Git configuration; the image does not globally trust every directory.
+
+### Other commands and writable paths
+
+Arguments after the image name go directly to `aikit`. Reuse the runtime options above:
+
+~~~powershell
+docker run @runtime $image --help
+docker run @runtime $image check
+docker run @runtime $image route 'review an interface'
+docker run @runtime --mount "type=bind,source=$appPath,target=/workspace,readonly" $image context select /workspace --workflow web-design
+~~~
+
+`check` validates the bundled distribution. `doctor /workspace` validates the installed project. Read-only reports need a read-only project mount; explicit writes such as `install --apply`, `context snapshot --apply`, configuration or local records need a writable mount. The root filesystem stays read-only, with temporary storage in `/tmp`. Interactive installation also needs `-it`.
+
+| Runtime contract | Value |
+| --- | --- |
+| Entrypoint and default command | `aikit`, `--help` |
+| Default Linux identity | UID/GID `10001:10001` |
+| Working directory and project mount | `/workspace` |
+| Temporary writable storage | `/tmp`, provided by the caller |
+| Network and ports | Offline examples; no exposed ports |
+| Shutdown | Foreground CLI receives SIGTERM; use `--init` to forward signals and reap children |
+| Completion | CLI exit code: installer 0 success, 1 refusal, 2 unresolved conflicts |
+
+Stopping an installation is not a rollback operation. After an interruption, inspect the project, run `doctor` and preview again before continuing. The container smoke test checks SIGTERM while waiting in an interactive preview; it does not establish atomic cancellation during writes.
+
+Framework toolchains, browsers, Node/Composer, model workers, MCP connections and the Strix executable are separate. Benchmark workers need their own reviewed runtime and project dependencies. The Docker inspection helper (`aikit docker`) runs on the host with Docker access; this CLI image does not mount the Docker socket or bundle a Docker client.
+
+### Kubernetes preview Job
+
+[install-preview-job.yaml](deploy/k8s/install-preview-job.yaml) runs one read-only installation preview against an existing `aikit-project` PVC. It sets a non-root identity, read-only root, dropped capabilities, no API token, an explicit deadline and no automatic retries. `/tmp` uses `emptyDir`; project data uses the PVC.
+
+Its `ai-kit:local` image with `imagePullPolicy: Never` is a local-cluster example. Load/tag the reviewed image in the intended test cluster, or replace it with your registry image pinned by digest and an appropriate pull policy. Ensure UID `10001` can read the PVC. Initial CPU/memory requests and limits are estimates, not measured recommendations. A one-shot CLI reports completion through its exit code, so this Job needs no Service or HTTP probe. Before deployment, verify the actual cluster version, context, namespace, storage and resource requirements. Local schema checks do not establish a successful cluster run.
+
+### Verify or update the image
+
+~~~sh
+python scripts/check_kit.py
+python -m unittest discover -s tests -v
+python tests/docker_smoke.py ai-kit:1.4.0 --context .
+~~~
+
+Use the tag you actually built. The Docker smoke uses disposable synthetic projects, no runtime network and Docker's actual ignore engine; it checks preview/apply, all optional modules, preservation, rerun stability, read-only refusal and SIGTERM. CI builds and tests a local image without publishing it. [Maintainer contract and results](docs/DOCKER.md) records pins, packaging, checks and unavailable environments.
+
+For an upgrade, review the new kit revision, rebuild with its `VERSION`, preview against the same application folder and then apply normally. Review base/tool updates and rerun the image checks. After testing, measure only identifiable project test volumes/cache; follow the canonical [cleanup policy](template/ai-kit/CONTAINERS.md#post-test-docker-cleanup). A shared builder does not prove project ownership, and no automatic unscoped prune is part of this workflow.
 
 ## Choose your defaults
 
@@ -741,11 +869,125 @@ Review, then repeat with `--apply --check`; `aikit install` accepts the same fla
 
 **Connection setup is separate.** AI-KIT installs no server/package, provisions no account and writes no MCP credentials/configuration. The [connection and usage guide](template/ai-kit/CONTEXT7.md) includes Codex, Claude Code and Cursor HTTP examples with environment-based credentials, an OAuth alternative, activation checks and fallback behavior. Reuse an existing Context7 connection. [Source review and integration verification](docs/CONTEXT7.md); the hosted service is not revision-pinned.
 
+## Shared context from two dialogues
+
+**Bring two conversations into one reviewed project context.** The offline `memory` command imports selected messages, preserves their sources, groups candidate facts/decisions, shows contradictions and exports reference material for ChatGPT and OpenRouter. It needs Python 3.10+ with no extra packages or API key. Automatic synchronization and live model execution remain separate.
+
+This is useful when one chat holds your brief and architectural choices while another contains implementation findings. Both clients can receive the same reviewed handoff. Your existing PROJECT_CONTEXT, decisions, settings and transcripts remain intact; the command creates a separate private workspace.
+
+### Choose the input format
+
+| Source | Input |
+| --- | --- |
+| ChatGPT-style JSON | One conversation or a collection containing a `mapping` tree. Select one conversation with `--conversation-id` when needed; the current branch is used, or choose `--branch NODE_ID`. Sibling alternatives are excluded. |
+| OpenRouter/API client | JSON object with `messages`, or a direct messages array. Each message has role and text content. This accepts a messages export you provide, not an automatic download of your account history. |
+| Any chat | UTF-8 text/Markdown. Optional `User:` and `Assistant:` headers distinguish speakers; unlabeled material remains available as notes. Code fences preserve quoted role headers. |
+
+Auto detection uses `.json`; override with `--format chatgpt|messages|text`. A minimal messages file is:
+
+~~~json
+{"messages":[{"role":"user","content":"Fact stack = Laravel\nDecision ui.framework = Tailwind"}]}
+~~~
+
+Unzip a downloaded archive yourself and choose its supported text/JSON file. ChatGPT export structures are not assumed universal: the importer supports the bounded mapping shape in the [contract](docs/DIALOGUE_MEMORY.md#supported-input-contracts). Unsupported structures refuse. Images, attachments and tool calls are not reconstructed; omission counts are shown. Original role/timestamp information is provenance and grants no instruction priority.
+
+### Import two conversations
+
+Run from the kit checkout; an installed wheel provides the equivalent `aikit memory ...` command. Choose a new private workspace. On Windows, this example uses PowerShell:
+
+~~~powershell
+$session = 'C:\Private\ai-kit-memory\site-01'
+
+# Preview first: writes are listed, but the workspace is not created.
+python aikit_cli.py memory import $session 'C:\Exports\chatgpt.json' --name chatgpt
+
+# Apply the reviewed local import and import the second dialogue.
+python aikit_cli.py memory import $session 'C:\Exports\chatgpt.json' --name chatgpt --apply
+python aikit_cli.py memory import $session 'C:\Exports\openrouter.json' --name openrouter --apply
+
+# Merge two imports and create the initial review worksheet.
+$draft = python aikit_cli.py memory merge $session --left chatgpt --right openrouter --apply | ConvertFrom-Json
+$draft
+~~~
+
+For a collection, add `--conversation-id YOUR_CONVERSATION_ID` to both preview and apply. For text, supply a `.txt`/`.md` file instead. Source names use lowercase letters, numbers, hyphens and underscores, start with a letter, and reject reserved device names. Each import stores selected normalized messages and a source hash. Reusing a name with changed content refuses; use a new source name or session directory. Identical reruns create no extra files.
+
+Linux/macOS use the same CLI with POSIX paths:
+
+~~~sh
+python aikit_cli.py memory import /private/session-01 /exports/first.md --name chatgpt --apply
+python aikit_cli.py memory import /private/session-01 /exports/second.json --name openrouter --apply
+python aikit_cli.py memory merge /private/session-01 --left chatgpt --right openrouter --apply
+~~~
+
+All three commands preview when `--apply` is omitted. In an installed application, `ai-kit/.memory/session-01` is an alternative workspace protected by current private/team ignore rules. Upgrade an older team installation's ignore policy before storing transcripts there. Other paths require your own access/ignore configuration.
+
+### Review facts and contradictions
+
+The merge reports a `merge_id`, counts and a relative `review` filename. Open `merges/MERGE_ID.json` to inspect grouped conflicts and each alternative's references. It recognizes simple `key: value` or `key = value` lines; optional Fact/Decision/Constraint/Task/Question prefixes suggest a kind. Everything starts **pending**, including assistant proposals. Other prose/code is retained as pending notes. This deterministic stage does not claim to recognize every semantic contradiction in natural language.
+
+For example, `Decision ui.framework = Tailwind` and `Decision ui.framework = Bootstrap` become alternatives for one key. Equal values deduplicate with references to both sources. Different phrasing or aliases need review: assign the same key when two statements concern the same decision, or different scoped keys when both are valid in different modules.
+
+Copy the worksheet before editing:
+
+~~~powershell
+$reviewFile = Join-Path $session 'review-edited.json'
+Copy-Item -LiteralPath (Join-Path $session $draft.review) -Destination $reviewFile
+~~~
+
+In that copy:
+
+- Read the referenced imported messages under `imports/`. Each claim retains `SOURCE:mNNNN` references.
+- Set `status` to `accepted`, `rejected` or leave `pending`. Adjust `key`, `kind` and `value` to express the reviewed meaning. Available kinds: fact, decision, constraint, task, question, note.
+- Keep original candidate IDs and refs. Reject unwanted candidates instead of deleting them. You may add claims with new IDs and valid message refs to split long notes.
+- For a conflict, add a resolution using its key, a chosen active claim ID and a reason. `drop` excludes that key; `defer` keeps it unresolved. Neither the last message nor the more confident model wins automatically.
+
+For example, append this object to the worksheet's `resolutions` array, replacing the ID with the actual candidate ID:
+
+~~~json
+{"key":"ui.framework","choice":"c_REPLACE_WITH_ACTUAL_ID","reason":"Owner selected Tailwind for this interface."}
+~~~
+
+Marking both different alternatives accepted still leaves a conflict. The input digests in the worksheet must remain unchanged; stale reviews refuse. A chosen claim settles that key and supersedes its alternatives for the handoff. Acceptance records your review, not independent verification by AI-KIT.
+
+Create a new immutable merge from the edited worksheet:
+
+~~~powershell
+$reviewed = python aikit_cli.py memory merge $session --left chatgpt --right openrouter --review $reviewFile --apply | ConvertFrom-Json
+$reviewed
+~~~
+
+The original imports and draft remain available. Review-created merges have their own content-derived ID. No command overwrites your project memory or silently picks the latest snapshot.
+
+### Export to ChatGPT and OpenRouter
+
+~~~powershell
+# Normal export requires every active key to be accepted, chosen or explicitly dropped.
+python aikit_cli.py memory export $session --merge $reviewed.merge_id --apply
+
+# An explicit draft export can carry unresolved alternatives into another review chat.
+python aikit_cli.py memory export $session --merge $draft.merge_id --draft --apply
+~~~
+
+Each normal export creates `exports/MERGE_ID/chatgpt.md` and `openrouter.json`; draft filenames contain `-draft`. Add `--format chatgpt` or `--format openrouter` to write only one. Without `--apply`, inspect the planned filenames and byte counts. Pending keys or conflicts block normal export with exit 2. The explicit draft contains their values and DRAFT status rather than presenting them as decisions.
+
+**ChatGPT:** paste/upload `chatgpt.md` into the intended chat or use it as a source in a Project. Ask the client to use it as reference material alongside the new task. This carries the selected knowledge; it does not recreate native chat history, attachments or account memory. Project sources and instructions are described in [OpenAI Docs](https://learn.chatgpt.com/docs/projects).
+
+**OpenRouter:** `openrouter.json` is a local request fragment with one `user` message containing the same reference document. Your client adds trusted system instructions, a chosen supported model and the current task, then performs any separately authorized API call. Keep the imported material at reference-data authority. The file includes no credentials, model selection, active tools or session configuration. [Messages API format](https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion).
+
+The exporter rechecks source hashes and the reviewed result. Its default per-file limit is 128000 bytes; raise `--max-bytes` deliberately if needed. It refuses oversized exports before writing and never silently truncates. Byte counts are not token counts, so check the target model/client's context capacity.
+
+### Privacy, recovery and current limits
+
+Normalized messages, review files and exports can contain private material. The tool does not redact secrets or upload anything. Review exported files before sharing. New POSIX workspace directories/files use 0700/0600; Windows inherits folder ACLs. Current Git/Docker/package policies exclude `ai-kit/.memory/`; imports are never added to metrics or default instruction selection. Ignore rules alone do not control access.
+
+Files are created exclusively. Edited or conflicting existing artifacts are preserved and cause refusal; exact reruns are stable. Interrupted multi-file writes can leave completed or partial artifacts: inspect the session and use a fresh workspace when necessary. There is no automatic overwrite/recovery or synchronization loop. Source files are never modified. [Full contract, schemas and checks](docs/DIALOGUE_MEMORY.md).
+
 ## Working with OpenRouter
 
 **AI-KIT rules can travel with your API requests.** OpenRouter can provide model access while a client or adapter supplies selected AI-KIT instructions, project facts and task material. This makes the kit useful beyond native coding-client configuration.
 
-**Integration status:** AI-KIT currently ships offline context selection, routing recommendations and opt-in measurements. It does not ship an OpenRouter API adapter, provider profile or live model executor. The workflow below documents a proposed integration, with existing commands identified explicitly. No API key, paid call or code upload is configured by installing AI-KIT.
+**Integration status:** AI-KIT ships offline instruction selection, [dialogue memory and messages export](#shared-context-from-two-dialogues), routing recommendations and opt-in measurements. It does not ship an OpenRouter HTTP adapter, provider profile or live model executor. The workflow below describes proposed API execution; local dialogue exports are already available. No API key, paid call or code upload is configured by installing AI-KIT.
 
 ### What can be reused
 

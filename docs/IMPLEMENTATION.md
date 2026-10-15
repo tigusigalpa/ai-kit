@@ -2,7 +2,7 @@
 
 ## Scope and decisions
 
-The [changelog](../CHANGELOG.md) records kit evolution. v0.13.0 adds Rust/.NET/Java/infra stack profiles; v0.12.0 hardens benchmarks (resumable runs, per-unit failure records, configurable kit arms); v0.11.0 extends local v0.10.0 with isolated benchmarks, conservative measured routing and scoped context; [current verification](#measurement-led-development-verification) records limits. Earlier results remain in [v0.6.4 verification](V0_6_4.md), [v0.5.0 verification](V0_5_0.md), and the [audit disposition](MANUS_REVIEW.md).
+The [changelog](../CHANGELOG.md) records evolution; [measurement verification](#measurement-led-development-verification) records v0.11 tooling limits. Earlier results: [v0.6.4](V0_6_4.md), [v0.5.0](V0_5_0.md), [audit disposition](MANUS_REVIEW.md). [Dialogue memory](DIALOGUE_MEMORY.md) records the offline import/review/export contract.
 Historical source evidence: [Windows CI](WINDOWS_CI_FIX.md). Current facts: PROJECT_CONTEXT.
 Execution claims require evidence.
 
@@ -19,7 +19,7 @@ Execution claims require evidence.
 | Provider-specific router details | Shared capability/risk policy; model IDs and supported efforts in reviewed provider JSON; controls and unknown mappings explicit |
 | Model escalation | Latest owner policy retained: inexpensive bounded work, substantive engineering, justified higher-capability escalation; no switching is simulated |
 | License and public maintenance | Owner-selected MIT; CONTRIBUTING, separate reporting SECURITY, version source, checks and CI workflow |
-| Docker cleanup helper | Read-only evidence collector; actual deletion governed by the existing ownership/disposability/size rule, with no unscoped prune |
+| Docker CLI and cleanup | [Standalone image](DOCKER.md); read-only cleanup evidence helper, deletion governed by ownership/disposability/size rules |
 | Dogfooding and source accuracy | Root context describes AI-KIT itself; checker validates reference boundaries, anchors, skills, and Git visibility |
 | ADR/change history | Kit ADRs stay under root docs/; clean project ADR/decision templates; CHANGELOG updates remain required after tasks changing files |
 
@@ -44,6 +44,7 @@ Owner defaults remain: English files/Russian chat, Laravel conventions, explicit
 | Benchmark execution, telemetry and semantic acceptance | [benchmark contract](BENCHMARK.md), [benchmark helper](../scripts/benchmark.py), [Metrics](../template/ai-kit/METRICS.md) |
 | Client evidence and conservative adapter retirement | [agent registry](../integrations/agents.json), [adapters helper](../scripts/adapters.py), [Adapters](../template/ai-kit/ADAPTERS.md) |
 | Project-fact evidence and pair-coverage evaluation | [context helper](../scripts/context.py), [evaluation helper](../scripts/evaluate.py), [Metrics](../template/ai-kit/METRICS.md) |
+| Local dialogue import, conflict review and reference exports | [Contract](DIALOGUE_MEMORY.md), [memory CLI](../scripts/memory.py) |
 | MCP trust boundary and documentation workflow | [MCP](../template/ai-kit/MCP.md), [Security](../template/ai-kit/SECURITY.md), [Context7](../template/ai-kit/CONTEXT7.md) |
 | Optional visual workflow and UI implementation | [Web Design](../template/ai-kit/WEB-DESIGN.md), conditional [guides](../template/ai-kit/web-design); project-owned docs/design records actual choices/evidence |
 | Installation/upstream reconciliation | [Bootstrap](../template/ai-kit/BOOTSTRAP.md), [upstream](../template/ai-kit/UPSTREAM.md), installer state |
@@ -62,7 +63,7 @@ Entry points link to policy owners; historical ADRs do not activate superseded r
 - Codex nested AGENTS.md and config.toml: Codex reads AGENTS.md only from the root to its working directory, and approval/sandbox settings are user decisions; Roo has no documented path-scoped rules.
 - Topics, homepage, hosted publication, tags/releases: these require remote changes; local work does not authorize them. The current repository description and MIT were independently confirmed; a homepage is unnecessary for the first usable bundle.
 - PyPI publication needs explicit authorization. [Hosted CI/main protection](../PROJECT_CONTEXT.md#repository-maintenance).
-- Real-project trials and Linux execution: temporary project fixtures exercise preservation and mixed manifests. These do not replace trials on actual applications or hosted CI.
+- Real-project trials: synthetic fixtures do not replace actual applications or hosted CI; [Docker results](DOCKER.md#verification-results) record local Linux checks.
 
 ## Verification
 

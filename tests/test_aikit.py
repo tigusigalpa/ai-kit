@@ -39,6 +39,13 @@ class AikitCliTests(unittest.TestCase):
         self.assertEqual(aikit_cli.__version__, (Path(__file__).resolve().parents[1] / "VERSION")
                          .read_text(encoding="utf-8").strip())
 
+    def test_memory_help_reaches_offline_commands(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as context:
+            aikit_cli.main(["memory", "--help"])
+        self.assertEqual(context.exception.code, 0)
+        self.assertIn("{import,merge,export}", output.getvalue())
+
     def test_providers_dispatches_to_router(self):
         output = io.StringIO()
         with contextlib.redirect_stdout(output):

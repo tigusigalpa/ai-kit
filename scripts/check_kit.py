@@ -28,7 +28,7 @@ def source_files(root: Path):
     for directory, dirs, files in os.walk(root, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded]
         if Path(directory) == root / "ai-kit":
-            dirs[:] = [d for d in dirs if d != ".metrics"]
+            dirs[:] = [d for d in dirs if d not in {".metrics", ".memory"}]
         for name in files:
             path = Path(directory) / name
             if path.suffix != ".pyc":
@@ -136,7 +136,7 @@ def visibility(root: Path, git: str) -> list[str]:
                 if ignored(path) != (mode == "private"):
                     errors.append(f"{mode}: wrong shared visibility: {path}")
             for path in (".env", ".claude/settings.local.json", "ai-kit/.upstream-cache/a",
-                         "ai-kit/.metrics/tasks.jsonl", "ai-kit/.metrics/write.lock",
+                         "ai-kit/.metrics/tasks.jsonl", "ai-kit/.metrics/write.lock", "ai-kit/.memory/session/imports/chat.json",
                          "ai-kit/.design/screenshots/home.png", "ai-kit/.design/extractions/DESIGN.md",
                          "go-cache/a", "test.out", "__pycache__/a.pyc", ".idea/workspace.xml",
                          ".netrc", ".pypirc", ".aider.chat.history.md", ".aider.tags.cache.v4/a",
@@ -175,10 +175,13 @@ def agent_registry_links(root: Path) -> list[str]:
 def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     required = ["VERSION", "LICENSE", "AGENTS.md", "PROJECT_CONTEXT.md", "README.md",
+                "Dockerfile", ".dockerignore", "docker/check_version.py", "docker/build-requirements.txt",
+                "deploy/k8s/install-preview-job.yaml", "tests/docker_smoke.py", "docs/DOCKER.md",
                 "template/AGENTS.md", "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
                 "template/ai-kit/project.json", "template/ai-kit/MCP.md",
                 "scripts/install.py", "scripts/router.py", "scripts/adr.py", "scripts/changelog.py",
                 "scripts/metrics.py", "scripts/context.py", "scripts/adapters.py", "scripts/evaluate.py",
+                "scripts/memory.py", "scripts/memory_import.py", "scripts/memory_store.py", "docs/DIALOGUE_MEMORY.md",
                 "scripts/benchmark.py", "scripts/adaptive.py", "scripts/learning.py",
                 "scripts/__init__.py", "template/ai-kit/METRICS.md",
                 "template/ai-kit/stacks/FILAMENT.md", "template/.agents/skills/filament-work/SKILL.md",

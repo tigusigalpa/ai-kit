@@ -12,6 +12,7 @@
 /docs/DECISIONS.md
 /docs/adr/0000-template.md
 /ai-kit/
+/ai-kit/.memory/
 /.ai-kit-install.lock
 /.agents/
 /.claude/

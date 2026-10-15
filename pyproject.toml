@@ -18,7 +18,7 @@ package-dir = {aikit = ".", "aikit.scripts" = "scripts"}
 include-package-data = true
 
 [tool.setuptools.package-data]
-aikit = ["VERSION", "LICENSE", "MANIFEST.in", "pyproject.toml", "Makefile", ".gitignore", ".gitattributes", "*.md", "*.json", "ai-kit/*.md", "ai-kit/router/*.md", "ai-kit/router/providers/*.md", "ai-kit/stacks/*.md", "ai-kit/profiles/*.md", "docs/**/*", "integrations/**/*", "template/**/*", "template/.agents/**/*", "templates/**/*", ".github/**/*", ".agents/**/*", "tests/*.py", "tests/fixtures/**/*"]
+aikit = ["VERSION", "LICENSE", "MANIFEST.in", "pyproject.toml", "Makefile", "Dockerfile", ".dockerignore", ".gitignore", ".gitattributes", "*.md", "*.json", "ai-kit/*.md", "ai-kit/router/*.md", "ai-kit/router/providers/*.md", "ai-kit/stacks/*.md", "ai-kit/profiles/*.md", "docs/**/*", "integrations/**/*", "template/**/*", "template/.agents/**/*", "templates/**/*", ".github/**/*", ".agents/**/*", "docker/**/*", "deploy/**/*", "tests/*.py", "tests/fixtures/**/*"]
 
 [tool.setuptools.dynamic]
 version = {file = ["VERSION"]}

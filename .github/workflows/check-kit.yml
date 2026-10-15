@@ -45,3 +45,18 @@ jobs:
         run: python -m pip wheel . --no-deps --wheel-dir dist
       - name: Smoke-install the wheel in an isolated environment
         run: python tests/wheel_smoke.py dist
+
+  docker:
+    name: Docker CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.13'
+      - name: Build the local CLI image
+        run: docker build --build-arg AIKIT_VERSION="$(cat VERSION)" --tag ai-kit:ci .
+      - name: Exercise offline container behavior and build-context boundaries
+        run: python tests/docker_smoke.py ai-kit:ci --context .

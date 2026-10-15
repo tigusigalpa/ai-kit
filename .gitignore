@@ -4,6 +4,7 @@
 # ---- Local AI-KIT and agent state ----
 /ai-kit/.upstream-cache/
 /ai-kit/.metrics/
+/ai-kit/.memory/
 /.claude/
 /.codex/
 /.windsurf/

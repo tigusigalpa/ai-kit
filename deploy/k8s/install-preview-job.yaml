@@ -1,0 +1,56 @@
+# Local preview example. Replace image and existing PVC for the actual cluster.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: aikit-install-preview
+  labels:
+    app.kubernetes.io/name: aikit
+    app.kubernetes.io/component: cli
+spec:
+  backoffLimit: 0
+  activeDeadlineSeconds: 300
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: aikit
+        app.kubernetes.io/component: cli
+    spec:
+      restartPolicy: Never
+      automountServiceAccountToken: false
+      terminationGracePeriodSeconds: 30
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        runAsGroup: 10001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: aikit
+          image: ai-kit:local
+          imagePullPolicy: Never
+          args: ["install", "/workspace", "--agent", "codex"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          volumeMounts:
+            - name: project
+              mountPath: /workspace
+              readOnly: true
+            - name: temporary
+              mountPath: /tmp
+      volumes:
+        - name: project
+          persistentVolumeClaim:
+            claimName: aikit-project
+        - name: temporary
+          emptyDir:
+            sizeLimit: 512Mi
