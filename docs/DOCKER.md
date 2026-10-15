@@ -6,6 +6,8 @@ The root [Dockerfile](../Dockerfile) packages the existing Python CLI as a one-s
 
 The wheel is installed at build time, including templates, pinned security resources, optional skills, docs and tests. Runtime uses no checkout mount or package installation. `/workspace` is an application bind mount, outside the reference distribution; `/tmp` is explicitly writable temporary storage. No Docker socket, host credentials, privileged mode or anonymous volume is required. Git supports project evidence/visibility checks; external framework tools and reviewed benchmark workers are outside this image.
 
+Root AGENTS.md, PROJECT_CONTEXT.md and WIKI.md stay local and are excluded from wheel/context; template counterparts remain packaged. See [maintenance](../CONTRIBUTING.md#local-maintainer-files).
+
 The entrypoint is exec-form `aikit`, default command `--help`, default UID/GID `10001:10001`, and stop signal SIGTERM. Callers use `--init`, a read-only root, dropped capabilities and no-new-privileges. Ordinary reports can disable networking and mount the project read-only. Installation requires an intentional writable project mount and `--apply`. Existing installer defaults, preservation and conflicts are unchanged. Mid-apply interruption is not an atomic rollback guarantee; inspect, run doctor and preview again.
 
 ## Build inputs
@@ -21,9 +23,9 @@ Verified 2026-10-14 against the [official Python image manifest](https://github.
 | Build-only wheel | 0.48.0 |
 | Build-only packaging | 26.3 |
 
-[build-requirements.txt](../docker/build-requirements.txt) records exact wheel SHA-256 hashes; pip verifies them with `--require-hashes`. The builder produces a no-runtime-dependency wheel without isolated dependency resolution. Runtime installation uses `--no-index --no-deps`. Git and its Debian dependencies resolve at build time; the base/tool pins do not promise byte-identical rebuilds. A distributable release must record its own resulting immutable image identity. No registry publication is implemented or implied.
+[build-requirements.txt](../docker/build-requirements.txt) records exact wheel SHA-256 hashes; pip verifies them with `--require-hashes`. The builder produces a no-runtime-dependency wheel without isolated dependency resolution. Runtime installation uses `--no-index --no-deps`. Git and its Debian dependencies resolve at build time; the base/tool pins do not promise byte-identical rebuilds. A distributable release must record its own resulting immutable image identity. Registry publication requires explicit authorization and remote verification.
 
-`AIKIT_VERSION` is mandatory and must match the source [VERSION](../VERSION). [check_version.py](../docker/check_version.py) refuses missing/mismatched labels before wheel building; the OCI version label then describes the bundled CLI version. Tags are caller-controlled mutable names. [v1.4.0 release preparation](V1_4_0.md) records the current version and Docker Hub handoff; the results below retain their original test versions.
+`AIKIT_VERSION` is mandatory and must match the source [VERSION](../VERSION). [check_version.py](../docker/check_version.py) refuses missing/mismatched labels before wheel building; the OCI version label then describes the bundled CLI version. Tags are caller-controlled mutable names. [v1.4.1 release preparation](V1_4_1.md) records the current version and Docker Hub handoff; the results below retain their original test versions.
 
 The [.dockerignore](../.dockerignore) is a closed allowlist with later sensitive/cache exclusions. Unknown root files are excluded. Included source directories still require review: a filename denylist cannot detect arbitrary credentials embedded in allowed source. Synthetic context tests verify actual Docker ignore behavior, including hidden source skill directories, without reading personal credentials. The `context-audit` scratch stage is a test export target, never the runtime image. Package-data and MANIFEST include image resources so the installed wheel can pass kit validation.
 
@@ -58,7 +60,7 @@ The supplied batch/v1 Job is a read-only preview, not an apply operation: `insta
 
 ## Verification results
 
-Current release labeling, tagged image and package checks: [v1.4.0](V1_4_0.md#verification). The initial integration results below retain their original date and version.
+Current release labeling, tagged image and package checks: [v1.4.1](V1_4_1.md#verification). The initial integration results below retain their original date and version.
 
 Verified locally on 2026-10-14:
 

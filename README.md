@@ -6,7 +6,7 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
-**[v1.4.0](CHANGELOG.md#v140-2026-10-15)** adds a standalone Docker CLI and shared context from two local dialogues: import, human review of contradictions, and exports for ChatGPT/OpenRouter. [Release preparation and verification](docs/V1_4_0.md). Optional Web Design and the extensive README guide remain available without a README size quota.
+**[v1.4.1](CHANGELOG.md#v141-2026-10-15)** adds Docker image freshness rules and excludes local maintainer documents from public packages and images. Application templates and shared dialogue memory remain available. [Release preparation and verification](docs/V1_4_1.md). Optional Web Design and the extensive README guide retain their existing scope.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
@@ -16,6 +16,8 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 [Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
 ## Features at a glance
+
+![Features at a glance](https://i.postimg.cc/BbPSVW8b/01-features-at-a-glance.jpg)
 
 | | Feature | What it does for you |
 | --- | --- | --- |
@@ -35,6 +37,8 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 | 🗂️ | **Shared dialogue context** | Import two conversations locally, review conflicting claims and export the same reference state for ChatGPT and OpenRouter |
 
 ## Why AI-KIT
+
+![Why AI-KIT](https://i.postimg.cc/qq6J5ftv/02-why-ai-kit.jpg)
 
 AI-KIT preserves facts and decisions, points agents at real checks and records authorization boundaries:
 
@@ -189,6 +193,8 @@ Installation stays offline and copies files only. A Strix scan requires a separa
 
 ## Install
 
+![Install](https://i.postimg.cc/pr5W6N9m/04-install.jpg)
+
 You need Python 3.10 or later; the installer uses only the standard library.
 
 ~~~sh
@@ -253,7 +259,7 @@ The closed `.dockerignore` includes distribution sources and excludes Git, perso
 
 ### Docker Hub image
 
-**Published image:** [tigusigalpa/ai-kit:1.4.0](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.0), for `linux/amd64`. Download with `docker pull tigusigalpa/ai-kit:1.4.0`. The mount examples below use the local name `ai-kit:1.4.0`; give the downloaded image that alias with `docker tag tigusigalpa/ai-kit:1.4.0 ai-kit:1.4.0` and set the version variable to `1.4.0`, or use the full namespaced image name in your commands. [Publication record](docs/V1_4_0.md#docker-hub-publication) records the verified digest. No `latest` tag was assigned and no automated registry push is configured.
+**Published image:** [tigusigalpa/ai-kit:1.4.1](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.1), for `linux/amd64`. Download with `docker pull tigusigalpa/ai-kit:1.4.1`. The mount examples below use the local name `ai-kit:1.4.1`; give the downloaded image that alias with `docker tag tigusigalpa/ai-kit:1.4.1 ai-kit:1.4.1` and set the version variable to `1.4.1`, or use the full namespaced image name in your commands. [Publication record](docs/V1_4_1.md#docker-hub-publication) records publication status and the verified digest. No `latest` tag was assigned and no automated registry push is configured.
 
 ### Preview and apply on Windows
 
@@ -337,7 +343,7 @@ Its `ai-kit:local` image with `imagePullPolicy: Never` is a local-cluster exampl
 ~~~sh
 python scripts/check_kit.py
 python -m unittest discover -s tests -v
-python tests/docker_smoke.py ai-kit:1.4.0 --context .
+python tests/docker_smoke.py ai-kit:1.4.1 --context .
 ~~~
 
 Use the tag you actually built. The Docker smoke uses disposable synthetic projects, no runtime network and Docker's actual ignore engine; it checks preview/apply, all optional modules, preservation, rerun stability, read-only refusal and SIGTERM. CI builds and tests a local image without publishing it. [Maintainer contract and results](docs/DOCKER.md) records pins, packaging, checks and unavailable environments.
@@ -345,6 +351,8 @@ Use the tag you actually built. The Docker smoke uses disposable synthetic proje
 For an upgrade, review the new kit revision, rebuild with its `VERSION`, preview against the same application folder and then apply normally. Review base/tool updates and rerun the image checks. After testing, measure only identifiable project test volumes/cache; follow the canonical [cleanup policy](template/ai-kit/CONTAINERS.md#post-test-docker-cleanup). A shared builder does not prove project ownership, and no automatic unscoped prune is part of this workflow.
 
 ## Choose your defaults
+
+![Choose your defaults](https://i.postimg.cc/FzkrBtfs/05-choose-your-defaults.jpg)
 
 Project choices live in `ai-kit/settings.json`; defaults are in [the settings template](template/ai-kit/settings.json).
 
@@ -1110,7 +1118,7 @@ For other assistants, share the repository or SKILL.md.
 
 ![For maintainers](https://i.postimg.cc/jjJ13S2b/15-for-maintainers.jpg)
 
-Applications install from `template/`; the root maintains AI-KIT itself (`scripts/`, `integrations/`, `templates/`, `docs/`). Before contributing, run:
+Applications install from `template/`; the root maintains AI-KIT itself (`scripts/`, `integrations/`, `templates/`, `docs/`). Root `AGENTS.md`, `PROJECT_CONTEXT.md` and `WIKI.md` are local maintainer files: ignored, untracked and excluded from wheel/Docker builds. Their template counterparts remain public. A clean clone works without local copies; public maintenance starts at [CONTRIBUTING](CONTRIBUTING.md). Before contributing, run:
 
 ~~~sh
 python scripts/check_kit.py

@@ -26,6 +26,25 @@ class CheckerTests(unittest.TestCase):
     def test_clean_distribution(self):
         self.assertEqual(self.check(), [])
 
+    def test_distribution_does_not_require_local_maintainer_files(self):
+        for name in check_kit.LOCAL_MAINTAINER_FILES:
+            (self.root / name).unlink(missing_ok=True)
+        self.assertEqual(self.check(), [])
+
+    def test_private_root_files_are_excluded_without_hiding_project_templates(self):
+        for name in check_kit.LOCAL_MAINTAINER_FILES:
+            (self.root / name).write_bytes(b"\xff\x00LOCAL_MAINTAINER_DATA")
+        self.assertEqual(self.check(), [])
+        sources = {p.relative_to(self.root).as_posix() for p in check_kit.source_files(self.root)}
+        self.assertTrue(check_kit.LOCAL_MAINTAINER_FILES.isdisjoint(sources))
+        for name in check_kit.LOCAL_MAINTAINER_FILES:
+            self.assertIn("template/" + name, sources)
+
+    def test_public_document_cannot_depend_on_optional_private_file(self):
+        with (self.root / "README.md").open("a", encoding="utf-8") as stream:
+            stream.write("\n[Private map](WIKI.md)\n")
+        self.assertTrue(any("public link depends on local maintainer file" in error for error in self.check()))
+
     def test_modified_pinned_package_is_reported(self):
         path = self.root / "template/ai-kit/vendor/security-audit/SKILL.md"
         path.write_bytes(path.read_bytes() + b"\nUnexpected edit.\n")
@@ -47,7 +66,7 @@ class CheckerTests(unittest.TestCase):
 
     def test_missing_heading_is_reported(self):
         with (self.root / "README.md").open("a", encoding="utf-8") as stream:
-            stream.write("\n[Broken](PROJECT_CONTEXT.md#nonexistent-heading)\n")
+            stream.write("\n[Broken](template/PROJECT_CONTEXT.md#nonexistent-heading)\n")
         self.assertTrue(any("missing heading" in error for error in self.check()))
 
     def test_readme_has_no_size_quota_while_conditional_guides_keep_theirs(self):

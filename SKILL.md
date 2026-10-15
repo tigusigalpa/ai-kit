@@ -90,7 +90,7 @@ CI and optional integrations stay outside presets. Read the audit, Strix, Contex
 
 ## Maintaining AI-KIT itself
 
-1. Read the repository's `PROJECT_CONTEXT.md` and `AGENTS.md`; keep template rules in their canonical owner (see policy ownership in `docs/IMPLEMENTATION.md`).
+1. Read [contribution rules](CONTRIBUTING.md) and optional local context/instructions; keep template rules in their canonical owner (`docs/IMPLEMENTATION.md`).
 2. Run `python scripts/check_kit.py` and `python -m unittest discover -s tests -v` for affected behavior; build and smoke-install the wheel when packaging changes.
 3. Keep `template/` free of kit history/assumed facts. Byte budgets: template AGENTS 2500, CORE 3000, conditional docs 12000; root README has no quota. Keep entries short.
 4. Verify client formats and model facts against primary vendor documentation before changing them.
@@ -102,4 +102,4 @@ AI-KIT writes instructions and configuration; its opt-in benchmark invokes only 
 
 ## Use this repository as a skill
 
-This SKILL.md sits at the root of the AI-KIT repository, so the repository itself is the skill and carries its installer, templates, and documents. For Claude Code across all projects, clone it into the skills directory: `git clone https://github.com/tigusigalpa/ai-kit.git ~/.claude/skills/ai-kit`; the commands above then run from that folder. For other assistants, clone the repository next to the project or paste this file as context. Canonical documents: [README](README.md), [Core](template/ai-kit/CORE.md), [adapters and presets](template/ai-kit/ADAPTERS.md), [containers](template/ai-kit/CONTAINERS.md), [routing](template/ai-kit/router/POLICY.md), [maintainer instructions](AGENTS.md).
+This SKILL.md sits at the root of the AI-KIT repository, so the repository itself is the skill and carries its installer, templates, and documents. For Claude Code across all projects, clone it into the skills directory: `git clone https://github.com/tigusigalpa/ai-kit.git ~/.claude/skills/ai-kit`; the commands above then run from that folder. For other assistants, clone the repository next to the project or paste this file as context. Canonical documents: [README](README.md), [Core](template/ai-kit/CORE.md), [adapters and presets](template/ai-kit/ADAPTERS.md), [containers](template/ai-kit/CONTAINERS.md), [routing](template/ai-kit/router/POLICY.md), [contribution rules](CONTRIBUTING.md).

@@ -2,6 +2,9 @@
 # Application projects receive templates/gitignore.private or gitignore.team instead.
 
 # ---- Local AI-KIT and agent state ----
+/AGENTS.md
+/PROJECT_CONTEXT.md
+/WIKI.md
 /ai-kit/.upstream-cache/
 /ai-kit/.metrics/
 /ai-kit/.memory/

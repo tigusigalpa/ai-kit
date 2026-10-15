@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import venv
+import zipfile
 
 
 def venv_python(root: Path) -> Path:
@@ -29,6 +30,10 @@ def main(argv: list[str] | None = None) -> int:
         wheel = candidates[0]
     if not wheel.is_file():
         raise SystemExit("Wheel not found: " + str(wheel))
+    with zipfile.ZipFile(wheel) as package:
+        for name in ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"):
+            if "aikit/" + name in package.namelist() or "aikit/template/" + name not in package.namelist():
+                raise RuntimeError("Wheel must exclude local maintainer files and retain project templates: " + name)
     with tempfile.TemporaryDirectory(prefix="ai-kit-wheel-") as folder:
         root = Path(folder).resolve()
         env = root / "venv"

@@ -1,4 +1,5 @@
-include VERSION LICENSE AGENTS.md PROJECT_CONTEXT.md README.md WIKI.md CHANGELOG.md SECURITY.md SKILL.md BOOTSTRAP_PROMPT.md CONTRIBUTING.md
+include VERSION LICENSE README.md CHANGELOG.md SECURITY.md SKILL.md BOOTSTRAP_PROMPT.md CONTRIBUTING.md
+exclude AGENTS.md PROJECT_CONTEXT.md WIKI.md
 include .gitignore .gitattributes
 include Dockerfile .dockerignore
 include pyproject.toml Makefile MANIFEST.in

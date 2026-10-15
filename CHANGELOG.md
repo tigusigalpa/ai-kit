@@ -1,8 +1,13 @@
 # AI-KIT changelog
 
-## Unreleased
+## v1.4.1 (2026-10-15)
 
-- Added mandatory [Docker impact/refresh](docs/DOCKER.md#change-impact-and-image-refresh): rebuild/test changed packaged code, rules and dependencies; document exceptions, use development tags and preserve separate registry authorization. Wired maintainer and canonical container rules.
+- Added [image freshness](docs/DOCKER.md#change-impact-and-image-refresh): maintainer and installed AGENTS assess Docker impact, rebuild/test affected images and preserve publication authorization.
+- Keep root maintainer AGENTS/PROJECT_CONTEXT/WIKI local and untracked; retain template counterparts. Exclude local copies from Git, wheel and Docker; validate distributions without them.
+
+- Prepared matching VERSION, wheel and Docker version 1.4.1; [release checks and publication record](docs/V1_4_1.md). Added package/context regression coverage and retained full v1.2.0 history in its archive.
+
+- Published `tigusigalpa/ai-kit:1.4.1`; push, remote digest/configuration and anonymous tag visibility matched the tested image. Post-label: nine Windows CLI tests, 339 Linux tests (337 passed/two skips), Docker smoke, offline wheel/source privacy checks and private/team 1.4.0 upgrades passed. [Evidence](docs/V1_4_1.md#verification).
 
 ## v1.4.0 (2026-10-15)
 
@@ -23,12 +28,7 @@
 
 ## v1.2.0 (2026-10-12)
 
-- Prepared v1.2.0 for optional Context7 documentation lookup and the OpenRouter integration guide. Version labeling is local; the full behavioral results below preceded labeling. Publication/tagging remain separate.
-- After labeling: eight CLI tests, CLI/wheel version 1.2.0, clean kit validation and offline fresh-environment wheel smoke passed. Synthetic pre-label 1.1.0 upgrade preserved facts, settings values/choices, local Context7 edits, MCP configuration and both security pins; rerun stayed stable. [Release checks](docs/CONTEXT7.md#release-labeling).
-- Added optional --with-context7: persistent documentation lookup skill with source/Claude copies, version-aware sanitized queries, and separate Codex/Claude/Cursor MCP setup examples. Installation remains offline and preserves native MCP configuration. Recorded upstream documentation revision; no hosted runtime pin or live connection is implied. Added lifecycle/preservation tests and wheel smoke coverage; [contract and verification](docs/CONTEXT7.md).
-- Context7 verification on Windows/Python 3.12.14: 293 tests in 1239.036 seconds (289 passed/four runtime skips), clean kit/config/skill checks, all-client private/team visibility and offline fresh-environment wheel smoke. Live client activation and documentation retrieval remain unverified.
-- Added a dedicated README OpenRouter section: reusable rules/context, current offline helpers versus a proposed API adapter, request layout, prompt/response caching, provider/session behavior, actual usage accounting and execution boundaries. Raised only the root README budget from 22000 to 32000 bytes at the owner's request; retained all existing feature content. Archived v0.5.0 release history with adjusted relative links to keep the changelog within its budget.
-- Verified on Windows/Python 3.12.14: kit validation without errors/warnings, both README JSON examples, Python 3.10 grammar, exact preservation of prior README content and archived release text, and 285 tests in 970.706 seconds (281 passed, four runtime skips). No live OpenRouter call, cache experiment or savings measurement was run.
+[Archived release entry](docs/history/v1.2.0-changelog.md#v120-2026-10-12).
 
 ## v1.1.0 (2026-10-12)
 

@@ -53,9 +53,11 @@ def context_smoke(source: Path, base: Path, builder: str | None) -> None:
     context.mkdir()
     for name in ("Dockerfile", ".dockerignore"):
         (context / name).write_bytes((source / name).read_bytes())
-    included = ("VERSION", "scripts/install.py", "template/.agents/skills/web-design/SKILL.md",
+    included = ("VERSION", "scripts/install.py", "template/AGENTS.md", "template/PROJECT_CONTEXT.md",
+                "template/WIKI.md", "template/.agents/skills/web-design/SKILL.md",
                 "template/ai-kit/vendor/security-audit/LICENSE", "docker/check_version.py")
-    excluded = (".env", ".git/config", ".codex/auth.json", ".aws/credentials", "private-helper.py",
+    excluded = ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", ".env", ".git/config",
+                ".codex/auth.json", ".aws/credentials", "private-helper.py",
                 "docs/.private/brief.txt", "docs/auth.json", "template/.env", "ai-kit/.metrics/tasks.jsonl",
                 "ai-kit/.design/screenshots/private.png", "ai-kit/.memory/session/imports/private.json",
                 "scripts/__pycache__/private.pyc")

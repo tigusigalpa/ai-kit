@@ -22,3 +22,6 @@ aikit = ["VERSION", "LICENSE", "MANIFEST.in", "pyproject.toml", "Makefile", "Doc
 
 [tool.setuptools.dynamic]
 version = {file = ["VERSION"]}
+
+[tool.setuptools.exclude-package-data]
+aikit = ["AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"]

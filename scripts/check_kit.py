@@ -18,6 +18,7 @@ import install
 ROOT = Path(__file__).resolve().parents[1]
 # Human onboarding in the root README has no size quota; instruction budgets remain scoped.
 DOC_BUDGET = 12000
+LOCAL_MAINTAINER_FILES = frozenset(("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"))
 
 
 
@@ -31,6 +32,8 @@ def source_files(root: Path):
             dirs[:] = [d for d in dirs if d not in {".metrics", ".memory"}]
         for name in files:
             path = Path(directory) / name
+            if path.parent == root and name in LOCAL_MAINTAINER_FILES:
+                continue
             if path.suffix != ".pyc":
                 yield path
 
@@ -99,6 +102,9 @@ def visibility(root: Path, git: str) -> list[str]:
             return result.returncode == 0
 
         (scratch / ".gitignore").write_bytes((root / ".gitignore").read_bytes())
+        for relative in sorted(LOCAL_MAINTAINER_FILES):
+            if not ignored(relative):
+                errors.append("Local maintainer file must be ignored: " + relative)
         for p in source_files(root):
             relative = p.relative_to(root).as_posix()
             if ignored(relative):
@@ -174,10 +180,11 @@ def agent_registry_links(root: Path) -> list[str]:
 
 def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
-    required = ["VERSION", "LICENSE", "AGENTS.md", "PROJECT_CONTEXT.md", "README.md",
+    required = ["VERSION", "LICENSE", "CONTRIBUTING.md", "README.md",
                 "Dockerfile", ".dockerignore", "docker/check_version.py", "docker/build-requirements.txt",
                 "deploy/k8s/install-preview-job.yaml", "tests/docker_smoke.py", "docs/DOCKER.md",
-                "template/AGENTS.md", "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
+                "template/AGENTS.md", "template/PROJECT_CONTEXT.md", "template/WIKI.md",
+                "template/ai-kit/CORE.md", "template/ai-kit/settings.json",
                 "template/ai-kit/project.json", "template/ai-kit/MCP.md",
                 "scripts/install.py", "scripts/router.py", "scripts/adr.py", "scripts/changelog.py",
                 "scripts/metrics.py", "scripts/context.py", "scripts/adapters.py", "scripts/evaluate.py",
@@ -268,6 +275,9 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 destination.relative_to(root.resolve())
             except ValueError:
                 errors.append(f"{p}: link escapes reference: {target}")
+                continue
+            if destination.parent == root.resolve() and destination.name in LOCAL_MAINTAINER_FILES:
+                errors.append(f"{p}: public link depends on local maintainer file: {target}")
                 continue
             if not destination.exists():
                 errors.append(f"{p}: missing link: {target}")

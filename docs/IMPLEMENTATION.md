@@ -62,7 +62,7 @@ Entry points link to policy owners; historical ADRs do not activate superseded r
 - Additional model/client mappings: unsupported provider IDs and runtime settings remain unknown; no speculative model names or fake activation.
 - Codex nested AGENTS.md and config.toml: Codex reads AGENTS.md only from the root to its working directory, and approval/sandbox settings are user decisions; Roo has no documented path-scoped rules.
 - Topics, homepage, hosted publication, tags/releases: these require remote changes; local work does not authorize them. The current repository description and MIT were independently confirmed; a homepage is unnecessary for the first usable bundle.
-- PyPI publication needs explicit authorization. [Hosted CI/main protection](../PROJECT_CONTEXT.md#repository-maintenance).
+- PyPI publication needs explicit authorization. [Repository administration](../CONTRIBUTING.md#repository-maintenance).
 - Real-project trials: synthetic fixtures do not replace actual applications or hosted CI; [Docker results](DOCKER.md#verification-results) record local Linux checks.
 
 ## Verification
