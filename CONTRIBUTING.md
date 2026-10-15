@@ -18,6 +18,14 @@ Follow plan -> implement -> test -> review -> document. Run `python scripts/chec
 
 Assess [Docker impact](docs/DOCKER.md#change-impact-and-image-refresh) on every task and rebuild/test affected final sources locally. Publication needs authorization. Update the root changelog, any local context/map and the continuity skill when procedures change. Keep templates free of kit history; do not bootstrap this distribution as an application.
 
+## Docker Hub releases
+
+Update [DOCKER_HUB_OVERVIEW.md](docs/DOCKER_HUB_OVERVIEW.md) for every AI-KIT Docker image release, including patch releases and authorized replacements of an existing tag. Keep the complete publication copy in that file; README and the [Docker guide](docs/DOCKER.md) link to it.
+
+Before building, synchronize its version/tag, feature summary, release changes, optional modules, CLI examples and runtime/platform contract with VERSION, README and actual sources. Record only checks that ran. After an authorized push, read back the remote digest and configuration, then update publication status and the immutable pull example from that evidence. Never invent a digest or claim local preparation is publication. Keep descriptive publication receipts separate from the prepared image snapshot; do not rebuild/replace an image just to include its own digest.
+
+The root README and Docker Hub Overview are user documentation without a size quota. Other document and instruction budgets remain scoped. Preparing this file does not itself publish a Docker Hub description, image or Git release; the relevant authorization still applies.
+
 ## Repository maintenance
 
 Before changing remote protection or required CI checks, verify live configuration and emitted names. Local jobs establish neither hosted success nor updated protection. Remote changes, commits, pushes and publication need the relevant user authorization. Private context snapshots require verification before use.

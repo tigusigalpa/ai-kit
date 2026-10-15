@@ -259,6 +259,8 @@ The closed `.dockerignore` includes distribution sources and excludes Git, perso
 
 ### Docker Hub image
 
+The ready-to-publish [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) covers capabilities, release changes and launch examples; maintain it for every image release using the [release checklist](CONTRIBUTING.md#docker-hub-releases).
+
 **Published image:** [tigusigalpa/ai-kit:1.4.1](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.1), for `linux/amd64`. Download with `docker pull tigusigalpa/ai-kit:1.4.1`. The mount examples below use the local name `ai-kit:1.4.1`; give the downloaded image that alias with `docker tag tigusigalpa/ai-kit:1.4.1 ai-kit:1.4.1` and set the version variable to `1.4.1`, or use the full namespaced image name in your commands. [Publication record](docs/V1_4_1.md#docker-hub-publication) records publication status and the verified digest. No `latest` tag was assigned and no automated registry push is configured.
 
 ### Preview and apply on Windows

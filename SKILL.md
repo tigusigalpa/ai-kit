@@ -92,7 +92,7 @@ CI and optional integrations stay outside presets. Read the audit, Strix, Contex
 
 1. Read [contribution rules](CONTRIBUTING.md) and optional local context/instructions; keep template rules in their canonical owner (`docs/IMPLEMENTATION.md`).
 2. Run `python scripts/check_kit.py` and `python -m unittest discover -s tests -v` for affected behavior; build and smoke-install the wheel when packaging changes.
-3. Keep `template/` free of kit history/assumed facts. Byte budgets: template AGENTS 2500, CORE 3000, conditional docs 12000; root README has no quota. Keep entries short.
+3. Keep `template/` free of kit facts/history. Byte budgets: template AGENTS 2500, CORE 3000, conditional docs 12000; root README and Docker Hub Overview have no quota. Keep entries short.
 4. Verify client formats and model facts against primary vendor documentation before changing them.
 5. Update the root CHANGELOG, maintainer context, the continuity skill, and this skill when commands or features change.
 

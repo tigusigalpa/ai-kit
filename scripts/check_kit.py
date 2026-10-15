@@ -16,8 +16,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import install
 
 ROOT = Path(__file__).resolve().parents[1]
-# Human onboarding in the root README has no size quota; instruction budgets remain scoped.
+# User-facing onboarding/publication copy has no size quota; instruction budgets remain scoped.
 DOC_BUDGET = 12000
+UNBOUNDED_DOCUMENTS = frozenset(("README.md", "docs/DOCKER_HUB_OVERVIEW.md"))
 LOCAL_MAINTAINER_FILES = frozenset(("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"))
 
 
@@ -264,7 +265,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         if not text.endswith("\n"):
             errors.append("Missing final newline: " + str(p))
         # Immutable upstream references are conditional assets; the entry point retains its budget.
-        if p != root / "README.md" and p not in vendored_files and len(text.encode()) > DOC_BUDGET:
+        if p.relative_to(root).as_posix() not in UNBOUNDED_DOCUMENTS and p not in vendored_files and len(text.encode()) > DOC_BUDGET:
             warnings.append("Large conditional document: " + str(p))
         for target in links(text):
             if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):

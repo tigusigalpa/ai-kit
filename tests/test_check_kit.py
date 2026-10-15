@@ -69,16 +69,21 @@ class CheckerTests(unittest.TestCase):
             stream.write("\n[Broken](template/PROJECT_CONTEXT.md#nonexistent-heading)\n")
         self.assertTrue(any("missing heading" in error for error in self.check()))
 
-    def test_readme_has_no_size_quota_while_conditional_guides_keep_theirs(self):
-        readme = self.root / "README.md"
-        readme.write_bytes(readme.read_bytes() + b"\n" + b"Reader documentation.\n" * 6000)
+    def test_user_documentation_has_no_size_quota_while_conditional_guides_keep_theirs(self):
+        documents = [self.root / "README.md", self.root / "docs/DOCKER_HUB_OVERVIEW.md"]
+        for document in documents:
+            document.write_bytes(document.read_bytes() + b"\n" + b"Reader documentation.\n" * 6000)
         guide = self.root / "template/ai-kit/WEB-DESIGN.md"
         guide.write_bytes(guide.read_bytes() + b"\n" + b"Conditional instructions.\n" * 600)
+        scoped_overview = self.root / "template/ai-kit/DOCKER_HUB_OVERVIEW.md"
+        scoped_overview.write_bytes(b"# Scoped instructions\n\n" + b"Conditional instructions.\n" * 600)
         with patch.object(check_kit, "visibility", return_value=[]):
             errors, warnings = check_kit.check(self.root, git="not-invoked")
         self.assertEqual(errors, [])
-        self.assertFalse(any(warning.endswith(str(readme)) for warning in warnings))
+        for document in documents:
+            self.assertFalse(any(warning.endswith(str(document)) for warning in warnings))
         self.assertTrue(any(warning.endswith(str(guide)) for warning in warnings))
+        self.assertTrue(any(warning.endswith(str(scoped_overview)) for warning in warnings))
 
     def test_link_cannot_escape_reference(self):
         with (self.root / "README.md").open("a", encoding="utf-8") as stream:

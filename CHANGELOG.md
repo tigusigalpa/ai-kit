@@ -1,5 +1,9 @@
 # AI-KIT changelog
 
+## Unreleased
+
+- Saved the complete [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) for v1.4.1 and linked it from README/Docker docs. The [release checklist](CONTRIBUTING.md#docker-hub-releases) and continuity skill require updating it for every image release, with verified publication identity recorded after push. Exempted only this user-facing document from the size quota alongside README; instruction budgets remain unchanged, with regression coverage.
+
 ## v1.4.1 (2026-10-15)
 
 - Added [image freshness](docs/DOCKER.md#change-impact-and-image-refresh): maintainer and installed AGENTS assess Docker impact, rebuild/test affected images and preserve publication authorization.
