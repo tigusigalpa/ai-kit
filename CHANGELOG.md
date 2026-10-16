@@ -3,7 +3,8 @@
 ## v1.4.2 (2026-10-16)
 
 - Verified kit/archive/offline installation, 351 Linux tests (two skips), 23 Windows CLI/archive tests and Docker smoke. [Evidence](docs/V1_4_2.md).
-- Prepared `ai-kit-python` 1.4.2; pending PyPI publisher and GitHub pypi environment verified. Earlier short names were refused. Preserve v1.4.1 Git/Docker. [Status](docs/V1_4_2.md).
+- Prepared `ai-kit-python` 1.4.2; PyPI publisher/GitHub pypi environment verified. Preserve v1.4.1 Git/Docker. [Status](docs/V1_4_2.md).
+- Fixed quoted Twine wildcards for Windows CI.
 - Added PyPI metadata, a portable [description](docs/PYPI_DESCRIPTION.md), README guidance and a [release procedure](docs/PYPI.md). Wheel/sdist checks cover metadata, licenses, resources, private files, offline installation and publication identity. Manual Trusted Publishing defaults to validation, requires exact version/tag/repository, and gives OIDC only to upload jobs consuming tested artifacts. Required CI names stay unchanged.
 - Isolated builds inject synthetic private probes; archives exclude private drafts and credential filenames. Added tested `aikit --version`; published Docker 1.4.1 examples use its existing `--help`. Added a README Docker Hub badge.
 

@@ -53,7 +53,7 @@ jobs:
       - name: Validate archives, description and installed CLI
         run: |
           python scripts/check_distribution.py archives "${{ runner.temp }}/pypi-dist"
-          python -m twine check --strict "${{ runner.temp }}/pypi-dist/"*
+          python -m twine check --strict "${{ runner.temp }}/pypi-dist/*"
           python tests/wheel_smoke.py "${{ runner.temp }}/pypi-dist"
       - name: Retain the exact validated distributions
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2, verified 2026-10-16

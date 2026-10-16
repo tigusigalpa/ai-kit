@@ -50,7 +50,7 @@ jobs:
       - name: Validate archive metadata, privacy and resources
         run: python scripts/check_distribution.py archives "${{ runner.temp }}/pypi-dist"
       - name: Validate the package description
-        run: python -m twine check --strict "${{ runner.temp }}/pypi-dist/"*
+        run: python -m twine check --strict "${{ runner.temp }}/pypi-dist/*"
       - name: Smoke-install the wheel in an isolated environment
         run: python tests/wheel_smoke.py "${{ runner.temp }}/pypi-dist"
 
