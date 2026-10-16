@@ -205,7 +205,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "aikit_cli.py", "__init__.py", "MANIFEST.in", "pyproject.toml", "tests/wheel_smoke.py",
                 "scripts/check_distribution.py", "tests/test_distribution.py", "docs/PYPI.md", "docs/PYPI_DESCRIPTION.md",
                 "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml",
-                "tests/build_distribution.py",
+                "tests/build_distribution.py", "tests/test_pypi_events.py",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md",
                 ]
     for name in install.OPTIONAL_SKILLS:

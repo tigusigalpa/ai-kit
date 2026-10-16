@@ -1,5 +1,11 @@
 # AI-KIT changelog
 
+## Unreleased
+
+- Added a live PyPI version badge to README.
+- Added stable GitHub Release publication preparation, event/version/repository guards and regression tests; manual validation stays the default. PyPI upload waits for the owner. The live tag policy now accepts v* with reviewer protections preserved. [Procedure](docs/PYPI.md#release-to-pypi-with-owner-approval). Archived v0.13.0 text intact to retain the changelog budget.
+- Verified kit checks, 368 packaged Linux tests (two platform skips), archive/privacy/Twine/offline wheel checks and Docker smoke.
+
 ## v1.4.2 (2026-10-16)
 
 - Verified kit/archive/offline installation, 351 Linux tests (two skips), 23 Windows CLI/archive tests and Docker smoke. [Evidence](docs/V1_4_2.md).
@@ -46,10 +52,7 @@
 
 ## v0.13.0 (2026-10-11)
 
-- Added Rust, .NET, Java (Maven/Gradle), and Terraform/Helm stack profiles with evidence-based per-module detection: Cargo.toml (rust-version, cargo test/build/clippy), *.csproj/*.fsproj/*.vbproj and global.json (TargetFramework, dotnet test/build), pom.xml/mvnw/build.gradle(.kts)/gradlew (language level, wrapper-aware commands), and .tf files or Chart.yaml (fmt/validate, helm lint). Drafts remain suggestions until bootstrap confirms them.
-- Added rust-work, dotnet-work, java-work, and infra-work skills to the registry; Claude native copies install with the claude agent selection.
-- Benchmark packs accept the new stack names; README, SKILL.md, and WIKI profile lists updated.
-- Verified locally (Windows/Python 3.14.6): 254 tests ran, all passed, 1 runtime skip; kit validation returned zero errors and zero warnings; Python 3.10 grammar verified; end-to-end smoke detected RUST/INFRA with drafted context and installed source/native skills. Real applications of the new stacks remain untrialed.
+[Archived release entry](docs/history/v0.13.0-changelog.md#v0130-2026-10-11).
 
 ## v0.12.0 (2026-10-11)
 

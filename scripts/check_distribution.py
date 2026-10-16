@@ -1,4 +1,4 @@
-"""Validate local release archives and manual publication identity without uploading."""
+"""Validate release archives and manual/GitHub Release identity without uploading."""
 from __future__ import annotations
 
 import argparse
@@ -23,7 +23,8 @@ PRIVATE_PARTS = {".git", ".aws", ".codex", ".claude", ".secrets", ".metrics", ".
 REQUIRED = {"VERSION", "LICENSE", "aikit_cli.py", "scripts/install.py", "scripts/check_distribution.py",
             "template/AGENTS.md", "template/PROJECT_CONTEXT.md", "template/WIKI.md",
             "template/ai-kit/settings.json", "docs/PYPI_DESCRIPTION.md", "docs/PYPI.md",
-            "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml", "tests/build_distribution.py", *LICENSES}
+            "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml", "tests/build_distribution.py",
+            "tests/test_pypi_events.py", *LICENSES}
 
 
 def release_identity(version: str, expected: str, destination: str, ref: str, repository: str) -> dict:
@@ -41,6 +42,50 @@ def release_identity(version: str, expected: str, destination: str, ref: str, re
             raise ValueError("Publication is restricted to the canonical repository")
     return {"name": PROJECT_NAME, "version": version, "destination": destination,
             "upload_performed": False}
+
+
+def workflow_identity(version: str, event: str, payload: dict, ref: str, repository: str) -> dict:
+    """Resolve supported GitHub events before any build or publication permission."""
+    if not isinstance(payload, dict):
+        raise ValueError("GitHub event must be a JSON object")
+    event_repository = payload.get("repository")
+    if not isinstance(event_repository, dict) or event_repository.get("full_name") != repository:
+        raise ValueError("GitHub event repository does not match the runner repository")
+    if event == "release":
+        release = payload.get("release")
+        if payload.get("action") != "published" or not isinstance(release, dict):
+            raise ValueError("Automatic publication requires a published release")
+        if release.get("draft") is not False or release.get("prerelease") is not False:
+            raise ValueError("Automatic publication requires a stable, non-draft release")
+        tag = release.get("tag_name")
+        if not isinstance(tag, str) or not re.fullmatch(r"v(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", tag):
+            raise ValueError("Automatic publication requires a stable vMAJOR.MINOR.PATCH tag")
+        if ref != "refs/tags/" + tag:
+            raise ValueError("Release tag does not match the runner ref")
+        result = release_identity(version, tag[1:], "pypi", ref, repository)
+    elif event == "workflow_dispatch":
+        inputs = payload.get("inputs", {})
+        if not isinstance(inputs, dict):
+            raise ValueError("Manual workflow inputs must be an object")
+        expected = inputs.get("version", "")
+        destination = inputs.get("destination", "validate")
+        if not isinstance(expected, str) or not isinstance(destination, str):
+            raise ValueError("Manual version and destination must be strings")
+        result = release_identity(version, expected, destination, ref, repository)
+    else:
+        raise ValueError("Only release and workflow_dispatch events are supported")
+    return {**result, "event": event}
+
+
+def read_workflow_event(path: Path) -> dict:
+    """Read bounded runner event JSON without copying its release body into logs."""
+    if path.is_symlink() or not path.is_file():
+        raise ValueError("GitHub event must be a regular unlinked file")
+    with path.open("rb") as stream:
+        raw = stream.read(1_000_001)
+    if len(raw) > 1_000_000:
+        raise ValueError("GitHub event exceeds the inspection limit")
+    return json.loads(raw)
 
 
 def _members(path: Path) -> dict[str, bytes]:
@@ -153,18 +198,28 @@ def check_archives(directory: Path, version: str) -> list[dict]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
-    identity = sub.add_parser("identity", help="Validate a manual build/publication request; never uploads")
+    identity = sub.add_parser("identity", help="Validate a manual or GitHub event request; never uploads")
     identity.add_argument("--expected-version", default="")
     identity.add_argument("--destination", choices=("validate", "testpypi", "pypi"), default="validate")
     identity.add_argument("--ref", default="")
     identity.add_argument("--repository", default="")
+    identity.add_argument("--event-name", default="")
+    identity.add_argument("--event-path", type=Path)
     archives = sub.add_parser("archives", help="Inspect a prepared wheel and sdist; never uploads")
     archives.add_argument("directory", type=Path)
     args = parser.parse_args(argv)
     try:
         version = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
         if args.command == "identity":
-            result = release_identity(version, args.expected_version, args.destination, args.ref, args.repository)
+            if args.event_name or args.event_path is not None:
+                if not args.event_name or args.event_path is None:
+                    raise ValueError("Both event name and event path are required")
+                if args.expected_version or args.destination != "validate":
+                    raise ValueError("Use event inputs instead of manual options with a GitHub event")
+                result = workflow_identity(version, args.event_name, read_workflow_event(args.event_path),
+                                           args.ref, args.repository)
+            else:
+                result = release_identity(version, args.expected_version, args.destination, args.ref, args.repository)
         else:
             result = {"archives": check_archives(args.directory, version), "upload_performed": False}
         print(json.dumps(result, indent=2))

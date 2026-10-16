@@ -86,7 +86,7 @@ CI and optional integrations stay outside presets. Read the audit, Strix, Contex
 
 ## Unified CLI
 
-`python aikit_cli.py --help` lists commands; pip exposes `aikit`. [Dialogue memory](docs/DIALOGUE_MEMORY.md) imports/merges two dialogues and exports reviewed ChatGPT/OpenRouter references. [Docker](README.md#run-ai-kit-with-docker) mounts an application. [PyPI](docs/PYPI.md) covers package validation and manual Trusted Publishing; preparation uploads nothing. Standalone scripts and Makefile also work.
+`python aikit_cli.py --help` lists commands; pip exposes `aikit`. [Dialogue memory](docs/DIALOGUE_MEMORY.md) imports/merges two dialogues and exports reviewed ChatGPT/OpenRouter references. [Docker](README.md#run-ai-kit-with-docker) mounts an application. [PyPI](docs/PYPI.md) covers checks and owner-approved release publishing; preparation uploads nothing. Standalone scripts and Makefile also work.
 
 ## Maintaining AI-KIT itself
 
