@@ -9,6 +9,9 @@ import tempfile
 import venv
 import zipfile
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import check_distribution
+
 
 def venv_python(root: Path) -> Path:
     return root / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
@@ -30,6 +33,8 @@ def main(argv: list[str] | None = None) -> int:
         wheel = candidates[0]
     if not wheel.is_file():
         raise SystemExit("Wheel not found: " + str(wheel))
+    version = (Path(__file__).resolve().parents[1] / "VERSION").read_text(encoding="utf-8").strip()
+    check_distribution.inspect_distribution(wheel, version)
     with zipfile.ZipFile(wheel) as package:
         for name in ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"):
             if "aikit/" + name in package.namelist() or "aikit/template/" + name not in package.namelist():
@@ -45,6 +50,9 @@ def main(argv: list[str] | None = None) -> int:
             subprocess.run([str(item) for item in command], cwd=root, env=environment, check=True)
         run([python, "-m", "pip", "install", "--no-index", "--no-deps", wheel])
         aikit = venv_aikit(env)
+        run([python, "-c", "import importlib.metadata; assert importlib.metadata.version("
+             + repr(check_distribution.PROJECT_NAME) + ") == " + repr(version)])
+        run([aikit, "--version"])
         run([aikit, "route", "implement a feature"])
         for module in ("learning", "adaptive", "benchmark", "memory"):
             run([python, "-c", "from aikit.scripts import " + module])

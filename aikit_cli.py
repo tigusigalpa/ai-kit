@@ -39,6 +39,7 @@ def _load(module_name: str):
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="aikit", description=__doc__)
+    parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
     parser.add_argument("command", nargs="?", choices=sorted(_COMMANDS),
                         help="AI-KIT command to run")
     values = list(argv) if argv is not None else sys.argv[1:]

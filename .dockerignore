@@ -39,8 +39,10 @@
 !.github/
 !.github/workflows/
 !.github/workflows/check-kit.yml
+!.github/workflows/publish-pypi.yml
 !docker/
 !docker/build-requirements.txt
+!docker/pypi-requirements.txt
 !docker/check_version.py
 !deploy/
 !deploy/k8s/

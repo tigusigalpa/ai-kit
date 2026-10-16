@@ -1,0 +1,3 @@
+# Release validation tools; not AI-KIT runtime dependencies. Verified 2026-10-16.
+build==1.6.1
+twine==7.0.0

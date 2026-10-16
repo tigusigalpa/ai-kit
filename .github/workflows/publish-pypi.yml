@@ -1,0 +1,108 @@
+name: Prepare or publish Python package
+
+on:
+  workflow_dispatch:
+    inputs:
+      destination:
+        description: Build only, or explicitly upload to the selected registry
+        type: choice
+        options: [validate, testpypi, pypi]
+        default: validate
+        required: true
+      version:
+        description: Exact VERSION confirmation; required for either upload
+        type: string
+        default: ''
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: python-package-${{ github.ref }}-${{ inputs.destination }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.13'
+      - name: Verify explicit release identity before building
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          DESTINATION: ${{ inputs.destination }}
+        run: >-
+          python scripts/check_distribution.py identity
+          --expected-version "$RELEASE_VERSION" --destination "$DESTINATION"
+          --ref "$GITHUB_REF" --repository "$GITHUB_REPOSITORY"
+      - name: Validate sources and behavior
+        run: |
+          python scripts/check_kit.py
+          python -m unittest discover -s tests -v
+      - name: Install reviewed build and validation tools
+        run: |
+          python -m pip install --require-hashes -r docker/build-requirements.txt
+          python -m pip install -r docker/pypi-requirements.txt
+      - name: Build source archive and wheel from that source archive
+        run: python tests/build_distribution.py "${{ runner.temp }}/pypi-dist"
+      - name: Validate archives, description and installed CLI
+        run: |
+          python scripts/check_distribution.py archives "${{ runner.temp }}/pypi-dist"
+          python -m twine check --strict "${{ runner.temp }}/pypi-dist/*"
+          python tests/wheel_smoke.py "${{ runner.temp }}/pypi-dist"
+      - name: Retain the exact validated distributions
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2, verified 2026-10-16
+        with:
+          name: python-distributions
+          path: ${{ runner.temp }}/pypi-dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  testpypi:
+    needs: build
+    if: inputs.destination == 'testpypi' && github.repository == 'tigusigalpa/ai-kit' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/ai-kit-python/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, verified 2026-10-16
+        with:
+          name: python-distributions
+          path: dist/
+      - name: Upload only the validated artifacts to TestPyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2, verified 2026-10-16
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist/
+          attestations: true
+          skip-existing: false
+
+  pypi:
+    needs: build
+    if: inputs.destination == 'pypi' && github.repository == 'tigusigalpa/ai-kit' && startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/ai-kit-python/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, verified 2026-10-16
+        with:
+          name: python-distributions
+          path: dist/
+      - name: Upload only the validated artifacts to PyPI
+        uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2, verified 2026-10-16
+        with:
+          repository-url: https://upload.pypi.org/legacy/
+          packages-dir: dist/
+          attestations: true
+          skip-existing: false

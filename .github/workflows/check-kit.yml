@@ -41,10 +41,18 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7, verified 2026-10-08
         with:
           python-version: ${{ matrix.python }}
-      - name: Build a portable no-runtime-dependency wheel
-        run: python -m pip wheel . --no-deps --wheel-dir dist
+      - name: Install reviewed build tools
+        run: python -m pip install --require-hashes -r docker/build-requirements.txt
+      - name: Install release validation tools
+        run: python -m pip install -r docker/pypi-requirements.txt
+      - name: Build a source archive and portable wheel
+        run: python tests/build_distribution.py "${{ runner.temp }}/pypi-dist"
+      - name: Validate archive metadata, privacy and resources
+        run: python scripts/check_distribution.py archives "${{ runner.temp }}/pypi-dist"
+      - name: Validate the package description
+        run: python -m twine check --strict "${{ runner.temp }}/pypi-dist/*"
       - name: Smoke-install the wheel in an isolated environment
-        run: python tests/wheel_smoke.py dist
+        run: python tests/wheel_smoke.py "${{ runner.temp }}/pypi-dist"
 
   docker:
     name: Docker CLI

@@ -6,11 +6,12 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
-**[v1.4.1](CHANGELOG.md#v141-2026-10-15)** adds Docker image freshness rules and excludes local maintainer documents from public packages and images. Application templates and shared dialogue memory remain available. [Release preparation and verification](docs/V1_4_1.md). Optional Web Design and the extensive README guide retain their existing scope.
+**[v1.4.2](CHANGELOG.md#v142-2026-10-16)** prepares the first PyPI release with verified source/wheel packages, a version command and manual Trusted Publishing. Publication is pending; [release status and verification](docs/V1_4_2.md) distinguish local checks from registry availability. The published Docker Hub image remains **1.4.1**, with Docker freshness rules, private-file exclusions, shared dialogue memory and all optional modules.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
+[![Docker Hub](https://img.shields.io/badge/Docker%20Hub-ai--kit-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/tigusigalpa/ai-kit)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 
 [Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
@@ -223,6 +224,32 @@ python scripts/install.py /path/to/my-app --preset solo --agent codex --agent cl
 Existing project documents and context are never overwritten; customized instructions become reviewable conflicts.
 
 Every command also runs through one CLI: `python aikit_cli.py install|doctor|route|metrics|benchmark|check|…` (or `aikit …` after `pip install -e .`).
+
+### Packaged CLI and PyPI status
+
+AI-KIT includes a portable Python package and a manual Trusted Publishing workflow. **PyPI/TestPyPI publication is prepared, not performed.** The package name is `ai-kit-python`, the executable is `aikit`, and Python 3.10+ is required. PyPI rejected the initial `ai-kit` name as too similar to an existing project; registry activation must finish before the first upload.
+
+From a reviewed AI-KIT checkout, you can install it now inside a virtual environment:
+
+~~~powershell
+$cliEnv = Join-Path $env:LOCALAPPDATA 'AI-KIT\venv'
+python -m venv "$cliEnv"
+& "$cliEnv\Scripts\Activate.ps1"
+python -m pip install .
+aikit --version
+~~~
+
+After a verified PyPI release under that name, installation becomes `pipx install ai-kit-python`, or `python -m pip install ai-kit-python` inside a virtual environment. Updating uses `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`; installed application instructions are updated separately through preview/apply.
+
+~~~powershell
+aikit install "C:\Projects\my-app" --agent codex --mode private
+aikit install "C:\Projects\my-app" --agent codex --mode private --apply --check
+aikit doctor "C:\Projects\my-app"
+~~~
+
+Then open that application in your client and run its bootstrap workflow. The CLI bundles templates and optional integration resources, uses no runtime third-party dependencies and preserves local documents/conflicts. [PyPI description](docs/PYPI_DESCRIPTION.md) contains portable publication copy; the [release guide](docs/PYPI.md) covers local builds, archive/privacy checks, TestPyPI, OIDC publisher fields and later publication.
+
+For maintainers, [publish-pypi.yml](.github/workflows/publish-pypi.yml) runs only by manual dispatch and defaults to build-only `validate`. Upload jobs require an explicit registry, exact version confirmation, a matching release tag and the canonical repository. They use separate `testpypi`/`pypi` environments and receive OIDC permission only in those jobs. Account/environment setup and any actual upload remain separate authorized operations. No permanent registry token is needed.
 
 ## Run AI-KIT with Docker
 

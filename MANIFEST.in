@@ -7,6 +7,7 @@ recursive-include ai-kit *.md
 prune ai-kit/.metrics
 prune ai-kit/.memory
 prune ai-kit/.upstream-cache
+prune ai-kit/.design
 recursive-include .agents *
 recursive-include tests *.py *.json *.ps1
 recursive-include docs *
@@ -17,3 +18,5 @@ recursive-include templates *
 recursive-include .github *
 recursive-include docker *.py *.txt
 recursive-include deploy *.yaml
+prune docs/.private
+global-exclude .env .env.* auth.json .netrc .pypirc *.pem *.p12 *.pfx id_rsa* id_ed25519*

@@ -39,6 +39,14 @@ class AikitCliTests(unittest.TestCase):
         self.assertEqual(aikit_cli.__version__, (Path(__file__).resolve().parents[1] / "VERSION")
                          .read_text(encoding="utf-8").strip())
 
+    def test_version_flag_reports_bundle_without_loading_or_running_a_command(self):
+        output = io.StringIO()
+        with mock.patch.object(aikit_cli, "_load") as load, contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as context:
+            aikit_cli.main(["--version"])
+        self.assertEqual(context.exception.code, 0)
+        self.assertEqual(output.getvalue().strip(), "aikit " + aikit_cli.__version__)
+        load.assert_not_called()
+
     def test_memory_help_reaches_offline_commands(self):
         output = io.StringIO()
         with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as context:
