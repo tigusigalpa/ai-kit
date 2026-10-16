@@ -2,7 +2,7 @@
 
 ## Status and package identity
 
-Version [1.4.3](V1_4_3.md) includes the owner-approved Release path; publication requires human approval. Release [1.4.2 is published on PyPI](https://pypi.org/project/ai-kit-python/1.4.2/); [evidence](V1_4_2.md) records its workflow, uploaded hashes and clean registry installation. Trusted Publishing uses repository `tigusigalpa/ai-kit`, workflow `publish-pypi.yml`, environment `pypi`. On 2026-10-16 that environment was extended to future `v*` tags with owner review preserved. VERSION is the version source; distribution `ai-kit-python`, import package and executable `aikit`, Python 3.10+, no runtime dependencies. TestPyPI remains unconfigured.
+Release [1.4.3 is published on PyPI](https://pypi.org/project/ai-kit-python/1.4.3/); [evidence](V1_4_3.md#pypi-publication-and-read-back) records the owner-approved Release workflow, matching hosted/registry file hashes and fresh registry installation. Trusted Publishing uses repository `tigusigalpa/ai-kit`, workflow `publish-pypi.yml`, environment `pypi`. On 2026-10-16 that environment was extended to future `v*` tags with owner review preserved. VERSION is the version source; distribution `ai-kit-python`, import package and executable `aikit`, Python 3.10+, no runtime dependencies. TestPyPI remains unconfigured.
 
 PyPI rejected `ai-kit` and `ai-kit-cli` as too similar to existing projects; the owner selected `ai-kit-python`, whose pending-publisher registration succeeded. A public JSON 404 alone does not establish eligibility, and a pending publisher does not reserve a name. For a rename synchronize pyproject, archive checks, metadata smoke tests, workflow URLs, publisher configuration and install examples before rebuilding.
 
