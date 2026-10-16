@@ -6,7 +6,7 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
-**[v1.4.2](CHANGELOG.md#v142-2026-10-16)** prepares the first PyPI release with verified source/wheel packages, a version command and manual Trusted Publishing. Publication is pending; [release status and verification](docs/V1_4_2.md) distinguish local checks from registry availability. The published Docker Hub image remains **1.4.1**, with Docker freshness rules, private-file exclusions, shared dialogue memory and all optional modules.
+**[v1.4.2](CHANGELOG.md#v142-2026-10-16)** is published on [PyPI as `ai-kit-python`](https://pypi.org/project/ai-kit-python/1.4.2/), with verified source/wheel packages, `aikit --version` and manual Trusted Publishing. [Release verification](docs/V1_4_2.md) records the workflow, hashes and installation checks. The published Docker Hub image remains **1.4.1**, with Docker freshness rules, private-file exclusions, shared dialogue memory and all optional modules.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
@@ -227,19 +227,19 @@ Every command also runs through one CLI: `python aikit_cli.py install|doctor|rou
 
 ### Packaged CLI and PyPI status
 
-AI-KIT includes a portable Python package and a manual Trusted Publishing workflow. **PyPI/TestPyPI publication is prepared, not performed.** The package name is `ai-kit-python`, the executable is `aikit`, and Python 3.10+ is required. PyPI rejected the initial `ai-kit` name as too similar to an existing project; registry activation must finish before the first upload.
+**AI-KIT 1.4.2 is available on [PyPI](https://pypi.org/project/ai-kit-python/1.4.2/).** Install package `ai-kit-python` and run command `aikit`; Python 3.10+ is required with no mandatory runtime dependencies. Publication uses GitHub Trusted Publishing. Uploaded wheel/source hashes and installation directly from PyPI were verified. TestPyPI was not used.
 
-From a reviewed AI-KIT checkout, you can install it now inside a virtual environment:
+Install into a virtual environment:
 
 ~~~powershell
 $cliEnv = Join-Path $env:LOCALAPPDATA 'AI-KIT\venv'
 python -m venv "$cliEnv"
 & "$cliEnv\Scripts\Activate.ps1"
-python -m pip install .
+python -m pip install ai-kit-python
 aikit --version
 ~~~
 
-After a verified PyPI release under that name, installation becomes `pipx install ai-kit-python`, or `python -m pip install ai-kit-python` inside a virtual environment. Updating uses `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`; installed application instructions are updated separately through preview/apply.
+For an isolated CLI, use `pipx install ai-kit-python`. To install a reviewed source checkout instead, run `python -m pip install .` there. Updating uses `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`; installed application instructions are updated separately through preview/apply.
 
 ~~~powershell
 aikit install "C:\Projects\my-app" --agent codex --mode private

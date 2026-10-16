@@ -2,25 +2,25 @@
 
 ## Status and package identity
 
-Release 1.4.2 is prepared for authorized PyPI publication on 2026-10-16; [release status](V1_4_2.md) records verification. PyPI registered a pending Trusted Publisher for `ai-kit-python`, repository `tigusigalpa/ai-kit`, workflow `publish-pypi.yml`, environment `pypi`. The GitHub environment allows only tag `v1.4.2` with owner review. No upload or hosted workflow run is established yet. VERSION is the version source; import package and executable are `aikit`. Python 3.10+ is required with no runtime dependencies.
+Release [1.4.2 is published on PyPI](https://pypi.org/project/ai-kit-python/1.4.2/), verified on 2026-10-16; [release evidence](V1_4_2.md) records workflow identity, uploaded hashes and clean installation from the registry. Trusted Publishing uses repository `tigusigalpa/ai-kit`, workflow `publish-pypi.yml`, environment `pypi`. That environment allows tag `v1.4.2` with owner review. VERSION is the version source; distribution `ai-kit-python`, import package and executable `aikit`, Python 3.10+, no runtime dependencies. TestPyPI was not configured or used.
 
 PyPI rejected `ai-kit` and `ai-kit-cli` as too similar to existing projects; the owner selected `ai-kit-python`, whose pending-publisher registration succeeded. A public JSON 404 alone does not establish eligibility, and a pending publisher does not reserve a name. For a rename synchronize pyproject, archive checks, metadata smoke tests, workflow URLs, publisher configuration and install examples before rebuilding.
 
 [pyproject.toml](../pyproject.toml) owns metadata. [PYPI_DESCRIPTION.md](PYPI_DESCRIPTION.md) is the complete Markdown description, with absolute public links and no GitHub-only diagrams. AI-KIT's own code remains MIT; the distribution also bundles Apache-2.0 Strix resources, so its SPDX expression is `MIT AND Apache-2.0`. All three declared license files are included under wheel dist-info/licenses and retained beside their payload resources.
 
-## Install before and after publication
+## Install the published package
 
-Before the first authorized upload, use a reviewed checkout and a virtual environment:
+Use an isolated CLI installation with `pipx install ai-kit-python`, or a Python virtual environment:
 
 ~~~powershell
 $cliEnv = Join-Path $env:LOCALAPPDATA 'AI-KIT\venv'
 python -m venv "$cliEnv"
 & "$cliEnv\Scripts\Activate.ps1"
-python -m pip install .
+python -m pip install ai-kit-python
 aikit --version
 ~~~
 
-Keep that environment local; it is not an application dependency. After publication, users can run `pipx install ai-kit-python`, or `python -m pip install ai-kit-python` in a virtual environment. Update via `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`. Upgrading the CLI does not rewrite installed project instructions: preview `aikit install TARGET` and apply after review. [Usage](../README.md#packaged-cli-and-pypi-status).
+Keep that environment local; it is not an application dependency. For a reviewed checkout, `python -m pip install .` remains available. Update via `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`. Upgrading the CLI does not rewrite installed project instructions: preview `aikit install TARGET` and apply after review. [Usage](../README.md#packaged-cli-and-pypi-status).
 
 ## Build and validate without uploading
 
@@ -68,7 +68,7 @@ Configure these account settings separately when publication is authorized. PyPI
 
 Create the exact GitHub environments in repository settings, restrict deployment refs to approved release tags and enable required reviewers where supported. Keep publisher environment names identical. Do not store a PyPI API token: the pinned PyPA action exchanges GitHub OIDC identity for a short-lived token. Only the upload jobs receive `id-token: write`; the build/test job has read-only repository access. Upload jobs retrieve the validated same-run artifact, check out no repository code and perform no build.
 
-## Later authorized publication
+## Release publication procedure
 
 1. Review VERSION, metadata, description, README examples, license files, tool/action pins and changes since the prior release. Complete local checks, including image-impact handling. Any Git commit/tag/push still requires its own authorization. Preserve existing tags: if a release tag predates publication support, prepare a new patch version instead of moving it.
 2. After the reviewed workflow exists on the default branch, a `validate` dispatch can exercise hosted build-only preparation. Hosted results remain unknown until that run finishes.
