@@ -92,6 +92,8 @@ The distribution excludes root maintainer AGENTS.md, PROJECT_CONTEXT.md and WIKI
 
 A separate [Docker image](https://hub.docker.com/r/tigusigalpa/ai-kit) packages the CLI for container use.
 
+Package releases follow GitHub Release, automated checks and owner approval before PyPI upload through Trusted Publishing. Future stable tags must match VERSION; manual runs default to validation. See the [release procedure](https://github.com/tigusigalpa/ai-kit/blob/main/docs/PYPI.md#release-to-pypi-with-owner-approval).
+
 ## Documentation and license
 
 - [Repository and full README](https://github.com/tigusigalpa/ai-kit)

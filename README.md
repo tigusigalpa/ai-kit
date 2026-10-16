@@ -6,7 +6,7 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
-**[v1.4.2](CHANGELOG.md#v142-2026-10-16)** is published on [PyPI as `ai-kit-python`](https://pypi.org/project/ai-kit-python/1.4.2/), with verified source/wheel packages, `aikit --version` and manual Trusted Publishing. [Release verification](docs/V1_4_2.md) records the workflow, hashes and installation checks. The published Docker Hub image remains **1.4.1**, with Docker freshness rules, private-file exclusions, shared dialogue memory and all optional modules.
+**[v1.4.3](CHANGELOG.md#v143-2026-10-16)** adds **GitHub Release → checks → your approval → PyPI**, future release-tag support, fifteen event regression tests and a live PyPI version badge. [Release verification](docs/V1_4_3.md) separates GitHub release preparation from registry publication. The latest verified PyPI package is [ai-kit-python 1.4.2](https://pypi.org/project/ai-kit-python/1.4.2/); the published Docker Hub image remains **1.4.1**. Shared dialogue memory and all optional modules remain available.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![PyPI version](https://img.shields.io/pypi/v/ai-kit-python?logo=pypi&logoColor=white)](https://pypi.org/project/ai-kit-python/)
@@ -265,7 +265,7 @@ The live `pypi` deployment policy accepts **tags `v*`**, so future versions do n
 
 For a manual run, choose **Run workflow**, select the versioned tag, set `destination=pypi`, and type the exact version in `version`. Uploads use the same approval gate. `destination=validate` only builds and tests; `testpypi` is an explicit separate registry with its own environment/publisher setup. Prerelease trials can use that manual route. Republishing the same PyPI version fails rather than replacing or silently skipping files.
 
-The Release path takes effect once this workflow is merged into the repository and included in the next release tag. Existing `v1.4.2` stays unchanged. The complete [release procedure](docs/PYPI.md#release-to-pypi-with-owner-approval) includes activation, recovery and configuration verification.
+The Release path is included in **v1.4.3 and later tagged source**. Existing `v1.4.2` stays unchanged. The complete [release procedure](docs/PYPI.md#release-to-pypi-with-owner-approval) includes activation, recovery and configuration verification. Each stable release still needs your human approval before PyPI upload.
 
 ## Run AI-KIT with Docker
 
