@@ -1,10 +1,11 @@
 # AI-KIT changelog
 
-## Unreleased
+## v1.4.3 (2026-10-16)
 
 - Added a live PyPI version badge to README.
 - Added stable GitHub Release publication preparation, event/version/repository guards and regression tests; manual validation stays the default. PyPI upload waits for the owner. The live tag policy now accepts v* with reviewer protections preserved. [Procedure](docs/PYPI.md#release-to-pypi-with-owner-approval). Archived v0.13.0 text intact to retain the changelog budget.
-- Verified kit checks, 368 packaged Linux tests (two platform skips), archive/privacy/Twine/offline wheel checks and Docker smoke.
+- Added fifteen event regression tests. Before release labeling, 32 hosted CI checks and build-only workflow verification passed; kit checks, 368 packaged Linux tests (two platform skips), archive/privacy/Twine/offline wheel checks and Docker smoke also passed. [Release verification](docs/V1_4_3.md).
+- Verified 1.4.3 CLI/archive/image identity, offline packaging, Docker smoke, 368 Linux tests and preserved private/team upgrades from v1.4.2.
 
 ## v1.4.2 (2026-10-16)
 
