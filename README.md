@@ -9,6 +9,7 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 **[v1.4.2](CHANGELOG.md#v142-2026-10-16)** is published on [PyPI as `ai-kit-python`](https://pypi.org/project/ai-kit-python/1.4.2/), with verified source/wheel packages, `aikit --version` and manual Trusted Publishing. [Release verification](docs/V1_4_2.md) records the workflow, hashes and installation checks. The published Docker Hub image remains **1.4.1**, with Docker freshness rules, private-file exclusions, shared dialogue memory and all optional modules.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
+[![PyPI version](https://img.shields.io/pypi/v/ai-kit-python?logo=pypi&logoColor=white)](https://pypi.org/project/ai-kit-python/)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-ai--kit-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/tigusigalpa/ai-kit)
@@ -249,7 +250,22 @@ aikit doctor "C:\Projects\my-app"
 
 Then open that application in your client and run its bootstrap workflow. The CLI bundles templates and optional integration resources, uses no runtime third-party dependencies and preserves local documents/conflicts. [PyPI description](docs/PYPI_DESCRIPTION.md) contains portable publication copy; the [release guide](docs/PYPI.md) covers local builds, archive/privacy checks, TestPyPI, OIDC publisher fields and later publication.
 
-For maintainers, [publish-pypi.yml](.github/workflows/publish-pypi.yml) runs only by manual dispatch and defaults to build-only `validate`. Upload jobs require an explicit registry, exact version confirmation, a matching release tag and the canonical repository. They use separate `testpypi`/`pypi` environments and receive OIDC permission only in those jobs. Account/environment setup and any actual upload remain separate authorized operations. No permanent registry token is needed.
+For maintainers, [publish-pypi.yml](.github/workflows/publish-pypi.yml) supports **GitHub Release → checks → your approval → PyPI**. Publishing a stable GitHub Release starts production preparation; the upload waits for your review of environment `pypi`. Manual dispatch remains available and defaults to build-only `validate`. No permanent registry token is needed.
+
+#### Publish future releases to PyPI
+
+1. Prepare the new version through the normal reviewed Git workflow. For example, put `1.5.0` in `VERSION`, update release documentation and complete the kit/package checks. Assess Docker impact through the existing image-refresh procedure. The tag's source must contain the updated release workflow and event guard.
+2. Create a new tag such as `v1.5.0` at that prepared commit. **The tag and its committed `VERSION` must match exactly.** Preserve previous tags and published versions.
+3. On GitHub, create and publish a normal Release for that tag. `release: published` starts the workflow automatically. Saving a draft, pushing a tag alone, editing an existing Release or marking it as a prerelease does not request automatic production publication.
+4. Open **Actions → Prepare or publish Python package**. Its `build` job checks the release identity, runs kit validation and behavioral tests, builds a source archive and wheel, validates metadata/resources/privacy and the description, then smoke-installs the wheel. A failed check prevents the upload job from proceeding.
+5. After checks pass, the `pypi` job waits at **Review deployments**. Inspect the tag, commit and successful checks, select environment **pypi**, and click **Approve and deploy**. Required reviewer: repository owner `tigusigalpa`. **This confirmation is a human step; agents must not approve or bypass it on your behalf.** For solo maintenance the owner may approve a run they initiated.
+6. GitHub exchanges its OIDC identity for a short-lived PyPI credential and uploads only the same-run validated artifacts. The upload job builds no code. Verify the new version on [PyPI](https://pypi.org/project/ai-kit-python/), compare its file hashes with the run artifacts, and check installation in a fresh environment. The README PyPI badge then follows the published version automatically.
+
+The live `pypi` deployment policy accepts **tags `v*`**, so future versions do not need a new allowlist entry. Branches are excluded. The event guard separately requires a canonical stable tag of the form `vMAJOR.MINOR.PATCH`, the canonical repository, a published non-draft/non-prerelease Release and matching `VERSION`. Tests and your approval remain required for each production run.
+
+For a manual run, choose **Run workflow**, select the versioned tag, set `destination=pypi`, and type the exact version in `version`. Uploads use the same approval gate. `destination=validate` only builds and tests; `testpypi` is an explicit separate registry with its own environment/publisher setup. Prerelease trials can use that manual route. Republishing the same PyPI version fails rather than replacing or silently skipping files.
+
+The Release path takes effect once this workflow is merged into the repository and included in the next release tag. Existing `v1.4.2` stays unchanged. The complete [release procedure](docs/PYPI.md#release-to-pypi-with-owner-approval) includes activation, recovery and configuration verification.
 
 ## Run AI-KIT with Docker
 

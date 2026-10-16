@@ -30,7 +30,7 @@ The root README and Docker Hub Overview are user documentation without a size qu
 
 Follow [PyPI preparation and release](docs/PYPI.md) for every package release. Synchronize VERSION, pyproject metadata, [description](docs/PYPI_DESCRIPTION.md) and README; verify license/resource inclusion and local-file exclusions in both sdist and wheel, build the wheel from sdist, run strict Twine checks and offline fresh-venv smoke. Preserve existing CI matrix/job names. Refresh the image when packaging changes affect it.
 
-Trusted Publishing remains manual and build-only by default. Registry uploads require the matching version/tag, canonical repository and the separately configured registry environment/publisher. Build tests have no OIDC permission; upload jobs consume only validated same-run artifacts. Record local, hosted and registry results separately. No upload, publisher/account setup or Git operation is authorized by preparation alone.
+A published stable GitHub Release starts PyPI preparation; manual dispatch defaults to build-only validation. Uploads require matching VERSION/tag, the canonical repository, a configured environment/publisher and the owner's human approval. Agents must not approve or bypass a pending deployment on the owner's behalf. Keep environment reviewer protections when allowing future `v*` tags; validate canonical stable versions separately. Build tests have no OIDC permission; upload jobs consume only validated same-run artifacts. Record local, hosted and registry results separately. Preparation alone authorizes no upload, account setup or Git operation.
 
 ## Repository maintenance
 
