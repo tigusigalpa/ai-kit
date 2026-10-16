@@ -72,14 +72,14 @@ Docker must be running with Linux-container support.
 docker pull tigusigalpa/ai-kit:1.4.1
 ```
 
-Check the installed version:
+Check the CLI help:
 
 ```sh
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.4.1 --version
+  tigusigalpa/ai-kit:1.4.1 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.

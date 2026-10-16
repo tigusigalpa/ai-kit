@@ -1,13 +1,40 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
+requires = ["setuptools>=77.0.3", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ai-kit"
+name = "ai-kit-python"
 description = "Offline installer and portable instructions that give AI coding agents project memory, stack rules, guardrails, and adaptive model routing."
-readme = "README.md"
+readme = {file = "docs/PYPI_DESCRIPTION.md", content-type = "text/markdown"}
 requires-python = ">=3.10"
+authors = [{name = "Igor Sazonov"}]
+license = "MIT AND Apache-2.0"
+license-files = [
+    "LICENSE",
+    "template/ai-kit/vendor/security-audit/LICENSE",
+    "template/ai-kit/vendor/strix/LICENSE",
+]
+keywords = ["ai-agents", "coding-assistant", "context-engineering", "agent-skills", "project-memory", "developer-tools"]
+classifiers = [
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development",
+]
 dynamic = ["version"]
+
+[project.urls]
+Homepage = "https://github.com/tigusigalpa/ai-kit"
+Documentation = "https://github.com/tigusigalpa/ai-kit#readme"
+Source = "https://github.com/tigusigalpa/ai-kit"
+Issues = "https://github.com/tigusigalpa/ai-kit/issues"
+Changelog = "https://github.com/tigusigalpa/ai-kit/blob/main/CHANGELOG.md"
 
 [project.scripts]
 aikit = "aikit.aikit_cli:main"
@@ -24,4 +51,10 @@ aikit = ["VERSION", "LICENSE", "MANIFEST.in", "pyproject.toml", "Makefile", "Doc
 version = {file = ["VERSION"]}
 
 [tool.setuptools.exclude-package-data]
-aikit = ["AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"]
+aikit = [
+    "AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "auth.json", ".netrc", ".pypirc", ".env", ".env.*",
+    "ai-kit/.metrics/*", "ai-kit/.memory/*", "ai-kit/.upstream-cache/*", "ai-kit/.design/*", "docs/.private/*",
+    "**/.env", "**/.env.*", "**/auth.json", "**/.netrc", "**/.pypirc",
+    "*.pem", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*",
+    "**/*.pem", "**/*.p12", "**/*.pfx", "**/id_rsa*", "**/id_ed25519*",
+]

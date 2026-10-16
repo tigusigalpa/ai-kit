@@ -26,6 +26,12 @@ Before building, synchronize its version/tag, feature summary, release changes, 
 
 The root README and Docker Hub Overview are user documentation without a size quota. Other document and instruction budgets remain scoped. Preparing this file does not itself publish a Docker Hub description, image or Git release; the relevant authorization still applies.
 
+## Python package releases
+
+Follow [PyPI preparation and release](docs/PYPI.md) for every package release. Synchronize VERSION, pyproject metadata, [description](docs/PYPI_DESCRIPTION.md) and README; verify license/resource inclusion and local-file exclusions in both sdist and wheel, build the wheel from sdist, run strict Twine checks and offline fresh-venv smoke. Preserve existing CI matrix/job names. Refresh the image when packaging changes affect it.
+
+Trusted Publishing remains manual and build-only by default. Registry uploads require the matching version/tag, canonical repository and the separately configured registry environment/publisher. Build tests have no OIDC permission; upload jobs consume only validated same-run artifacts. Record local, hosted and registry results separately. No upload, publisher/account setup or Git operation is authorized by preparation alone.
+
 ## Repository maintenance
 
 Before changing remote protection or required CI checks, verify live configuration and emitted names. Local jobs establish neither hosted success nor updated protection. Remote changes, commits, pushes and publication need the relevant user authorization. Private context snapshots require verification before use.
