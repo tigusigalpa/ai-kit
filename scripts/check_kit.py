@@ -30,7 +30,7 @@ def source_files(root: Path):
     for directory, dirs, files in os.walk(root, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded]
         if Path(directory) == root / "ai-kit":
-            dirs[:] = [d for d in dirs if d not in {".metrics", ".memory"}]
+            dirs[:] = [d for d in dirs if d not in {".metrics", ".memory", ".orchestration"}]
         for name in files:
             path = Path(directory) / name
             if path.parent == root and name in LOCAL_MAINTAINER_FILES:
@@ -203,7 +203,8 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "template/ai-kit/router/providers/gemini.json",
                 "templates/gitignore.private", "templates/gitignore.team",
                 "aikit_cli.py", "__init__.py", "MANIFEST.in", "pyproject.toml", "tests/wheel_smoke.py",
-                "scripts/check_distribution.py", "tests/test_distribution.py", "docs/PYPI.md", "docs/PYPI_DESCRIPTION.md",
+                "scripts/check_distribution.py", "tests/test_distribution.py", "scripts/orchestrate.py",
+                "tests/test_orchestration.py", "docs/ORCHESTRATION.md", "docs/PYPI.md", "docs/PYPI_DESCRIPTION.md",
                 "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml",
                 "tests/build_distribution.py", "tests/test_pypi_events.py",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md",

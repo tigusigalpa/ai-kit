@@ -1,12 +1,18 @@
 # AI-KIT changelog
 
+## v1.4.4 (unreleased)
+
+- Added opt-in Codex helpers and a bounded OpenRouter text executor: explicit scope, capped-key preflight, durable reservations, private accounting, source-bound review and billing reconciliation without replay.
+- Preserved installer defaults, presets, settings, helper edits and private/team runtime exclusions; added mocked regressions, detailed [instructions](README.md#optional-orchestration), package/image preparation and [verification](docs/V1_4_4.md).
+
 ## v1.4.3 (2026-10-16)
 
 - Added a live PyPI version badge to README.
-- Added stable GitHub Release preparation with event/version/repository guards and owner-approved PyPI uploads; manual validation stays the default. Future v* tags retain reviewer protections. [Procedure](docs/PYPI.md#release-to-pypi-with-owner-approval). Archived v0.13.0 text intact for the changelog budget.
-- Added fifteen event regression tests. Before release labeling, 32 hosted CI checks and build-only workflow verification passed; kit checks, 368 packaged Linux tests (two platform skips), archive/privacy/Twine/offline wheel checks and Docker smoke also passed. [Release verification](docs/V1_4_3.md).
+- Added stable GitHub Release checks and owner-approved PyPI uploads, event/version/repository guards, future v* tags and manual validation. [Procedure](docs/PYPI.md#release-to-pypi-with-owner-approval). Archived v0.13.0 text intact.
+- Added fifteen event regression tests. Before labeling, 32 hosted checks and build-only verification passed, plus kit, 368 Linux tests (two skips), archive/privacy/Twine/offline wheel and Docker checks. [Verification](docs/V1_4_3.md).
 - Verified 1.4.3 CLI/archive/image identity, offline packaging, Docker smoke, 368 Linux tests and preserved private/team upgrades from v1.4.2.
 - Verified PyPI 1.4.3 publication, matching hosted hashes and fresh registry installation; [receipt](docs/V1_4_3.md#pypi-publication-and-read-back).
+- Published Docker Hub 1.4.3 with verified image/digest and refreshed README/Overview; [receipt](docs/V1_4_3.md#docker-hub-143).
 
 ## v1.4.2 (2026-10-16)
 
@@ -58,12 +64,7 @@
 
 ## v0.12.0 (2026-10-11)
 
-- Benchmark packs accept optional `kit_agents`/`kit_preset` (default codex/minimal), so kit arms install the client's real adapter set and preset instead of a hard-coded arm; both are validated against the installer registry.
-- Benchmark task paths are now probed against the benchmark project instead of the process working directory.
-- Interrupted benchmark runs are resumable: re-running `benchmark run` with the identical pack skips completed units and continues missing ones, and a changed pack is refused against the existing run. Per-unit infrastructure failures are recorded as explicit failed units, so one bad unit neither aborts the run nor hides as an executed attempt; failed units still block savings and cannot be reviewed as correct.
-- The unified `aikit` dispatcher now prefers installed `aikit.scripts.*` package modules over bare script-path imports, avoiding duplicate module objects inside the wheel.
-- The checker document budgets are named constants; the root README budget rises to 22000 bytes (human onboarding that never enters project context), other documents keep 12000.
-- Verified locally (Windows/Python 3.14.6): 252 tests ran, all passed, 1 runtime skip; kit validation returned zero errors and zero warnings; Python 3.10 grammar was verified for the changed sources. Live workers, native client activation and hosted CI remain unverified.
+[Full preserved entry](docs/changelog/v0.12.0.md).
 
 ## v0.11.0 (2026-10-11)
 

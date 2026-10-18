@@ -13,6 +13,7 @@
 /docs/adr/0000-template.md
 /ai-kit/
 /ai-kit/.memory/
+/ai-kit/.orchestration/
 /.ai-kit-install.lock
 /.agents/
 /.claude/

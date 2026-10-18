@@ -59,7 +59,7 @@ def context_smoke(source: Path, base: Path, builder: str | None) -> None:
     excluded = ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", ".env", ".git/config",
                 ".codex/auth.json", ".aws/credentials", "private-helper.py",
                 "docs/.private/brief.txt", "docs/auth.json", "template/.env", "ai-kit/.metrics/tasks.jsonl",
-                "ai-kit/.design/screenshots/private.png", "ai-kit/.memory/session/imports/private.json",
+                "ai-kit/.orchestration/state.json", "ai-kit/.design/screenshots/private.png", "ai-kit/.memory/session/imports/private.json",
                 "scripts/__pycache__/private.pyc")
     for name in included + excluded:
         path = context / name
@@ -135,7 +135,12 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
         if (project / "ai-kit").exists():
             raise RuntimeError("Read-only mount refusal left project writes")
         docker([*runtime_arguments(image, project), "install", "/workspace", "--agent", "codex", "--agent", "claude",
-                "--with-web-design", "--with-context7", "--with-security-audit", "--with-strix", "--apply", "--check"])
+                "--with-web-design", "--with-context7", "--with-security-audit", "--with-strix", "--with-orchestration", "--apply", "--check"])
+        if not (project / ".codex/agents/aikit_worker.toml").is_file():
+            raise RuntimeError("Orchestration helper was not installed")
+        (project / "task.json").write_text('{"schema":1,"id":"image-smoke","instruction":"Summarize","input_files":[]}', encoding="utf-8")
+        docker([*runtime_arguments(image, project, readonly=True), "orchestrate", "run", "/workspace", "--task", "task.json"])
+        docker([*runtime_arguments(image, project, readonly=True), "orchestrate", "status", "/workspace"])
         if preserved != {name: (project / name).read_bytes() for name in preserved}:
             raise RuntimeError("Installation replaced existing project/client documents")
         report = json.loads(docker([*runtime_arguments(image, project, readonly=True), "doctor", "/workspace"]))

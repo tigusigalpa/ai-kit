@@ -25,7 +25,7 @@ Verified 2026-10-14 against the [official Python image manifest](https://github.
 
 [build-requirements.txt](../docker/build-requirements.txt) records exact wheel SHA-256 hashes; pip verifies them with `--require-hashes`. The builder produces a no-runtime-dependency wheel without isolated dependency resolution. Runtime installation uses `--no-index --no-deps`. Git and its Debian dependencies resolve at build time; the base/tool pins do not promise byte-identical rebuilds. A distributable release must record its own resulting immutable image identity. Registry publication requires explicit authorization and remote verification.
 
-`AIKIT_VERSION` must match [VERSION](../VERSION); [the guard](../docker/check_version.py) refuses missing/mismatched labels before building. Tags remain mutable. Follow the [release checklist](../CONTRIBUTING.md#docker-hub-releases) to update the [Overview](DOCKER_HUB_OVERVIEW.md) for every image release. [v1.4.1](V1_4_1.md) records publication; the results below retain their original versions.
+`AIKIT_VERSION` must match [VERSION](../VERSION); [the guard](../docker/check_version.py) refuses missing/mismatched labels before building. Tags remain mutable. Follow the [release checklist](../CONTRIBUTING.md#docker-hub-releases) to update the [Overview](DOCKER_HUB_OVERVIEW.md) for every image release. [v1.4.3](V1_4_3.md#docker-hub-143) records the current image refresh; the results below retain their original versions.
 
 The [.dockerignore](../.dockerignore) is a closed allowlist with later sensitive/cache exclusions. Unknown root files are excluded. Included source directories still require review: a filename denylist cannot detect arbitrary credentials embedded in allowed source. Synthetic context tests verify actual Docker ignore behavior, including hidden source skill directories, without reading personal credentials. The `context-audit` scratch stage is a test export target, never the runtime image. Package-data and MANIFEST include image resources so the installed wheel can pass kit validation.
 
@@ -60,7 +60,7 @@ The supplied batch/v1 Job is a read-only preview, not an apply operation: `insta
 
 ## Verification results
 
-Current release labeling, tagged image and package checks: [v1.4.1](V1_4_1.md#verification). The initial integration results below retain their original date and version.
+Local build: [v1.4.4](V1_4_4.md). Published image: [v1.4.3](V1_4_3.md#docker-hub-143). Earlier results retain their dates/versions.
 
 Verified locally on 2026-10-14:
 

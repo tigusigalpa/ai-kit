@@ -13,7 +13,7 @@ import check_distribution
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIVATE_PROBES = ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "auth.json",
-                  "ai-kit/.memory/session/private.json", "ai-kit/.metrics/private.json",
+                  "ai-kit/.orchestration/state.json", "ai-kit/.memory/session/private.json", "ai-kit/.metrics/private.json",
                   "ai-kit/.upstream-cache/private.md", "ai-kit/.design/private.md",
                   "docs/.private/private.md", "docs/auth.json", "docs/.env.release",
                   "template/.env", "docs/private.pem", "docs/id_ed25519")
@@ -36,7 +36,7 @@ def prepare(destination: Path) -> list[dict]:
         for name in sorted(names):
             shutil.copy2(ROOT / name, source / name)
         ignore = shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "*.egg-info", ".memory", ".metrics",
-                                       ".upstream-cache", ".design", ".private", ".env", ".env.*", "auth.json",
+                                       ".upstream-cache", ".design", ".private", ".orchestration", ".env", ".env.*", "auth.json",
                                        ".aws", ".codex", ".claude", ".secrets", ".netrc", ".pypirc",
                                        "*.pem", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*")
         for name in ("scripts", "tests", "docs", "template", "templates", "integrations", "ai-kit", ".agents", ".github", "docker", "deploy"):

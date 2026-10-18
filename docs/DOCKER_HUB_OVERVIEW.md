@@ -6,7 +6,9 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current image:** `tigusigalpa/ai-kit:1.4.1`
+**Current image:** `tigusigalpa/ai-kit:1.4.3`
+
+**Source preparation:** v1.4.4 adds optional Codex helpers and a budgeted OpenRouter text executor. It is verified locally as `ai-kit:1.4.4`; the published 1.4.3 image and the commands below retain their existing capabilities. No 1.4.4 registry publication is claimed.
 
 **Published platform:** `linux/amd64`
 
@@ -30,56 +32,46 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed in v1.4.1
+## What changed in v1.4.3
 
-### Docker image freshness
+This image refresh includes the 1.4.2 and 1.4.3 CLI, packaging and release improvements since the previous Docker Hub image, 1.4.1.
 
-Installed project instructions now ask agents to assess Docker impact whenever the project has images.
+- **Versioned CLI:** `aikit --version` reports `aikit 1.4.3`; the package version and image label must agree.
+- **Python package availability:** AI-KIT is also published as [`ai-kit-python` on PyPI](https://pypi.org/project/ai-kit-python/1.4.3/). The image already includes the CLI and resources; host Python installation is optional.
+- **Owner-approved package releases:** a stable GitHub Release runs checks and prepares the Python package, then waits for the owner's approval before Trusted Publishing. Future canonical release tags are supported; manual validation remains available. Running this container does not publish a package.
+- **Packaging checks:** isolated builds and regression tests verify archive resources, metadata, licenses, private-file exclusion and fresh installation. Published PyPI wheel/source hashes were checked against the successful workflow artifacts.
+- **Updated documentation:** current package status, release and recovery instructions, a live PyPI badge, and this refreshed Docker guide.
 
-When changes affect an image, the workflow calls for updating build inputs where needed, rebuilding the image and checking its actual behavior. This covers packaged code, instructions, templates, defaults and dependencies.
+### Project privacy and existing features
 
-These are maintenance instructions; rebuilding and publishing still happen through the project's tools and authorization rules.
+Root AI-KIT maintainer `AGENTS.md`, `PROJECT_CONTEXT.md` and `WIKI.md` are excluded from the build context and Python distributions. Their application template counterparts remain included. Private dialogue memory, journals, design output, credentials and personal client configuration also stay outside the image.
 
-### Local maintainer files excluded
+Shared dialogue memory, Web Design, Context7, both security integrations and preservation-aware installation remain available. Existing image versions remain usable.
 
-The following root AI-KIT maintainer documents are excluded from the Docker build context and Python distributions:
+### Image verification
 
-- `AGENTS.md`
-- `PROJECT_CONTEXT.md`
-- `WIKI.md`
+Verified on 2026-10-16: **368 packaged Linux tests, 366 passed and two Windows-only skips**. Docker smoke passed offline/read-only operation, installation and refusal, all optional modules, file preservation, stable reruns, actual context exclusions and SIGTERM. Root maintainer files were absent, template counterparts present, and prepared file hashes matched the installed image.
 
-Their **application template counterparts remain included** and can still be installed into your projects.
-
-Public maintenance documentation now starts at `CONTRIBUTING.md`. Validation supports clean distributions without the optional local maintainer documents.
-
-### Packaging and upgrade verification
-
-The release includes regression coverage for package exclusions, template preservation and public links.
-
-Verification included:
-
-- 339 packaged Linux tests: **337 passed, two Windows-specific skips**.
-- Nine Windows CLI tests.
-- Actual Docker smoke tests, including offline execution, read-only behavior, installation, preservation, stable reruns and SIGTERM.
-- Offline wheel installation into a clean environment.
-- Upgrade fixtures from 1.4.0 in private and team modes.
+The public registry digest, Linux manifest and configuration match the tested build. Pulling by digest and running `aikit --version` and the bundled kit check succeeded. The [published tag](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.3) and immutable pull example below identify this build.
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.4.1
+docker pull tigusigalpa/ai-kit:1.4.3
 ```
 
-Check the CLI help:
+Check the CLI version and help:
 
 ```sh
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.4.3 --version
+
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.4.1 --help
+  tigusigalpa/ai-kit:1.4.3 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -92,7 +84,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.4.1"
+image="tigusigalpa/ai-kit:1.4.3"
 
 runtime=(
   --rm --init
@@ -137,7 +129,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.4.1'
+$image = 'tigusigalpa/ai-kit:1.4.3'
 
 $runtime = @(
     '--rm', '--init',
@@ -292,13 +284,13 @@ To update a project, pull the selected image version, preview installation again
 
 Existing project documents, settings, private dialogue memory and local edits retain the normal preservation rules.
 
-For an immutable reference to this published build:
+For an immutable reference to this verified build:
 
 ```sh
-docker pull tigusigalpa/ai-kit@sha256:d11fc24026f13ad90d3ef7a39a235fa40db29ff022999cff3585e7e707978370
+docker pull tigusigalpa/ai-kit@sha256:0fd8de4396438e6250d29b44d342642bd4593b325eaf9983de2b637a3df12ea6
 ```
 
-Use the explicit version tag or digest. This release did not assign a `latest` tag.
+Use the explicit version tag or digest. Existing 1.4.0/1.4.1 tags were retained; this release did not assign a `latest` tag. Publication receipts added after building are a later documentation snapshot than the bundled files.
 
 ## Documentation and license
 

@@ -82,6 +82,8 @@ ai-kit/.metrics
 ai-kit/.metrics/**
 ai-kit/.memory
 ai-kit/.memory/**
+ai-kit/.orchestration
+ai-kit/.orchestration/**
 ai-kit/.upstream-cache
 ai-kit/.upstream-cache/**
 ai-kit/.design

@@ -54,7 +54,7 @@ def main(argv: list[str] | None = None) -> int:
              + repr(check_distribution.PROJECT_NAME) + ") == " + repr(version)])
         run([aikit, "--version"])
         run([aikit, "route", "implement a feature"])
-        for module in ("learning", "adaptive", "benchmark", "memory"):
+        for module in ("learning", "adaptive", "benchmark", "memory", "orchestrate"):
             run([python, "-c", "from aikit.scripts import " + module])
         run([aikit, "benchmark", "--help"])
         run([aikit, "check"])
@@ -77,7 +77,7 @@ def main(argv: list[str] | None = None) -> int:
         run([aikit, "adapters", "report", "--project", project])
         run([aikit, "context", "select", project])
         audit_project = root / "audit project"
-        run([aikit, "install", audit_project, "--with-security-audit", "--with-strix", "--with-context7", "--with-web-design", "--agent", "codex",
+        run([aikit, "install", audit_project, "--with-security-audit", "--with-strix", "--with-context7", "--with-web-design", "--with-orchestration", "--agent", "codex",
              "--agent", "claude", "--apply", "--check"])
         from_manifest = audit_project / "ai-kit/vendor/security-audit/UPSTREAM.json"
         if not from_manifest.is_file() or not (audit_project / ".agents/skills/security-audit/agents/openai.yaml").is_file():
@@ -95,6 +95,12 @@ def main(argv: list[str] | None = None) -> int:
                 raise RuntimeError("Wheel did not install the Web Design native skill: " + name)
         if not (audit_project / "docs/design/BRIEF.md").is_file():
             raise RuntimeError("Wheel did not initialize the Web Design project documents")
+        if not (audit_project / ".codex/agents/aikit_worker.toml").is_file():
+            raise RuntimeError("Wheel did not install the Codex orchestration helper")
+        task = audit_project / "task.json"
+        task.write_text('{"schema":1,"id":"wheel-smoke","instruction":"Summarize supplied text","input_files":[]}', encoding="utf-8")
+        run([aikit, "orchestrate", "run", audit_project, "--task", "task.json"])
+        run([aikit, "orchestrate", "status", audit_project])
         run([aikit, "context", "select", audit_project, "--workflow", "web-design"])
         run([aikit, "install", audit_project, "--apply", "--check"])
     return 0

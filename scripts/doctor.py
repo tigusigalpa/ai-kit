@@ -130,6 +130,13 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
         elif (date.today() - verified_date).days > PROVIDER_FRESHNESS_DAYS:
             warnings.append(f"Provider {provider.name} verification is older than "
                             f"{PROVIDER_FRESHNESS_DAYS} days")
+    if settings.get("orchestration") is True:
+        try:
+            import orchestrate
+            config = orchestrate.configuration(target)
+            info.append("Optional orchestration installed; API execution " + ("enabled" if config["enabled"] else "disabled"))
+        except (OSError, ValueError, TypeError, KeyError) as exc:
+            errors.append("Invalid orchestration configuration: " + str(exc))
     selection_path = target / "ai-kit" / "router" / "selection.json"
     if selection_path.is_file():
         try:

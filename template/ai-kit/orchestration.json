@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "enabled": false,
+  "model": null,
+  "budget_usd": "1.00",
+  "request_reserve_usd": "0.10",
+  "max_requests": 10,
+  "max_input_bytes": 16000,
+  "max_output_tokens": 1024,
+  "timeout_seconds": 60,
+  "max_price": {"prompt": "1", "completion": "3", "request": "0"}
+}

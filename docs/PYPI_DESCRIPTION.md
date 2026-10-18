@@ -103,3 +103,7 @@ Package releases follow GitHub Release, automated checks and owner approval befo
 - [Issues](https://github.com/tigusigalpa/ai-kit/issues)
 
 AI-KIT's own code and instructions are MIT licensed. Bundled Cloudflare references retain MIT; bundled Strix references retain Apache-2.0. The complete distribution declares `MIT AND Apache-2.0` and includes the corresponding license texts. External runtimes and application dependencies keep their own licenses.
+
+## Optional orchestration (v1.4.4)
+
+Install with `--with-orchestration` to add scoped Codex helpers and disabled-by-default OpenRouter configuration. `aikit orchestrate` previews selected text tasks, executes only on explicit apply, enforces local admission and capped-key preflight, and retains private observed usage/cost, review and billing reconciliation. It never executes model output. Native helper billing is separate; real trials and savings are unverified. See the [complete guide](https://github.com/tigusigalpa/ai-kit#optional-orchestration).

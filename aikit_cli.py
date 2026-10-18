@@ -15,6 +15,7 @@ _COMMANDS = {
     "doctor": ("doctor", None),
     "context": ("context", None),
     "memory": ("memory", None),
+    "orchestrate": ("orchestrate", None),
     "adapters": ("adapters", None),
     "route": ("router", "route"),
     "configure": ("router", "configure"),

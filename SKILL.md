@@ -98,8 +98,10 @@ CI and optional integrations stay outside presets. Read the audit, Strix, Contex
 
 ## Boundaries
 
-AI-KIT writes instructions and configuration; its opt-in benchmark invokes only an explicitly configured protocol worker. No live vendor adapter is shipped. Confirm activation in the actual client. Permission rules, ignore files, and MCP posture reduce risk but are not a security boundary. Hosted CI and real application trials are recorded as unverified unless evidence exists.
+AI-KIT installs instructions and opt-in helpers. The optional text executor requires explicit apply and configured budget/key limits. Benchmark protocol workers and native client activation remain separate. Ignore/permission rules are not a sandbox; live savings require evidence.
 
 ## Use this repository as a skill
 
-This SKILL.md sits at the root of the AI-KIT repository, so the repository itself is the skill and carries its installer, templates, and documents. For Claude Code across all projects, clone it into the skills directory: `git clone https://github.com/tigusigalpa/ai-kit.git ~/.claude/skills/ai-kit`; the commands above then run from that folder. For other assistants, clone the repository next to the project or paste this file as context. Canonical documents: [README](README.md), [Core](template/ai-kit/CORE.md), [adapters and presets](template/ai-kit/ADAPTERS.md), [containers](template/ai-kit/CONTAINERS.md), [routing](template/ai-kit/router/POLICY.md), [contribution rules](CONTRIBUTING.md).
+This repository is the skill. For Claude Code, clone it into `~/.claude/skills/ai-kit`; for other clients, use a reviewed checkout beside the project. Follow [README](README.md), [Core](template/ai-kit/CORE.md), [adapters](template/ai-kit/ADAPTERS.md), [containers](template/ai-kit/CONTAINERS.md), [routing](template/ai-kit/router/POLICY.md) and [contribution rules](CONTRIBUTING.md).
+
+For explicitly requested [optional orchestration](template/ai-kit/ORCHESTRATION.md), preview installation with --with-orchestration; use `aikit orchestrate run|status|review|reconcile`. Native helpers and paid external requests require separate explicit execution; no real calls during integration tests.

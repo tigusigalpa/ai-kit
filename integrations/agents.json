@@ -4,8 +4,8 @@
     "codex": {
       "documentation": {
         "status": "verified",
-        "verified_documentation_date": "2026-10-10",
-        "sources": ["https://learn.chatgpt.com/docs/agent-configuration/agents-md", "https://learn.chatgpt.com/docs/build-skills"],
+        "verified_documentation_date": "2026-10-18",
+        "sources": ["https://learn.chatgpt.com/docs/agent-configuration/agents-md", "https://learn.chatgpt.com/docs/build-skills", "https://learn.chatgpt.com/docs/agent-configuration/subagents"],
         "activation": "unverified"
       },
       "entries": [],

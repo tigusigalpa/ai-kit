@@ -6,6 +6,7 @@ include pyproject.toml Makefile MANIFEST.in
 recursive-include ai-kit *.md
 prune ai-kit/.metrics
 prune ai-kit/.memory
+prune ai-kit/.orchestration
 prune ai-kit/.upstream-cache
 prune ai-kit/.design
 recursive-include .agents *

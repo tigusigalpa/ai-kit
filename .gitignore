@@ -58,3 +58,5 @@ build/
 .DS_Store
 Thumbs.db
 Desktop.ini
+
+/ai-kit/.orchestration/

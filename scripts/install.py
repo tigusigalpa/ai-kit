@@ -26,13 +26,13 @@ PROFILE_MANIFESTS = {
 FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
                      "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
 EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci", "security-audit", "strix",
-          "context7", "web-design"}
+          "context7", "web-design", "orchestration"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
 EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "data-guards": "data_guards",
                        "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci",
                        "security-audit": "security_audit", "strix": "strix", "context7": "context7",
-                       "web-design": "web_design"}
+                       "web-design": "web_design", "orchestration": "orchestration"}
 SECURITY_AUDIT_SKILL = ".agents/skills/security-audit/"
 SECURITY_AUDIT_PACKAGE = "ai-kit/vendor/security-audit/"
 SECURITY_AUDIT_MANIFEST = "integrations/security-audit.json"
@@ -53,8 +53,8 @@ OPTIONAL_SKILLS = {
 # Local documentation workflows share selection/preservation behavior, without an upstream payload.
 OPTIONAL_ENTRY_POINTS = {**{name: (name,) for name in OPTIONAL_SKILLS}, "context7": ("context7-docs",),
                          "web-design": ("web-design", "laravel-blade-ui", "ui-review", "design-extract")}
-OPTIONAL_DOCUMENTS = {"web-design": ("docs/design/BRIEF.md", "docs/design/SYSTEM.md", "docs/design/ACCEPTANCE.md")}
-OPTIONAL_RESOURCES = {"web-design": ("ai-kit/WEB-DESIGN.md", "ai-kit/web-design/LARAVEL.md",
+OPTIONAL_DOCUMENTS = {"orchestration": ("ai-kit/orchestration.json",), "web-design": ("docs/design/BRIEF.md", "docs/design/SYSTEM.md", "docs/design/ACCEPTANCE.md")}
+OPTIONAL_RESOURCES = {"orchestration": ("ai-kit/ORCHESTRATION.md",), "web-design": ("ai-kit/WEB-DESIGN.md", "ai-kit/web-design/LARAVEL.md",
                                     "ai-kit/web-design/LIBRARIES.md", "ai-kit/web-design/TOOLS.md",
                                     "ai-kit/web-design/REVIEW.md")}
 # Presets set every extra they manage on or off; explicit --with-* flags add on top. CI is left
@@ -624,6 +624,8 @@ def scoped_rule_files(root: Path, registry: dict, agents: list[str], modules: li
 
 
 def adapter_owner(relative: str, registry: dict) -> str | None:
+    if relative.startswith(".codex/agents/aikit_") and relative.endswith(".toml"):
+        return "codex"
     entries = registry["entries"]
     skills_copies = registry["skills_copies"]
     optional = registry["optional"]
@@ -1138,6 +1140,22 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             continue
         incoming[relative] = src.read_bytes()
     incoming.update(upstream_files)
+    if "orchestration" in enabled_extras:
+        incoming["AGENTS.md"] += b"\nFor explicitly requested orchestration read [the optional contract](ai-kit/ORCHESTRATION.md).\n"
+        if "codex" in agents:
+            catalogue = read_json(root / "template/ai-kit/router/providers/openai.json", {})
+            for source in sorted((root / "integrations/codex-agents").glob("*.toml")):
+                if is_link(source):
+                    raise ValueError("Linked helper source")
+                text = source.read_text(encoding="utf-8")
+                for role in ("cheap", "work"):
+                    spec = catalogue["roles"][role]
+                    for field in ("model", "effort"):
+                        value = spec[field]
+                        if not isinstance(value, str) or not re.fullmatch(r"[A-Za-z0-9._-]+", value):
+                            raise ValueError("Invalid native helper model/effort")
+                        text = text.replace("__" + role.upper() + "_" + field.upper() + "__", value)
+                incoming[".codex/agents/" + source.name] = text.encode()
     for name, skills in OPTIONAL_ENTRY_POINTS.items():
         if name not in enabled_extras:
             registry_path = "ai-kit/SKILLS.md"
@@ -1330,6 +1348,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                         "remain on disk and may still load. Review/retire the listed files or retain "
                         "their agent selection; accepted files/state will not change.")
     unselected = dict(registry["entries"])
+    unselected.update({".codex/agents/" + p.name: "codex"
+                       for p in (root / "integrations/codex-agents").glob("aikit_*.toml")})
     for agent, items in registry["optional"].items():
         for _, destination in items:
             unselected[destination] = agent
@@ -1527,6 +1547,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="Install the Context7 documentation skill; MCP connection/authentication stays separate")
     parser.add_argument("--preset", choices=list(PRESETS),
                         help="Apply a selection bundle; explicit --mode and --with-* flags take precedence")
+    parser.add_argument("--with-orchestration", action="store_true",
+                        help="Install optional Codex helpers and disabled OpenRouter configuration; no calls")
     parser.add_argument("--with-web-design", action="store_true",
                         help="Install Web Design workflows and project documents; no external tool setup")
     args = parser.parse_args(argv)
@@ -1538,7 +1560,8 @@ def main(argv: list[str] | None = None) -> int:
                                       ("scoped-rules", args.with_scoped_rules),
                                       ("security-audit", args.with_security_audit), ("strix", args.with_strix),
                                       ("context7", args.with_context7),
-                                      ("web-design", args.with_web_design)) if flag]
+                                      ("web-design", args.with_web_design),
+                                      ("orchestration", args.with_orchestration)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
     preset = args.preset
     if args.interactive:
