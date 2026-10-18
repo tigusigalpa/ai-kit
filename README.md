@@ -6,16 +6,28 @@
 
 AI-KIT gives your coding agents persistent project memory, expert stack rules, **Kubernetes-ready** containers, **adaptive model routing**, and native configuration for **11 AI clients**. Add **Cloudflare security-audit** for structured security review and **Strix** for scoped pentesting workflows. One offline installer, zero installer dependencies, changes previewed before you apply them.
 
-**v1.4.4 preparation:** optional [orchestration](#optional-orchestration), native Codex helpers and a budgeted OpenRouter text executor. Package/image builds are local preparation; the published artifacts below remain 1.4.3.
-
-**[v1.4.3](CHANGELOG.md#v143-2026-10-16)** is published on [PyPI as `ai-kit-python` 1.4.3](https://pypi.org/project/ai-kit-python/1.4.3/). The **GitHub Release → checks → your approval → PyPI** workflow completed successfully; published file hashes and installation from PyPI in a fresh environment were verified. This release adds future release-tag support, fifteen event regression tests and a live PyPI version badge. [Publication verification](docs/V1_4_3.md#pypi-publication-and-read-back). The **Docker Hub image 1.4.3** is also published and verified; [image verification](docs/V1_4_3.md#docker-hub-143). Shared dialogue memory and all optional modules remain available.
-
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-3776AB?logo=python&logoColor=white)](#install)
 [![PyPI version](https://img.shields.io/pypi/v/ai-kit-python?logo=pypi&logoColor=white)](https://pypi.org/project/ai-kit-python/)
 [![Dependencies: none](https://img.shields.io/badge/dependencies-none-2ea44f)](scripts/install.py)
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#-works-with-your-ai-clients)
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-ai--kit-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/tigusigalpa/ai-kit)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
+## Get AI-KIT
+
+| 🐳 **[Docker image](https://hub.docker.com/r/tigusigalpa/ai-kit)** | 🐍 **[Python package](https://pypi.org/project/ai-kit-python/)** |
+| --- | --- |
+| **Run AI-KIT in a ready-made container.** Includes Python, Git, the CLI, project templates and optional integration resources. No host Python installation needed. | **Install AI-KIT directly in your Python environment.** The `ai-kit-python` package provides the `aikit` command, project templates and optional integration resources. |
+| **Requires:** Docker with Linux containers. Published platform: `linux/amd64`. | **Requires:** Python 3.10+. No mandatory third-party runtime dependencies. |
+| **Download:** `docker pull tigusigalpa/ai-kit:1.4.3` | **Install or update:** `python -m pip install --upgrade ai-kit-python` |
+| **Try the CLI:** `docker run --rm tigusigalpa/ai-kit:1.4.3 --help` | **Try the CLI:** `aikit --help` |
+| [**Open Docker Hub →**](https://hub.docker.com/r/tigusigalpa/ai-kit) · [Project mount and launch examples](#run-ai-kit-with-docker) | [**Open PyPI →**](https://pypi.org/project/ai-kit-python/) · [Virtual environment and setup guide](#packaged-cli-and-pypi-status) |
+
+Both distributions run the same CLI: preview installation into your project, apply the reviewed changes, then bootstrap your coding agent. **Published release: 1.4.3.**
+
+**v1.4.4 preparation:** optional [orchestration](#optional-orchestration), native Codex helpers and a budgeted OpenRouter text executor. Package/image builds are local preparation; the published artifacts above remain 1.4.3.
+
+**[v1.4.3](CHANGELOG.md#v143-2026-10-16)** is published on [PyPI as `ai-kit-python` 1.4.3](https://pypi.org/project/ai-kit-python/1.4.3/). The **GitHub Release → checks → your approval → PyPI** workflow completed successfully; published file hashes and installation from PyPI in a fresh environment were verified. This release adds future release-tag support, fifteen event regression tests and a live PyPI version badge. [Publication verification](docs/V1_4_3.md#pypi-publication-and-read-back). The **Docker Hub image 1.4.3** is also published and verified; [image verification](docs/V1_4_3.md#docker-hub-143). Shared dialogue memory and all optional modules remain available.
 
 [Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 

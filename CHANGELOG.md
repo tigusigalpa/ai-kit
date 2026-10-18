@@ -2,6 +2,7 @@
 
 ## v1.4.4 (unreleased)
 
+- Added a prominent README comparison of the Docker image and Python package, with registry links, requirements, install commands and setup guides.
 - Added opt-in Codex helpers and a bounded OpenRouter text executor: explicit scope, capped-key preflight, durable reservations, private accounting, source-bound review and billing reconciliation without replay.
 - Preserved installer defaults, presets, settings, helper edits and private/team runtime exclusions; added mocked regressions, detailed [instructions](README.md#optional-orchestration), package/image preparation and [verification](docs/V1_4_4.md).
 
