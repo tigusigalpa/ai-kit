@@ -1,7 +1,13 @@
 # AI-KIT changelog
 
-## v1.4.4 (unreleased)
+## Unreleased
 
+- Added a detailed Windows README guide covering setup, inherited/stale PATH, persistent user PATH, isolated CLI, common errors and project updates.
+
+## v1.4.4 (2026-10-18)
+
+- Verified owner-approved PyPI 1.4.4 publication, matching hosted/archive hashes, fresh online installation and offline wheel smoke; updated README and the [publication record](docs/V1_4_4.md#pypi-publication-status).
+- Published Docker Hub 1.4.4 after source/resource and Docker smoke verification; registry configuration/layers, immutable pull and CLI/kit checks passed. Refreshed README/Overview; [receipt](docs/V1_4_4.md#docker-hub-144). PyPI upload followed separate owner approval.
 - Added a prominent README comparison of the Docker image and Python package, with registry links, requirements, install commands and setup guides.
 - Added opt-in Codex helpers and a bounded OpenRouter text executor: explicit scope, capped-key preflight, durable reservations, private accounting, source-bound review and billing reconciliation without replay.
 - Preserved installer defaults, presets, settings, helper edits and private/team runtime exclusions; added mocked regressions, detailed [instructions](README.md#optional-orchestration), package/image preparation and [verification](docs/V1_4_4.md).

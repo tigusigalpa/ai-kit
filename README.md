@@ -19,17 +19,17 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 | --- | --- |
 | **Run AI-KIT in a ready-made container.** Includes Python, Git, the CLI, project templates and optional integration resources. No host Python installation needed. | **Install AI-KIT directly in your Python environment.** The `ai-kit-python` package provides the `aikit` command, project templates and optional integration resources. |
 | **Requires:** Docker with Linux containers. Published platform: `linux/amd64`. | **Requires:** Python 3.10+. No mandatory third-party runtime dependencies. |
-| **Download:** `docker pull tigusigalpa/ai-kit:1.4.3` | **Install or update:** `python -m pip install --upgrade ai-kit-python` |
-| **Try the CLI:** `docker run --rm tigusigalpa/ai-kit:1.4.3 --help` | **Try the CLI:** `aikit --help` |
-| [**Open Docker Hub →**](https://hub.docker.com/r/tigusigalpa/ai-kit) · [Project mount and launch examples](#run-ai-kit-with-docker) | [**Open PyPI →**](https://pypi.org/project/ai-kit-python/) · [Virtual environment and setup guide](#packaged-cli-and-pypi-status) |
+| **Download:** `docker pull tigusigalpa/ai-kit:1.4.4` | **Install or update:** `python -m pip install --upgrade ai-kit-python` |
+| **Try the CLI:** `docker run --rm tigusigalpa/ai-kit:1.4.4 --help` | **Try the CLI:** `aikit --help` |
+| [**Open Docker Hub →**](https://hub.docker.com/r/tigusigalpa/ai-kit) · [Project mount and launch examples](#run-ai-kit-with-docker) | [**Open PyPI →**](https://pypi.org/project/ai-kit-python/) · [Windows setup and troubleshooting](#windows-installation-and-troubleshooting) |
 
-Both distributions run the same CLI: preview installation into your project, apply the reviewed changes, then bootstrap your coding agent. **Published release: 1.4.3.**
+Both distributions provide the AI-KIT CLI: preview installation into your project, apply the reviewed changes, then bootstrap your coding agent. **Published Docker image: 1.4.4. Published PyPI package: 1.4.4.** Registry files and a fresh installation from PyPI are verified; [publication record](docs/V1_4_4.md#pypi-publication-status).
 
-**v1.4.4 preparation:** optional [orchestration](#optional-orchestration), native Codex helpers and a budgeted OpenRouter text executor. Package/image builds are local preparation; the published artifacts above remain 1.4.3.
+**[v1.4.4](CHANGELOG.md#v144-2026-10-18):** optional [orchestration](#optional-orchestration), native Codex helper configurations and a budgeted OpenRouter text executor are available in source, [the Python package](https://pypi.org/project/ai-kit-python/1.4.4/) and [the Docker image](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.4).
 
-**[v1.4.3](CHANGELOG.md#v143-2026-10-16)** is published on [PyPI as `ai-kit-python` 1.4.3](https://pypi.org/project/ai-kit-python/1.4.3/). The **GitHub Release → checks → your approval → PyPI** workflow completed successfully; published file hashes and installation from PyPI in a fresh environment were verified. This release adds future release-tag support, fifteen event regression tests and a live PyPI version badge. [Publication verification](docs/V1_4_3.md#pypi-publication-and-read-back). The **Docker Hub image 1.4.3** is also published and verified; [image verification](docs/V1_4_3.md#docker-hub-143). Shared dialogue memory and all optional modules remain available.
+**Publication verified on 2026-10-18:** the **GitHub Release → checks → your approval → PyPI** workflow completed successfully. Both PyPI file hashes match the tested workflow artifacts; installation from PyPI in a clean environment, CLI version and the bundled kit check passed. The Docker registry digest and configuration also match the tested image. [PyPI verification](docs/V1_4_4.md#pypi-publication-status) · [Docker verification](docs/V1_4_4.md#docker-hub-144). Earlier published versions remain intact.
 
-[Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
+[Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Windows guide](#windows-installation-and-troubleshooting) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
 ## Features at a glance
 
@@ -213,6 +213,8 @@ Installation stays offline and copies files only. A Strix scan requires a separa
 
 You need Python 3.10 or later; the installer uses only the standard library.
 
+**On Windows:** start with the [PowerShell guide](#windows-installation-and-troubleshooting), including an empty-project walkthrough, PATH repair and common errors.
+
 ~~~sh
 git clone https://github.com/tigusigalpa/ai-kit.git
 cd ai-kit
@@ -242,24 +244,27 @@ Every command also runs through one CLI: `python aikit_cli.py install|doctor|rou
 
 ### Packaged CLI and PyPI status
 
-**AI-KIT 1.4.3 is available on [PyPI](https://pypi.org/project/ai-kit-python/1.4.3/).** Install package `ai-kit-python` and run command `aikit`; Python 3.10+ is required with no mandatory runtime dependencies. The owner-approved GitHub Release workflow published through Trusted Publishing. Both registry files match the tested workflow artifacts; fresh Windows/Python 3.12.14 installation, `aikit --version` and the installed kit check passed. [Publication record](docs/V1_4_3.md#pypi-publication-and-read-back). TestPyPI was not used.
+**AI-KIT 1.4.4 is available on [PyPI](https://pypi.org/project/ai-kit-python/1.4.4/).** Install package `ai-kit-python` and run command `aikit`; Python 3.10+ is required with no mandatory runtime dependencies. The [release workflow](https://github.com/tigusigalpa/ai-kit/actions/runs/39133712478) completed its build and production upload through Trusted Publishing after the owner's approval. Both downloaded registry files match the exact tested workflow artifacts. TestPyPI was not used.
+
+**Installation verified on 2026-10-18:** a clean Windows/Python 3.12.14 environment installed `ai-kit-python==1.4.4` from `https://pypi.org/simple` with the verified wheel hash, dependencies and cache disabled. `aikit --version` returned `aikit 1.4.4`; CLI/orchestration help, orchestration and memory imports, and the installed kit check passed without errors or warnings. The identical downloaded workflow wheel also passed the full offline installation smoke. [Publication and installation record](docs/V1_4_4.md#pypi-publication-status).
 
 Install into a virtual environment:
 
 ~~~powershell
 $cliEnv = Join-Path $env:LOCALAPPDATA 'AI-KIT\venv'
 python -m venv "$cliEnv"
-& "$cliEnv\Scripts\Activate.ps1"
-python -m pip install ai-kit-python
-aikit --version
+& "$cliEnv\Scripts\python.exe" -m pip install ai-kit-python
+& "$cliEnv\Scripts\aikit.exe" --version
 ~~~
+
+These explicit executable paths work without activating the environment or changing PATH. The [Windows guide](#windows-installation-and-troubleshooting) covers both short commands and interpreter-bound launches.
 
 For an isolated CLI, use `pipx install ai-kit-python`. To install a reviewed source checkout instead, run `python -m pip install .` there. Updating uses `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`; installed application instructions are updated separately through preview/apply.
 
 ~~~powershell
-aikit install "C:\Projects\my-app" --agent codex --mode private
-aikit install "C:\Projects\my-app" --agent codex --mode private --apply --check
-aikit doctor "C:\Projects\my-app"
+& "$cliEnv\Scripts\aikit.exe" install "C:\Projects\my-app" --agent codex --mode private
+& "$cliEnv\Scripts\aikit.exe" install "C:\Projects\my-app" --agent codex --mode private --apply --check
+& "$cliEnv\Scripts\aikit.exe" doctor "C:\Projects\my-app"
 ~~~
 
 Then open that application in your client and run its bootstrap workflow. The CLI bundles templates and optional integration resources, uses no runtime third-party dependencies and preserves local documents/conflicts. [PyPI description](docs/PYPI_DESCRIPTION.md) contains portable publication copy; the [release guide](docs/PYPI.md) covers local builds, archive/privacy checks, TestPyPI, OIDC publisher fields and later publication.
@@ -281,11 +286,224 @@ For a manual run, choose **Run workflow**, select the versioned tag, set `destin
 
 The Release path is included in **v1.4.3 and later tagged source**. Existing `v1.4.2` stays unchanged. The complete [release procedure](docs/PYPI.md#release-to-pypi-with-owner-approval) includes activation, recovery and configuration verification. Each stable release still needs your human approval before PyPI upload.
 
+## Windows: installation and troubleshooting
+
+Use **Windows PowerShell 5.1 or PowerShell 7** with Python **3.10+**. The examples below are PowerShell commands: copy the command itself, without a `PS C:\>` prompt. Run them in your application's folder when a target of `.` is shown.
+
+AI-KIT creates project instructions, memory scaffolding and selected client resources. In an empty project, tell your coding agent which application and stack you want during bootstrap; stack detection needs actual project files. A source checkout of AI-KIT and your application are separate folders.
+
+### Windows quick start: an empty project
+
+**1. Check Python and install the package.** Use the same `python` for installation and execution:
+
+~~~powershell
+python --version
+python -m pip --version
+python -m pip install --upgrade ai-kit-python
+python -m aikit.aikit_cli --version
+~~~
+
+The package is **`ai-kit-python`**, its short executable is **`aikit.exe`**, and its module entry point is **`python -m aikit.aikit_cli`**. The module entry point works even when Windows cannot find `aikit.exe` through PATH. A successful installation can still print a Scripts/PATH warning; see [the error guide](#windows-error-guide).
+
+**2. Choose a project directory and preview.** Change `my-app` to your project name. This example uses a directory owned by your Windows user and also works when its path contains spaces:
+
+~~~powershell
+$projectPath = Join-Path $env:USERPROFILE 'Projects\my-app'
+New-Item -ItemType Directory -Path $projectPath -Force | Out-Null
+Set-Location -LiteralPath $projectPath
+python -m aikit.aikit_cli install . --agent codex --mode private
+~~~
+
+Review the proposed files and detected settings. Preview writes nothing to the project. If you already have a folder, set `$projectPath` to that folder instead. A Git repository can be initialized there separately with `git init` when wanted.
+
+**3. Apply the reviewed plan and check it.** Keep the same agent, sharing mode and optional-module flags:
+
+~~~powershell
+python -m aikit.aikit_cli install . --agent codex --mode private --apply --check
+~~~
+
+`--apply` writes the installation; `--check` runs the project doctor afterward. Existing project documents and local edits follow the normal preservation/conflict rules. Private mode selects local instruction visibility; it does not encrypt files.
+
+**4. Bootstrap in the coding client.** Open this application folder in Codex, then send `$ai-kit-bootstrap` in the **Codex chat**. This is a skill invocation in the client, not a PowerShell command. For Claude Code use `--agent claude` in both installer commands and `/ai-kit-bootstrap` in its chat; repeat `--agent` to configure both clients.
+
+Tell the agent what you are building, the intended stack and your constraints. If the client has not discovered the installed skill, confirm that it opened the target project, and ask it to read the target's `AGENTS.md` and `ai-kit/BOOTSTRAP.md`. Installing files and actual client activation are separate steps.
+
+Optional features stay explicit. For example, add `--with-web-design` to **both** preview and apply when you want the [Web Design module](#web-design). The [orchestration module](#optional-orchestration) has its own configuration and limits.
+
+### Windows isolated CLI: no activation required
+
+For a reusable CLI environment outside your application, use a user-owned folder. This avoids installing into a system Python and avoids the `Activate.ps1` execution-policy problem:
+
+~~~powershell
+$cliEnv = Join-Path $env:LOCALAPPDATA 'AI-KIT\venv'
+python -m venv "$cliEnv"
+& "$cliEnv\Scripts\python.exe" -m pip install --upgrade ai-kit-python
+& "$cliEnv\Scripts\aikit.exe" --version
+~~~
+
+From the application folder, preview and then apply separately:
+
+~~~powershell
+& "$cliEnv\Scripts\aikit.exe" install . --agent codex --mode private
+~~~
+
+~~~powershell
+& "$cliEnv\Scripts\aikit.exe" install . --agent codex --mode private --apply --check
+~~~
+
+The leading `&` executes a quoted path in PowerShell. Keep using this environment's executables for its installs and updates. Python documents that [environment activation is optional](https://docs.python.org/3/library/venv.html#how-venvs-work); using explicit paths is enough. A new PowerShell window needs the `$cliEnv` assignment again, while the environment files remain on disk.
+
+### Why installing the package may not enable the aikit command
+
+There are three separate states:
+
+| State | What it means | How to check |
+| --- | --- | --- |
+| Installed Python package | One particular interpreter can import AI-KIT. | `python -m pip show ai-kit-python` and `python -m aikit.aikit_cli --version` |
+| Saved user PATH | A Scripts directory is persisted for your Windows account. | `[Environment]::GetEnvironmentVariable('Path', 'User')` |
+| Current process PATH | This terminal has a current copy of the directories used to find executables. | `$env:Path` and `Get-Command aikit -ErrorAction SilentlyContinue` |
+
+PowerShell processes inherit their environment from their parent. Saving a user PATH entry does not rewrite the environment of every already-running terminal or editor. A new tab or shell opened by an older Windows Terminal, VS Code or Codex process can still inherit its old PATH. See Microsoft's [environment-variable scope and inheritance documentation](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_environment_variables).
+
+This explains the common sequence: pip reports `Successfully installed`, the Scripts directory is saved in user PATH, but the current terminal still reports `CommandNotFoundException`.
+
+### Fix PATH in the current PowerShell window
+
+The quickest route is to keep using `python -m aikit.aikit_cli`. To make the short command available, import missing saved user-PATH entries into **the same PowerShell window that reports the error**, preserving its existing entries:
+
+~~~powershell
+$savedUserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+foreach ($entry in ($savedUserPath -split ';')) {
+    if ([string]::IsNullOrWhiteSpace($entry)) { continue }
+    $expandedEntry = [Environment]::ExpandEnvironmentVariables($entry.Trim().Trim('"'))
+    $processEntries = @($env:Path -split ';' | ForEach-Object { $_.Trim().Trim('"').TrimEnd('\') })
+    if ($processEntries -notcontains $expandedEntry.TrimEnd('\')) {
+        $env:Path = $env:Path.TrimEnd(';') + ';' + $expandedEntry
+    }
+}
+Get-Command aikit -CommandType Application
+aikit --version
+~~~
+
+This refresh changes only the current process. If the Scripts directory has not been saved yet, use the permanent setup below. For future sessions, completely exit and reopen the **hosting terminal/editor application**; opening another tab can preserve the old parent environment. Save ongoing work before restarting an editor. A check in a separately refreshed process establishes that process's PATH, not the state of an older interactive window.
+
+### Add the correct Scripts directory to user PATH permanently
+
+Python layouts vary. For example, a Python 3.14 installation may use `%LOCALAPPDATA%\Python\pythoncore-3.14-64\Scripts`; older installations may use a different directory. Discover the location for the interpreter that already runs AI-KIT, rather than copying another user's path. Python exposes these paths through [sysconfig installation schemes](https://docs.python.org/3/library/sysconfig.html#installation-path-functions).
+
+Run this block with a **regular Python installation** where `python -m aikit.aikit_cli --version` already succeeds. For the isolated CLI above, continue using explicit paths or activate that environment; its Scripts directory should not become a permanent global shortcut.
+
+~~~powershell
+& {
+    $ErrorActionPreference = 'Stop'
+    $inVirtualEnv = python -c "import sys; print(sys.prefix != sys.base_prefix)"
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect the selected Python.' }
+    if ($inVirtualEnv -eq 'True') { throw 'Use the virtual environment executable directly.' }
+
+    $scriptDirectories = @(python -c "import sysconfig; print(sysconfig.get_path('scripts')); print(sysconfig.get_path('scripts', 'nt_user'))")
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot locate Python Scripts directories.' }
+    $aikitScriptsPath = $scriptDirectories |
+        Where-Object { Test-Path -LiteralPath (Join-Path $_ 'aikit.exe') -PathType Leaf } |
+        Select-Object -First 1
+    if (-not $aikitScriptsPath) { throw 'Install ai-kit-python with this Python first.' }
+
+    $userPathValue = [Environment]::GetEnvironmentVariable('Path', 'User')
+    $userEntries = @($userPathValue -split ';' | ForEach-Object {
+        [Environment]::ExpandEnvironmentVariables($_.Trim().Trim('"')).TrimEnd('\')
+    })
+    if ($userEntries -notcontains $aikitScriptsPath.TrimEnd('\')) {
+        $updatedUserPath = if ([string]::IsNullOrWhiteSpace($userPathValue)) {
+            $aikitScriptsPath
+        } else {
+            $userPathValue.TrimEnd(';') + ';' + $aikitScriptsPath
+        }
+        [Environment]::SetEnvironmentVariable('Path', $updatedUserPath, 'User')
+    }
+
+    $processEntries = @($env:Path -split ';' | ForEach-Object { $_.Trim().Trim('"').TrimEnd('\') })
+    if ($processEntries -notcontains $aikitScriptsPath.TrimEnd('\')) {
+        $env:Path = $env:Path.TrimEnd(';') + ';' + $aikitScriptsPath
+    }
+    Get-Command aikit -CommandType Application
+    aikit --version
+}
+~~~
+
+The block preserves existing entries, avoids adding the same directory again and writes only the **User** scope. It also updates the current window. The [.NET API](https://learn.microsoft.com/en-us/dotnet/api/system.environment.setenvironmentvariable) documents persistence by scope. Reopen the hosting application before testing future sessions. Never replace saved user PATH with the whole current process PATH: the latter may contain machine, virtual-environment and temporary entries.
+
+For a graphical setup, search Windows for **Edit environment variables for your account**, edit **Path** under user variables, add the discovered Scripts directory as a new entry and save. Preserve the other entries. Avoid using `setx PATH "$env:PATH;..."` as a repair shortcut.
+
+### Windows error guide
+
+| Message or symptom | Cause to check | Resolution |
+| --- | --- | --- |
+| `The term 'aikit' is not recognized` / `CommandNotFoundException` | The current shell cannot find `aikit.exe`. | Use `python -m aikit.aikit_cli`; then check saved versus process PATH and use the refresh/permanent steps above. |
+| `WARNING: The script aikit.exe is installed in ... which is not on PATH` | Pip installed the package, but the launcher directory is absent from that process's PATH. | Follow the exact directory in the warning or discover it with `sysconfig`. A successful module launch verifies the selected interpreter's package. |
+| The user PATH entry exists, but another tab still cannot find `aikit` | A running parent terminal/editor still has its earlier environment. | Refresh the failing window or restart the hosting application completely. |
+| `No module named aikit` | This `python` differs from the interpreter used by pip, or its environment lacks the package. | Bind installation and execution to the same interpreter as shown below. |
+| `python` is not recognized, or Windows opens the Store | No usable Python is selected, or an application alias resolves instead of the intended interpreter. | Follow the official Windows setup guide and inspect `Get-Command python -All`; an existing interpreter can be invoked by its full path with `&`. |
+| `No module named pip` | The selected Python does not have pip. | For an installation that supports it, run `python -m ensurepip --upgrade`, then `python -m pip --version`. |
+| `Activate.ps1 cannot be loaded because running scripts is disabled` | PowerShell execution policy blocks the activation script. | Use the isolated environment's `python.exe` / `aikit.exe` directly. Activation is optional; no policy change is needed for this route. |
+| `Access is denied`, `PermissionError` or `[WinError 5]` | The install destination or project is not writable, or a file is in use. | Use the user-owned isolated CLI and a writable project folder. Stop processes holding affected files before retrying; running the whole setup as administrator is unnecessary for a user-owned setup. |
+| `No matching distribution found for ai-kit-python` | Unsupported Python, incorrect package spelling or an unavailable/configured package index. | Confirm Python 3.10+, the exact `ai-kit-python` name and the intended index. Check connectivity and the public project page. |
+| TLS, certificate, proxy or timeout error during pip installation | Network settings, certificates or registry connectivity. | Check the system clock and approved proxy/CA configuration; use your organization's supported setup. Retrying PATH changes does not fix a failed download. |
+| `Unexpected token` around a quoted executable path | A quoted path was supplied as a string without PowerShell's call operator. | Use `& "C:\path with spaces\Scripts\aikit.exe" --version`. |
+| `Cannot install an application kit inside the reference distribution` | `.` points at the AI-KIT source folder or a child of it. | Switch to the separate application folder and rerun preview. |
+| `Refusing a linked target root` or another linked-path refusal | A selected root/managed path is a symlink or junction. | Use the real application directory and inspect the reported path; preserve existing files and review layout conflicts. |
+| Preview lists conflicts or `--check` reports a problem | Local customizations or an incomplete/incompatible project installation need review. | Review the candidates and run the doctor. Preserve local edits; `--accept-local` is for an explicitly reviewed merge. |
+| `[notice] A new release of pip is available` | An informational pip update notice. | It does not invalidate a successful AI-KIT installation. Update pip separately when appropriate. |
+
+#### Resolve multiple Python installations
+
+Inspect the interpreter and its package together:
+
+~~~powershell
+Get-Command python -All
+python -c "import sys; print(sys.executable)"
+python -m pip --version
+python -m pip show ai-kit-python
+python -m aikit.aikit_cli --version
+~~~
+
+If these refer to the wrong Python, use the intended executable explicitly. Replace the example path with your actual interpreter path:
+
+~~~powershell
+$pythonExe = 'C:\Path\To\Python\python.exe'
+& $pythonExe -m pip install --upgrade ai-kit-python
+& $pythonExe -m aikit.aikit_cli --version
+& $pythonExe -m aikit.aikit_cli install . --agent codex --mode private
+~~~
+
+This binds pip and the CLI to the same runtime. A short `aikit` command can still select another installation earlier in PATH; `Get-Command aikit -All` shows its candidates. See [Python on Windows](https://docs.python.org/3/using/windows.html) for interpreter/alias setup and [pip's invocation guide](https://pip.pypa.io/en/stable/user_guide/#running-pip) for interpreter-bound installation.
+
+#### Check an installed project and update it later
+
+After applying AI-KIT in the application directory:
+
+~~~powershell
+python -m aikit.aikit_cli doctor .
+~~~
+
+Updating the Python package updates the CLI. To update project instructions too, preview and apply against that application separately:
+
+~~~powershell
+python -m pip install --upgrade ai-kit-python
+python -m aikit.aikit_cli install .
+~~~
+
+After reviewing the preview:
+
+~~~powershell
+python -m aikit.aikit_cli install . --apply --check
+~~~
+
+For the isolated CLI, use `& "$cliEnv\Scripts\python.exe" -m pip ...` and `& "$cliEnv\Scripts\aikit.exe" ...` instead. Existing saved agent/module/sharing selections are retained when omitted; pass selection flags only when intentionally changing them. See [project upgrades](#update-an-application-project) for preservation and conflicts.
+
 ## Run AI-KIT with Docker
 
 **Build AI-KIT once, then run its CLI against a mounted application folder.** The image contains Python, Git, the packaged kit and all optional integration resources. Installation and the ordinary offline helpers need no host Python or network access at runtime. Each command exits when it finishes; there is no server to keep running.
 
-This is an alternative way to run the same installer. Open your coding agent in the application afterward and bootstrap normally. The image supplies neither an AI agent nor a model API adapter. Web Design, Context7, Cloudflare security-audit and Strix remain opt-in instruction modules; their external tools and live execution require separate setup.
+This is an alternative way to run the same installer. Open your coding agent in the application afterward and bootstrap normally. Version 1.4.4 also bundles the optional bounded OpenRouter text executor; live execution requires explicit model/key configuration and authorization. Native Codex helpers require a compatible coding client. Web Design, Context7, Cloudflare security-audit and Strix remain opt-in instruction modules; their external tools and live execution require separate setup.
 
 ### Build the local image
 
@@ -316,9 +534,9 @@ The closed `.dockerignore` includes distribution sources and excludes Git, perso
 
 ### Docker Hub image
 
-The ready-to-publish [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) covers capabilities, release changes and launch examples; maintain it for every image release using the [release checklist](CONTRIBUTING.md#docker-hub-releases).
+The [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) covers capabilities, release changes and launch examples; maintain it for every image release using the [release checklist](CONTRIBUTING.md#docker-hub-releases).
 
-**Published image:** [tigusigalpa/ai-kit:1.4.3](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.3), for `linux/amd64`. The remote digest and configuration match the tested build; [publication record](docs/V1_4_3.md#docker-hub-143). Download with `docker pull tigusigalpa/ai-kit:1.4.3`. To reuse the local build examples, run `docker tag tigusigalpa/ai-kit:1.4.3 ai-kit:1.4.3` and set `$kitVersion` (PowerShell) or `kit_version` (Bash) to `1.4.3`; alternatively use the full image name. Existing version tags are preserved; no `latest` tag or automated registry push is configured.
+**Published image:** [tigusigalpa/ai-kit:1.4.4](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.4), for `linux/amd64`. The remote digest and configuration match the tested build; [publication record](docs/V1_4_4.md#docker-hub-144). Download with `docker pull tigusigalpa/ai-kit:1.4.4`. To reuse the local build examples, run `docker tag tigusigalpa/ai-kit:1.4.4 ai-kit:1.4.4` and set `$kitVersion` (PowerShell) or `kit_version` (Bash) to `1.4.4`; alternatively use the full image name. Existing version tags are preserved; no `latest` tag or automated registry push is configured.
 
 ### Preview and apply on Windows
 
@@ -1064,7 +1282,7 @@ Files are created exclusively. Edited or conflicting existing artifacts are pres
 
 ## Optional orchestration
 
-**Prepared for v1.4.4.** Use native Codex helpers for explicitly delegated local work and the bounded OpenRouter executor for selected text tasks. Both are optional. Installing the module performs no API calls, creates no credentials, changes no global Codex configuration and launches no agents. The published PyPI/Docker Hub 1.4.3 artifacts do not contain this module; use the prepared 1.4.4 wheel, source checkout or local image until that release is published.
+**Available in v1.4.4 source, Python package and Docker image.** Use native Codex helpers for explicitly delegated local work and the bounded OpenRouter executor for selected text tasks. Both are optional. Installing the module performs no API calls, creates no credentials, changes no global Codex configuration and launches no agents. Install `ai-kit-python==1.4.4`, use the published Docker image 1.4.4 or work from a reviewed source checkout.
 
 ### Enable the module in an existing project
 
@@ -1187,7 +1405,7 @@ Exit codes: **0** for preview, completed work or a status report; **1** for refu
 
 ### Python package, Docker and verification boundaries
 
-The prepared 1.4.4 wheel includes the executor, templates, native helper sources and tests, with no new runtime dependencies. Docker must be rebuilt from this revision: use `ai-kit:dev` or `ai-kit:1.4.4` for local verification. Published `tigusigalpa/ai-kit:1.4.3` stays unchanged. Offline preview/status need no network; a future real `run --apply` needs outbound HTTPS and an intentionally supplied key, with a writable project mount. A read-only project mount cannot persist reservations or outputs. No Docker socket or privileged mode is needed.
+The published 1.4.4 wheel includes the executor, templates, native helper sources and tests, with no new runtime dependencies. The published `tigusigalpa/ai-kit:1.4.4` image contains the same executor and integration resources; `ai-kit:dev` and `ai-kit:1.4.4` remain local verification tags. Published `tigusigalpa/ai-kit:1.4.3` stays unchanged. Offline preview/status need no network; a future real `run --apply` needs outbound HTTPS and an intentionally supplied key, with a writable project mount. A read-only project mount cannot persist reservations or outputs. No Docker socket or privileged mode is needed.
 
 Code and tests use synthetic inputs and substituted provider responses. Real API calls, native client activation, account availability and measured savings remain separate. [Maintainer verification and limitations](docs/ORCHESTRATION.md).
 
@@ -1197,7 +1415,7 @@ Code and tests use synthetic inputs and substituted provider responses. Real API
 
 **AI-KIT rules can travel with your API requests.** OpenRouter can provide model access while a client or adapter supplies selected AI-KIT instructions, project facts and task material. This makes the kit useful beyond native coding-client configuration.
 
-**Integration status:** The prepared v1.4.4 source adds the explicit [bounded text executor](#optional-orchestration). Instruction selection, dialogue exports, routing recommendations and opt-in measurements remain available. The general coding-agent/tool-loop architecture below is still a proposal; the shipped executor sends only explicitly selected text and never executes model output. Installing AI-KIT configures no API key or paid call.
+**Integration status:** The v1.4.4 source, Python package and Docker image include the explicit [bounded text executor](#optional-orchestration). Instruction selection, dialogue exports, routing recommendations and opt-in measurements remain available. The general coding-agent/tool-loop architecture below is still a proposal; the shipped executor sends only explicitly selected text and never executes model output. Installing AI-KIT configures no API key or paid call.
 
 ### What can be reused
 

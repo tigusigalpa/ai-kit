@@ -6,9 +6,9 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current image:** `tigusigalpa/ai-kit:1.4.3`
+**Current image:** `tigusigalpa/ai-kit:1.4.4`
 
-**Source preparation:** v1.4.4 adds optional Codex helpers and a budgeted OpenRouter text executor. It is verified locally as `ai-kit:1.4.4`; the published 1.4.3 image and the commands below retain their existing capabilities. No 1.4.4 registry publication is claimed.
+**New in v1.4.4:** optional Codex helper configurations and a bounded OpenRouter text executor, with explicit inputs, request limits, budget reservations, usage accounting and result review. The image is published and verified; real model trials remain separate. PyPI currently provides 1.4.3; Python package 1.4.4 awaits separate owner-approved publication.
 
 **Published platform:** `linux/amd64`
 
@@ -27,20 +27,22 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 | **Optional security workflows** | Pinned Cloudflare security-audit references and Strix workflow skills, installed explicitly and invoked on request. |
 | **Optional Context7 guidance** | Version-aware documentation lookup workflows, with client connection setup handled separately. |
 | **Shared dialogue context** | Local conversation imports, source references, contradiction review and exports for ChatGPT and OpenRouter. |
-| **Routing and evaluation helpers** | Model-routing recommendations, context selection, local metrics and benchmark scaffolding. Actual model execution requires a separately configured runtime. |
+| **Routing and evaluation helpers** | Model-routing recommendations, context selection, local metrics and benchmark scaffolding. |
+| **Optional orchestration** | Native Codex helper configurations and an explicitly invoked OpenRouter text executor with bounded requests, private accounting and review. Native client activation and API credentials are configured separately. |
 | **Docker and Kubernetes guidance** | Container security, lifecycle, image freshness and deployment instructions, plus a Kubernetes installation-preview Job example. |
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed in v1.4.3
+## What changed in v1.4.4
 
-This image refresh includes the 1.4.2 and 1.4.3 CLI, packaging and release improvements since the previous Docker Hub image, 1.4.1.
+This image adds optional orchestration while preserving the existing installer defaults and optional modules.
 
-- **Versioned CLI:** `aikit --version` reports `aikit 1.4.3`; the package version and image label must agree.
-- **Python package availability:** AI-KIT is also published as [`ai-kit-python` on PyPI](https://pypi.org/project/ai-kit-python/1.4.3/). The image already includes the CLI and resources; host Python installation is optional.
-- **Owner-approved package releases:** a stable GitHub Release runs checks and prepares the Python package, then waits for the owner's approval before Trusted Publishing. Future canonical release tags are supported; manual validation remains available. Running this container does not publish a package.
-- **Packaging checks:** isolated builds and regression tests verify archive resources, metadata, licenses, private-file exclusion and fresh installation. Published PyPI wheel/source hashes were checked against the successful workflow artifacts.
-- **Updated documentation:** current package status, release and recovery instructions, a live PyPI badge, and this refreshed Docker guide.
+- **Codex helper configurations:** exploration, implementation and review roles, inheriting parent permissions and requiring explicit delegation in a compatible client.
+- **OpenRouter text executor:** an explicitly selected model and project files, bounded input/output, request count and timeout, and provider price filters. Responses are stored for review and never executed as tools.
+- **Budget and usage accounting:** capped-key preflight, durable reservations, exclusive project locking and actual API cost/token records. Unknown billing blocks further requests; known generations can be reconciled without repeating inference. Native Codex costs remain separate.
+- **Review and preservation:** task/input identity checks, source-bound result acceptance, preserved local configuration and private state excluded from Git, archives and image builds.
+- **Independent opt-in:** `--with-orchestration` adds the module outside installation presets; its project configuration starts disabled. Preview makes no network requests or writes.
+- **Version and documentation:** `aikit --version` reports `aikit 1.4.4`. README includes the orchestration guide and prominent Docker/PyPI setup links. Python package publication remains a separate owner-approved step; the image already includes its CLI and resources.
 
 ### Project privacy and existing features
 
@@ -50,28 +52,28 @@ Shared dialogue memory, Web Design, Context7, both security integrations and pre
 
 ### Image verification
 
-Verified on 2026-10-16: **368 packaged Linux tests, 366 passed and two Windows-only skips**. Docker smoke passed offline/read-only operation, installation and refusal, all optional modules, file preservation, stable reruns, actual context exclusions and SIGTERM. Root maintainer files were absent, template counterparts present, and prepared file hashes matched the installed image.
+Prepared and verified on 2026-10-18: **392 packaged Linux tests, 390 passed and two Windows-only skips**. Native Windows orchestration checks passed 22 of 24 tests with two environment skips. Before publication, 204 packaged resource files matched current sources and Docker smoke was repeated successfully: offline/read-only operation, installation and refusal, all optional modules, file preservation, stable reruns, actual context exclusions and SIGTERM. Root maintainer files were absent and application template counterparts present.
 
-The public registry digest, Linux manifest and configuration match the tested build. Pulling by digest and running `aikit --version` and the bundled kit check succeeded. The [published tag](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.3) and immutable pull example below identify this build.
+The public registry digest, Linux manifest, filesystem layers and configuration match the tested build. Pulling by digest and running `aikit --version` and the bundled kit check succeeded. The [published tag](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.4) and immutable pull example below identify this build. Real model calls, native Codex activation and measured cost savings remain unverified.
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.4.3
+docker pull tigusigalpa/ai-kit:1.4.4
 ```
 
 Check the CLI version and help:
 
 ```sh
-docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.4.3 --version
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.4.4 --version
 
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.4.3 --help
+  tigusigalpa/ai-kit:1.4.4 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -84,7 +86,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.4.3"
+image="tigusigalpa/ai-kit:1.4.4"
 
 runtime=(
   --rm --init
@@ -129,7 +131,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.4.3'
+$image = 'tigusigalpa/ai-kit:1.4.4'
 
 $runtime = @(
     '--rm', '--init',
@@ -177,8 +179,9 @@ Optional modules are selected explicitly and remain independent of installation 
 | `--with-context7` | Context7 documentation lookup guidance and skill entry points. |
 | `--with-security-audit` | Pinned Cloudflare security-audit resources and an explicit entry point. |
 | `--with-strix` | Pinned Strix workflow references and an explicit entry point. |
+| `--with-orchestration` | Codex helper configurations, an orchestration guide and preserved configuration for bounded OpenRouter text tasks. |
 
-For example, in the Bash session above, preview a Codex and Claude Code installation with all four modules:
+For example, in the Bash session above, preview a Codex and Claude Code installation with all five modules:
 
 ```bash
 docker run "${runtime[@]}" \
@@ -188,12 +191,27 @@ docker run "${runtime[@]}" \
   --with-web-design \
   --with-context7 \
   --with-security-audit \
-  --with-strix
+  --with-strix \
+  --with-orchestration
 ```
 
 To apply that selection, use a writable project mount and append `--apply --check`, keeping the same agent and module options.
 
 Installing these modules does not start a security scan, connect an MCP server or invoke a model. External tools and client activation are configured separately.
+
+## Optional orchestration
+
+The module adds `aikit orchestrate run`, `status`, `review` and `reconcile`. Its configuration starts disabled; explicitly choose the model, input files and limits before use.
+
+Explore the commands offline using the Bash runtime options above:
+
+```bash
+docker run "${runtime[@]}" "$image" orchestrate --help
+```
+
+Preview sends no request and writes nothing. An explicitly applied OpenRouter task requires outbound HTTPS, an intentionally supplied `OPENROUTER_API_KEY`, a dedicated capped key and a writable project mount for reservations and outputs. The offline examples in this Overview intentionally retain `--network none`; follow the [orchestration guide](https://github.com/tigusigalpa/ai-kit#optional-orchestration) when configuring an authorized live run.
+
+There are no automatic inference retries, model fallbacks or executable tool responses. Billing uncertainty or reserve overruns stop further requests until resolved. API costs are recorded separately from native Codex usage; end-to-end savings require real measurements. Installing helper configurations does not launch a Codex client or delegate work automatically.
 
 ## Shared context from conversations
 
@@ -287,10 +305,10 @@ Existing project documents, settings, private dialogue memory and local edits re
 For an immutable reference to this verified build:
 
 ```sh
-docker pull tigusigalpa/ai-kit@sha256:0fd8de4396438e6250d29b44d342642bd4593b325eaf9983de2b637a3df12ea6
+docker pull tigusigalpa/ai-kit@sha256:de5eabeb09fe738544b066006848ed3fc3854cdd9e7b7a3ed92f8c8a1fbf173e
 ```
 
-Use the explicit version tag or digest. Existing 1.4.0/1.4.1 tags were retained; this release did not assign a `latest` tag. Publication receipts added after building are a later documentation snapshot than the bundled files.
+Use the explicit version tag or digest. Existing tags were retained, including the verified unchanged 1.4.1 and 1.4.3 digests; this release did not assign a `latest` tag. Publication receipts and descriptive README/Overview updates are a later documentation snapshot than the bundled files; runtime and installed guidance match the tested build.
 
 ## Documentation and license
 
@@ -299,5 +317,6 @@ Use the explicit version tag or digest. Existing 1.4.0/1.4.1 tags were retained;
 - [Web Design](https://github.com/tigusigalpa/ai-kit#web-design)
 - [Shared dialogue context](https://github.com/tigusigalpa/ai-kit#shared-context-from-two-dialogues)
 - [OpenRouter guidance](https://github.com/tigusigalpa/ai-kit#working-with-openrouter)
+- [Optional orchestration](https://github.com/tigusigalpa/ai-kit#optional-orchestration)
 
 AI-KIT is licensed under MIT. Bundled Cloudflare references retain MIT licensing; bundled Strix references retain Apache-2.0 licensing.

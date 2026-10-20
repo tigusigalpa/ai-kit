@@ -2,7 +2,7 @@
 
 ## Role and boundary
 
-The root [Dockerfile](../Dockerfile) packages the existing Python CLI as a one-shot Linux workload. It does not run an agent, model adapter, HTTP service or security scanner. [README usage](../README.md#run-ai-kit-with-docker) covers build, mounts, commands and updates; canonical container policy remains [CONTAINERS](../template/ai-kit/CONTAINERS.md). [ADR 0013](adr/0013-docker-cli-image.md) records the role and tradeoffs.
+The [Dockerfile](../Dockerfile) packages AI-KIT's CLI as a one-shot Linux workload, including the optional bounded OpenRouter text executor in v1.4.4. Live calls require explicit configuration and invocation; native clients and scanners are separate. [README](../README.md#run-ai-kit-with-docker) covers usage; [CONTAINERS](../template/ai-kit/CONTAINERS.md) owns policy. [ADR 0013](adr/0013-docker-cli-image.md) records the initial design.
 
 The wheel is installed at build time, including templates, pinned security resources, optional skills, docs and tests. Runtime uses no checkout mount or package installation. `/workspace` is an application bind mount, outside the reference distribution; `/tmp` is explicitly writable temporary storage. No Docker socket, host credentials, privileged mode or anonymous volume is required. Git supports project evidence/visibility checks; external framework tools and reviewed benchmark workers are outside this image.
 
@@ -25,7 +25,7 @@ Verified 2026-10-14 against the [official Python image manifest](https://github.
 
 [build-requirements.txt](../docker/build-requirements.txt) records exact wheel SHA-256 hashes; pip verifies them with `--require-hashes`. The builder produces a no-runtime-dependency wheel without isolated dependency resolution. Runtime installation uses `--no-index --no-deps`. Git and its Debian dependencies resolve at build time; the base/tool pins do not promise byte-identical rebuilds. A distributable release must record its own resulting immutable image identity. Registry publication requires explicit authorization and remote verification.
 
-`AIKIT_VERSION` must match [VERSION](../VERSION); [the guard](../docker/check_version.py) refuses missing/mismatched labels before building. Tags remain mutable. Follow the [release checklist](../CONTRIBUTING.md#docker-hub-releases) to update the [Overview](DOCKER_HUB_OVERVIEW.md) for every image release. [v1.4.3](V1_4_3.md#docker-hub-143) records the current image refresh; the results below retain their original versions.
+`AIKIT_VERSION` must match [VERSION](../VERSION); [the guard](../docker/check_version.py) refuses missing/mismatched labels before building. Tags remain mutable. Follow the [release checklist](../CONTRIBUTING.md#docker-hub-releases) to update the [Overview](DOCKER_HUB_OVERVIEW.md) for every image release. [v1.4.4](V1_4_4.md#docker-hub-144) records the current image publication; the results below retain their original versions.
 
 The [.dockerignore](../.dockerignore) is a closed allowlist with later sensitive/cache exclusions. Unknown root files are excluded. Included source directories still require review: a filename denylist cannot detect arbitrary credentials embedded in allowed source. Synthetic context tests verify actual Docker ignore behavior, including hidden source skill directories, without reading personal credentials. The `context-audit` scratch stage is a test export target, never the runtime image. Package-data and MANIFEST include image resources so the installed wheel can pass kit validation.
 
@@ -48,7 +48,7 @@ Assess image impact on every maintenance task, including changes outside Dockerf
 5. Validate the [Job](../deploy/k8s/install-preview-job.yaml) against the target Kubernetes schema. Cluster dry-run and startup require a separately verified cluster context and existing PVC. No cluster deployment is part of image integration.
 6. Inspect the project test resource inventory after successful or failed runs. Measure owned volumes/cache without double-counting builder storage. Remove only eligible disposable resources when the canonical combined size is strictly above 10,000,000,000 bytes; a shared builder's records require ownership evidence. Never use unscoped system/volume/builder pruning.
 
-[docker_smoke.py](../tests/docker_smoke.py) checks non-root execution, matching version/label, no service/anonymous-volume contract, offline read-only help/route/check, a project path with spaces, read-only preview and refusal, installation of all four opt-in modules, preserved project/client documents, doctor, design context selection, stable rerun and SIGTERM in interactive preview. It removes only its own labeled temporary signal container; ordinary commands use `--rm`. It creates no Docker volumes. Linux callers forward a non-root host UID/GID for bind ownership; Windows uses the image default. Unit tests cover the version guard and safe command construction without requiring Docker.
+[docker_smoke.py](../tests/docker_smoke.py) checks non-root execution, matching version/label, no service/anonymous-volume contract, offline read-only help/route/check, a project path with spaces, read-only preview and refusal, all five opt-in modules, orchestration preview/status, preserved project/client documents, doctor, design context selection, stable rerun and SIGTERM in interactive preview. It removes only its own labeled temporary signal container; ordinary commands use `--rm`. It creates no Docker volumes. Linux callers forward a non-root host UID/GID for bind ownership; Windows uses the image default. Unit tests cover the version guard and safe command construction without requiring Docker.
 
 The new `Docker CLI` CI job builds and smoke-tests locally on Ubuntu. Existing validation/wheel check names are unchanged. Hosted execution and branch-protection changes need their own evidence/authorization.
 
@@ -60,7 +60,7 @@ The supplied batch/v1 Job is a read-only preview, not an apply operation: `insta
 
 ## Verification results
 
-Local build: [v1.4.4](V1_4_4.md). Published image: [v1.4.3](V1_4_3.md#docker-hub-143). Earlier results retain their dates/versions.
+Local build and published image: [v1.4.4](V1_4_4.md#docker-hub-144). Earlier results retain their dates/versions.
 
 Verified locally on 2026-10-14:
 
