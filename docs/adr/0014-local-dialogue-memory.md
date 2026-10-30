@@ -19,4 +19,4 @@ Export a quoted Markdown reference for ChatGPT and a user-message fragment for O
 
 The workflow is reproducible without an account connection, and both clients can receive the same reference state. It requires human semantic review; arbitrary prose conflicts cannot be reliably inferred by a deterministic parser. Large or unsupported exports refuse explicitly. Files are not a hardened concurrent sandbox or a transactional multi-file database.
 
-[Contract and tests](../DIALOGUE_MEMORY.md) define supported schemas, omissions, privacy, byte limits and recovery. [README](../../README.md#shared-context-from-two-dialogues) gives the import/review/export steps. Native upload/API execution and synchronization need their own implementation and authorization.
+[Contract and tests](../DIALOGUE_MEMORY.md) define supported schemas, omissions, privacy, byte limits and recovery. [README](../guide/DIALOGUE_MEMORY.md) gives the import/review/export steps. Native upload/API execution and synchronization need their own implementation and authorization.

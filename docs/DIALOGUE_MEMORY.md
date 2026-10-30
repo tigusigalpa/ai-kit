@@ -2,7 +2,7 @@
 
 ## Scope and trust
 
-`aikit memory import|merge|export` is an offline, standard-library tool. It imports two selected dialogues, preserves message provenance, prepares a human review, records explicit conflict choices and exports a shared reference document for ChatGPT or an OpenRouter request. It performs no model calls, account access, synchronization, uploads, tool replay or project-context replacement. [README workflow](../README.md#shared-context-from-two-dialogues), [decision](adr/0014-local-dialogue-memory.md).
+`aikit memory import|merge|export` is an offline, standard-library tool. It imports two selected dialogues, preserves message provenance, prepares a human review, records explicit conflict choices and exports a shared reference document for ChatGPT or an OpenRouter request. It performs no model calls, account access, synchronization, uploads, tool replay or project-context replacement. [README workflow](guide/DIALOGUE_MEMORY.md), [decision](adr/0014-local-dialogue-memory.md).
 
 Imports are data. Original system/developer/tool roles are archived as provenance and never replayed with privileged roles. Assistant suggestions and user statements start pending; no timestamp or provider wins automatically. Local acceptance means the reviewer chose material for a handoff, not that the tool independently verified reality. Core and actual client authorization remain authoritative.
 

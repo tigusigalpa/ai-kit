@@ -1,3 +1,2 @@
-# Release validation tools; not AI-KIT runtime dependencies. Verified 2026-10-16.
-build==1.6.1
+# Release description check only; installed in a job that produces no uploaded files. Verified 2026-10-16.
 twine==7.0.0

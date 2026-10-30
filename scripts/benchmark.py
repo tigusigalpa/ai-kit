@@ -442,7 +442,7 @@ def review(run: Path, review_file: Path, *, apply: bool = False) -> dict:
         changes.append((path, path.read_bytes(), json_bytes(result)))
     if apply:
         lock = install.safe_path(run, "review.lock")
-        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        descriptor = install.exclusive_lock(lock)
         try:
             os.close(descriptor)
             if any(path.read_bytes() != old for path, old, _ in changes):
@@ -483,7 +483,7 @@ def export_records(run: Path, project: Path, *, apply: bool = False) -> dict:
     if apply and count:
         lock = install.safe_path(project, metrics.LOCK)
         lock.parent.mkdir(parents=True, exist_ok=True)
-        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        descriptor = install.exclusive_lock(lock)
         try:
             os.close(descriptor)
             rows, count = merged()

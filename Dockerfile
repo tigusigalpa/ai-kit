@@ -1,4 +1,5 @@
-# CLI runtime. Build with --build-arg AIKIT_VERSION=<VERSION file value>.
+# CLI runtime. Build from a clean LF checkout with --build-arg AIKIT_VERSION=<VERSION file value>
+# and --build-arg AIKIT_REVISION=<full source commit>.
 FROM scratch AS context-audit
 COPY . /
 
@@ -18,11 +19,13 @@ RUN python -m pip wheel . --no-index --no-deps --no-build-isolation --wheel-dir 
 
 FROM python:3.13.16-slim-bookworm@sha256:a1165e272e578941b84abc79e4ab38a0305cd12803a5c4247979ac7655f4d641 AS runtime
 ARG AIKIT_VERSION
+ARG AIKIT_REVISION=unknown
 LABEL org.opencontainers.image.title="AI-KIT CLI" \
       org.opencontainers.image.description="Offline AI-KIT instructions, installer and project helpers" \
       org.opencontainers.image.source="https://github.com/tigusigalpa/ai-kit" \
-      org.opencontainers.image.licenses="MIT" \
-      org.opencontainers.image.version="${AIKIT_VERSION}"
+      org.opencontainers.image.licenses="MIT AND Apache-2.0" \
+      org.opencontainers.image.version="${AIKIT_VERSION}" \
+      org.opencontainers.image.revision="${AIKIT_REVISION}"
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONNOUSERSITE=1 \

@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+import signal
 import sys
+import threading
 
 ROOT = Path(__file__).resolve().parent
 __version__ = (ROOT / "VERSION").read_text(encoding="utf-8").strip()
@@ -38,7 +40,15 @@ def _load(module_name: str):
         return __import__(module_name)
 
 
+def _terminate(signum, frame) -> None:
+    """Exit like the default SIGTERM action so cleanup and atomic-write rollback still run."""
+    raise SystemExit(128 + signum)
+
+
 def main(argv: list[str] | None = None) -> int:
+    # As container PID 1 (Kubernetes adds no init), an unhandled SIGTERM would be ignored until SIGKILL.
+    if threading.current_thread() is threading.main_thread():
+        signal.signal(signal.SIGTERM, _terminate)
     parser = argparse.ArgumentParser(prog="aikit", description=__doc__)
     parser.add_argument("--version", action="version", version="%(prog)s " + __version__)
     parser.add_argument("command", nargs="?", choices=sorted(_COMMANDS),

@@ -73,6 +73,10 @@ class SecurityAuditTests(unittest.TestCase):
         self.assertEqual(manifest["revision"], "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8")
         self.assertIn(b"Cloudflare", self.package_path("LICENSE").read_bytes())
         for name, record in manifest["files"].items():
+            if install.UPSTREAM_TEST_FILE.search(name):
+                # Upstream tests are verified at source but never installed into projects.
+                self.assertFalse(self.package_path(name).exists())
+                continue
             self.assertEqual(install.digest(self.package_path(name).read_bytes()), record["sha256"])
         self.assertFalse(any(self.target.rglob("findings.json")))
         self.assertFalse(any(self.target.rglob("coverage-ledger.json")))

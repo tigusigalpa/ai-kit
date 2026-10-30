@@ -1,8 +1,25 @@
 # AI-KIT changelog
 
-## Unreleased
+## v1.4.6 (2026-10-30)
 
-- Added README installer flag tables, defaults, persistence and command examples.
+For installed projects:
+
+- Kit text is LF in every distribution (`* text=auto eol=lf`), so Git checkouts, the PyPI wheel and the Docker image carry identical bytes. Upgrades treat line-ending-only differences as unchanged: earlier CRLF installations neither rewrite nor conflict.
+- The `--with-ci` workflow validates committed AI-KIT files with pinned actions; it no longer clones an unpinned AI-KIT or reinstalls on every push. The private-mode warning now explains that team mode keeps the files to check.
+- New `docker_cleanup` setting and `--docker-cleanup maximum|keep-cache` flag. `maximum` (default) keeps the v1.4.5 policy; `keep-cache` still removes task-owned resources but keeps the dedicated project builder cache and reclaims host RAM/disk only on request or pressure. CONTAINERS regains its full Kubernetes wording.
+- Fresh installs no longer refuse projects with linked manifests or unusual module directory names; secondary stacks (Rust, .NET, Java, Infra) fill missing commands instead of replacing pytest/npm/Go commands; `./mvnw`/`./gradlew` wrappers are no longer auto-allowed.
+- `--with-security-audit` stops installing upstream `*.test.cjs` files that host test runners collected (still verified in the manifest); remove old copies from `ai-kit/vendor/security-audit/` manually. Delegated audit prompts must mark target content as untrusted data.
+- Doctor: `--fix` previews and `--fix --apply` writes; non-UTF-8 Markdown, environment/build folders and private dialogue/design/orchestration data no longer crash, flood or leak into reports; a malformed project.json is a warning. `install --apply --check` reports a doctor failure after successful writes accurately.
+- Memory imports keep labels such as Turkish "İ" as notes instead of aborting; `context snapshot` backs up project.json and keeps non-ASCII text readable; writer locks explain recovery; atomic writes fsync.
+
+CLI, packaging and image:
+
+- The CLI handles SIGTERM as PID 1 (Kubernetes Jobs, `docker run` without `--init`); smoke tests cover both. The image label declares `MIT AND Apache-2.0` and records the source revision; images are built from a clean LF export.
+- The PyPI build job installs only hash-pinned tools (now including `build` and its Python 3.10 `tomli` dependency), records artifact SHA-256 digests, and leaves twine to a separate job; upload jobs verify the digests before publishing. A workflow-security test guards pinned actions, token scope and these steps.
+- README is a 23 KB landing page with install paths (PyPI `ai-kit-python`, the image, a checkout), visible defaults (Russian chat, owner conventions) and honest feature wording; the reference material moved to [user guides](docs/guide/README.md). README installer flag tables, defaults, persistence and command examples now live in the [flag reference](docs/guide/INSTALLER_FLAGS.md).
+- Tracked CLAUDE.md, KIMI.md and MANUS.md point to CONTRIBUTING.md and work in a clean clone; a local ignored CLAUDE.local.md can import the private AGENTS.md. The conditional document budget rises to 24000 bytes; always-loaded budgets stay 2500/3000.
+- README features the [documentation site](https://tigusigalpa.github.io/ai-kit-docs/) (command configurator, CLI installation, flag reference) in a highlighted block, badge and navigation link; the guides index, PyPI description, Docker Hub Overview, SKILL.md and the PyPI `Documentation` project URL point to it.
+- [Decision](docs/adr/0016-consistent-distributions-and-safer-defaults.md), [release record](docs/V1_4_6.md).
 
 ## v1.4.5 (2026-10-30)
 
@@ -48,7 +65,7 @@
 
 - Published `tigusigalpa/ai-kit:1.4.0` to Docker Hub at the owner's request. Remote digest, linux/amd64 platform, version label and non-root entrypoint were read back and matched the prepared image; [publication record](docs/V1_4_0.md#docker-hub-publication). No `latest` tag was assigned.
 - Prepared v1.4.0 for the Docker CLI and local dialogue memory. VERSION, CLI/wheel metadata, image label and release pointers use the same version; [release checks and Docker Hub handoff](docs/V1_4_0.md). Registry publication and Git tagging remain separate.
-- Added offline `aikit memory import|merge|export`: three dialogue formats, selected ChatGPT branches, source-bound human review, explicit contradictions and ChatGPT/OpenRouter reference exports. Preserves immutable artifacts, refuses unreviewed normal exports and protects private memory across upgrades/builds. Added tests and detailed [workflow](README.md#shared-context-from-two-dialogues)/[contract](docs/DIALOGUE_MEMORY.md). Automatic sync and API execution remain separate. Archived v1.1.0 history without dropping its text.
+- Added offline `aikit memory import|merge|export`: three dialogue formats, selected ChatGPT branches, source-bound human review, explicit contradictions and ChatGPT/OpenRouter reference exports. Preserves immutable artifacts, refuses unreviewed normal exports and protects private memory across upgrades/builds. Added tests and detailed [workflow](docs/guide/DIALOGUE_MEMORY.md)/[contract](docs/DIALOGUE_MEMORY.md). Automatic sync and API execution remain separate. Archived v1.1.0 history without dropping its text.
 - Before release labeling, dialogue-memory verification passed: 336 Windows tests (329 passed/seven environment skips), 336 packaged Linux tests (334 passed/two skips), clean kit validation, offline wheel and private-package exclusion, README conflict-resolution flow and Docker smoke. [Coverage and limits](docs/DIALOGUE_MEMORY.md#verification).
 - Added standalone non-root Docker CLI, pinned build inputs, offline wheel resources, application mounts, Kubernetes preview Job, smoke tests, CI and [usage/results](docs/DOCKER.md). Earlier Docker-only Windows and packaged Linux runs passed 309 tests (307 passed/two skips each); actual image, preservation, signals, context exclusions, wheel and schema checks passed.
 - After labeling: nine CLI tests, 336 packaged Linux tests (334 passed/two Windows-only skips), clean kit validation, isolated Windows wheel/fresh-venv smoke and private-memory exclusion passed. The actual linux/amd64 image passed Docker smoke. Tracked 1.3.0 upgrades in private/team modes preserved data and pin identities, with explicit review of a local skill conflict; reruns stayed stable. [Release evidence](docs/V1_4_0.md#verification).
@@ -57,7 +74,7 @@
 
 - Prepared v1.3.0 for optional Web Design and the expanded README guide. The 304-test behavioral discovery below preceded release labeling; publication/tagging remain separate. [Release checks](docs/WEB_DESIGN.md#release-labeling).
 - After labeling: eight CLI tests, version/wheel metadata 1.3.0, clean kit checks and offline fresh-venv wheel smoke passed. The pre-label 1.2.0 upgrade preserved facts, settings, local design/skill edits, MCP configuration and both security pins; rerun stayed stable.
-- Added optional Web Design: --with-web-design installs four short skills, conditional Blade/library/tool/review guides and created-once project design documents. Added scoped context workflows, source/Claude lifecycle and preservation tests; installation remains offline. [Guide](README.md#web-design), [integration record](docs/WEB_DESIGN.md).
+- Added optional Web Design: --with-web-design installs four short skills, conditional Blade/library/tool/review guides and created-once project design documents. Added scoped context workflows, source/Claude lifecycle and preservation tests; installation remains offline. [Guide](docs/guide/WEB_DESIGN.md), [integration record](docs/WEB_DESIGN.md).
 - Removed the root README size quota and added extensive reference-to-site instructions for Laravel, Tailwind, Bootstrap, Alpine/Livewire, daisyUI, Flowbite, Flux, TypeUI and SkillUI. Existing instruction budgets remain scoped; external setup and real application checks stay separate.
 - Verified on Windows/Python 3.12.14: 304 tests (300 passed/four runtime skips), clean kit/skill checks, all-client private/team visibility, preserved tracked 1.2.0 upgrade and fresh-venv wheel smoke. Live tools/sites remain unverified. Archived v0.6.4 history without losing its text; [details](docs/WEB_DESIGN.md#verification).
 

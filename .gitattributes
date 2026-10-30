@@ -1,3 +1,5 @@
+# Every checkout, wheel and image carries LF text, so installed-file hashes match across platforms.
+* text=auto eol=lf
 # Pinned third-party bytes must survive Windows checkout without newline conversion.
 template/ai-kit/vendor/security-audit/** -text
 template/ai-kit/vendor/strix/** -text

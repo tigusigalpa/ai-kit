@@ -243,7 +243,7 @@ def restore_selection(project: Path, identifier: str, *, apply: bool = False) ->
     if apply and current != restored:
         lock = install.safe_path(project, metrics.LOCK)
         lock.parent.mkdir(parents=True, exist_ok=True)
-        descriptor = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        descriptor = install.exclusive_lock(lock)
         try:
             os.close(descriptor)
             backup = install.safe_path(project, "ai-kit/.metrics/proposals/selection-" + install.digest(current) + ".json")

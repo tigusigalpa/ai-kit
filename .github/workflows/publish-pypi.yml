@@ -31,6 +31,8 @@ jobs:
       (github.event_name == 'release' && github.event.action == 'published' &&
        !github.event.release.draft && !github.event.release.prerelease)
     runs-on: ubuntu-latest
+    outputs:
+      sha256: ${{ steps.digests.outputs.sha256 }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -47,17 +49,24 @@ jobs:
         run: |
           python scripts/check_kit.py
           python -m unittest discover -s tests -v
-      - name: Install reviewed build and validation tools
-        run: |
-          python -m pip install --require-hashes -r docker/build-requirements.txt
-          python -m pip install -r docker/pypi-requirements.txt
+      # Only hash-pinned tools run in the job that produces the published files.
+      - name: Install hash-pinned build tools
+        run: python -m pip install --require-hashes -r docker/build-requirements.txt
       - name: Build source archive and wheel from that source archive
         run: python tests/build_distribution.py "${{ runner.temp }}/pypi-dist"
-      - name: Validate archives, description and installed CLI
+      - name: Validate archives and installed CLI
         run: |
           python scripts/check_distribution.py archives "${{ runner.temp }}/pypi-dist"
-          python -m twine check --strict "${{ runner.temp }}/pypi-dist/*"
           python tests/wheel_smoke.py "${{ runner.temp }}/pypi-dist"
+      - name: Record artifact digests for the upload jobs
+        id: digests
+        working-directory: ${{ runner.temp }}/pypi-dist
+        run: |
+          {
+            echo 'sha256<<AIKIT_SHA256_END'
+            sha256sum -- *
+            echo 'AIKIT_SHA256_END'
+          } >> "$GITHUB_OUTPUT"
       - name: Retain the exact validated distributions
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2, verified 2026-10-16
         with:
@@ -66,10 +75,28 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  testpypi:
+  # twine and its unpinned dependencies run apart from the build; upload jobs re-verify digests.
+  twine-check:
     needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.13'
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2, verified 2026-10-16
+        with:
+          name: python-distributions
+          path: dist/
+      - name: Check package descriptions with twine
+        run: |
+          python -m pip install twine==7.0.0
+          python -m twine check --strict dist/*
+
+  testpypi:
+    needs: [build, twine-check]
     if: >-
-      needs.build.result == 'success' && github.event_name == 'workflow_dispatch' &&
+      needs.build.result == 'success' && needs.twine-check.result == 'success' &&
+      github.event_name == 'workflow_dispatch' &&
       inputs.destination == 'testpypi' && github.repository == 'tigusigalpa/ai-kit' &&
       startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -83,6 +110,14 @@ jobs:
         with:
           name: python-distributions
           path: dist/
+      - name: Verify artifacts match the build job digests
+        working-directory: dist
+        env:
+          EXPECTED_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: |
+          printf '%s\n' "$EXPECTED_SHA256" > ../SHA256SUMS
+          test "$(ls -1 | wc -l)" -eq "$(grep -c . ../SHA256SUMS)"
+          sha256sum --check --strict ../SHA256SUMS
       - name: Upload only the validated artifacts to TestPyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2, verified 2026-10-16
         with:
@@ -92,9 +127,9 @@ jobs:
           skip-existing: false
 
   pypi:
-    needs: build
+    needs: [build, twine-check]
     if: >-
-      needs.build.result == 'success' &&
+      needs.build.result == 'success' && needs.twine-check.result == 'success' &&
       (github.event_name == 'release' || inputs.destination == 'pypi') &&
       github.repository == 'tigusigalpa/ai-kit' && startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
@@ -108,6 +143,14 @@ jobs:
         with:
           name: python-distributions
           path: dist/
+      - name: Verify artifacts match the build job digests
+        working-directory: dist
+        env:
+          EXPECTED_SHA256: ${{ needs.build.outputs.sha256 }}
+        run: |
+          printf '%s\n' "$EXPECTED_SHA256" > ../SHA256SUMS
+          test "$(ls -1 | wc -l)" -eq "$(grep -c . ../SHA256SUMS)"
+          sha256sum --check --strict ../SHA256SUMS
       - name: Upload only the validated artifacts to PyPI
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2, verified 2026-10-16
         with:

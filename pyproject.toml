@@ -31,7 +31,7 @@ dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/tigusigalpa/ai-kit"
-Documentation = "https://github.com/tigusigalpa/ai-kit#readme"
+Documentation = "https://tigusigalpa.github.io/ai-kit-docs/"
 Source = "https://github.com/tigusigalpa/ai-kit"
 Issues = "https://github.com/tigusigalpa/ai-kit/issues"
 Changelog = "https://github.com/tigusigalpa/ai-kit/blob/main/CHANGELOG.md"
@@ -52,7 +52,7 @@ version = {file = ["VERSION"]}
 
 [tool.setuptools.exclude-package-data]
 aikit = [
-    "AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "auth.json", ".netrc", ".pypirc", ".env", ".env.*",
+    "AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "CLAUDE.local.md", "CLAUDE.md", "KIMI.md", "MANUS.md", "auth.json", ".netrc", ".pypirc", ".env", ".env.*",
     "ai-kit/.metrics/*", "ai-kit/.memory/*", "ai-kit/.orchestration/*", "ai-kit/.upstream-cache/*", "ai-kit/.design/*", "docs/.private/*",
     "**/.env", "**/.env.*", "**/auth.json", "**/.netrc", "**/.pypirc",
     "*.pem", "*.p12", "*.pfx", "id_rsa*", "id_ed25519*",

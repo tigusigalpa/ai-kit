@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
 import re
 import sys
+import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import install
@@ -40,7 +42,7 @@ def snapshot_plan(target: Path) -> dict:
     facts = install.detect_facts(target)
     updated = dict(value)
     updated["evidence"] = install.project_fact_evidence(target, facts)
-    data = (json.dumps(updated, indent=2) + "\n").encode("utf-8")
+    data = (json.dumps(updated, indent=2, ensure_ascii=False) + "\n").encode("utf-8")
     old = path.read_bytes()
     return {"target": str(target), "path": PROJECT_FACTS, "old": old, "data": data,
             "changed": old != data, "detected_modules": [module["path"] for module in facts["modules"]]}
@@ -54,6 +56,10 @@ def apply_snapshot(plan: dict) -> bool:
         raise ValueError("project.json changed after preview")
     if not plan["changed"]:
         return True
+    # project.json is project-owned: keep the previous bytes, as installer upgrades do.
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
+    install.atomic_write(install.safe_path(target, "ai-kit/.upstream-cache/backups/" + stamp + "/" + plan["path"]),
+                         plan["old"])
     install.atomic_write(path, plan["data"])
     return True
 

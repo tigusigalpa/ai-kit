@@ -8,7 +8,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 **Current image:** `tigusigalpa/ai-kit:1.4.5`
 
-**New in v1.4.5:** mandatory maximum disposable Docker cleanup without a size threshold, dedicated-builder lifecycle and separate Windows/WSL2 RAM and virtual-disk reclamation guidance. Docker Hub and [PyPI 1.4.5](https://pypi.org/project/ai-kit-python/1.4.5/) are published and verified; PyPI upload followed the human owner's approval.
+**New in v1.4.5:** mandatory maximum disposable Docker cleanup without a size threshold, dedicated-builder lifecycle and separate Windows/WSL2 RAM and virtual-disk reclamation guidance. Docker Hub and [PyPI 1.4.5](https://pypi.org/project/ai-kit-python/1.4.5/) are published and verified.
 
 **Published platform:** `linux/amd64`
 
@@ -19,7 +19,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 | Capability | Description |
 | --- | --- |
 | **Persistent project context** | Project facts, module maps, commands, decisions and continuity instructions that agents can reuse across chats. |
-| **Configuration for 11 AI clients** | Adapters for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi and Manus. Discovery and activation depend on the selected client. |
+| **Configuration for 11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified. |
 | **Stack-specific guidance** | Profiles for Go, PHP, Laravel, Filament, Moodle, Python, frontend, libraries, Rust, .NET, Java and Terraform/Helm. |
 | **Preview-first installation** | Review proposed changes before writing. Existing project documents and local modifications follow preservation and conflict rules. |
 | **Engineering workflows** | Plan, implement, test, review and document, supported by bootstrap, review and context synchronization skills. |
@@ -27,15 +27,15 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 | **Optional security workflows** | Pinned Cloudflare security-audit references and Strix workflow skills, installed explicitly and invoked on request. |
 | **Optional Context7 guidance** | Version-aware documentation lookup workflows, with client connection setup handled separately. |
 | **Shared dialogue context** | Local conversation imports, source references, contradiction review and exports for ChatGPT and OpenRouter. |
-| **Routing and evaluation helpers** | Model-routing recommendations, context selection, local metrics and benchmark scaffolding. |
+| **Routing and evaluation helpers** | Model role and reasoning-effort recommendations (no savings are claimed), context selection, local metrics and benchmark scaffolding. |
 | **Optional orchestration** | Native Codex helper configurations and an explicitly invoked OpenRouter text executor with bounded requests, private accounting and review. Native client activation and API credentials are configured separately. |
-| **Docker and Kubernetes guidance** | Container security, lifecycle, image freshness and deployment instructions, plus a Kubernetes installation-preview Job example. |
+| **Docker and Kubernetes guidance** | Instructions that tell agents to make new Dockerfiles and services Kubernetes-ready (security, lifecycle, image freshness, deployment), plus a Kubernetes installation-preview Job example. |
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
 ## What changed in v1.4.5
 
-This release strengthens installed Docker housekeeping and includes the Windows installation/troubleshooting guide.
+Projects installed with this image receive stronger Docker housekeeping instructions, and the Windows installation/troubleshooting guide is included.
 
 - **No cleanup threshold:** every Docker build, test and debugging task ends with zero eligible disposable resources, including interrupted runs after reports are saved.
 - **Complete resource coverage:** temporary containers, disposable anonymous/named volumes, networks, unnecessary test images and all reclaimable dedicated-builder cache.
@@ -44,15 +44,11 @@ This release strengthens installed Docker housekeeping and includes the Windows 
 - **Clear execution boundary:** AI-KIT installs agent instructions. The CLI image does not mount the Docker socket, run a cleanup daemon or compact its host disk.
 - **Upgrade preservation:** unchanged managed rules update normally; locally adapted rules and entry points produce reviewable conflicts rather than being overwritten.
 
-Optional orchestration, dialogue memory, Web Design, Context7 and both pinned security integrations remain available.
+Optional orchestration, dialogue memory, Web Design, Context7, both pinned security integrations and preservation-aware installation remain available. Existing image versions remain usable.
 
-### Project privacy and existing features
+The image contains no private dialogue memory, journals, design output, credentials or personal client configuration.
 
-Root AI-KIT maintainer `AGENTS.md`, `PROJECT_CONTEXT.md` and `WIKI.md` are excluded from the build context and Python distributions. Their application template counterparts remain included. Private dialogue memory, journals, design output, credentials and personal client configuration also stay outside the image.
-
-Shared dialogue memory, Web Design, Context7, both security integrations and preservation-aware installation remain available. Existing image versions remain usable.
-
-### Image verification
+## Image verification
 
 Verified on 2026-10-30: **395 packaged Linux tests, 393 passed and two Windows-only skips**; three native Windows upgrade regressions; zero kit errors/warnings; source/archive privacy, strict Twine validation and fresh offline Windows wheel installation. Docker smoke passed offline/read-only operation, preview/apply/refusal, all optional modules, preserved files, stable reruns, SIGTERM and actual build-context exclusions. All 205 inspected packaged resources matched source. Anonymous registry manifest/configuration/layer read-back, immutable pull and published CLI/kit checks passed.
 
@@ -100,6 +96,16 @@ runtime=(
   --user "$(id -u):$(id -g)"
 )
 ```
+
+**Defaults you should know:** chat replies default to Russian, and conventions default to the owner's opinionated Laravel conventions, including no database foreign key constraints. Authored project files are always English. For English replies and your project's own conventions, add `--chat-language English --conventions standard` after `install /workspace` in both the preview and the apply command, for example:
+
+```bash
+docker run "${runtime[@]}" \
+  --mount "type=bind,source=$app_path,target=/workspace,readonly" \
+  "$image" install /workspace --agent codex --chat-language English --conventions standard
+```
+
+Choices are saved in `ai-kit/settings.json` and reused on upgrades. [Defaults and presets](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALL.md#choose-your-defaults).
 
 Preview the installation with a read-only project mount:
 
@@ -169,7 +175,7 @@ docker run @runtime `
   $image doctor /workspace
 ```
 
-The image uses UID/GID `10001:10001` by default. Docker Desktop file sharing must permit access to the mounted folder.
+The image uses UID/GID `10001:10001` by default. Docker Desktop file sharing must permit access to the mounted folder. To change the defaults (Russian chat replies, the owner's opinionated Laravel conventions), add `--chat-language English --conventions standard` to both commands.
 
 ## Enable optional modules
 
@@ -211,7 +217,7 @@ Explore the commands offline using the Bash runtime options above:
 docker run "${runtime[@]}" "$image" orchestrate --help
 ```
 
-Preview sends no request and writes nothing. An explicitly applied OpenRouter task requires outbound HTTPS, an intentionally supplied `OPENROUTER_API_KEY`, a dedicated capped key and a writable project mount for reservations and outputs. The offline examples in this Overview intentionally retain `--network none`; follow the [orchestration guide](https://github.com/tigusigalpa/ai-kit#optional-orchestration) when configuring an authorized live run.
+Preview sends no request and writes nothing. An explicitly applied OpenRouter task requires outbound HTTPS, an intentionally supplied `OPENROUTER_API_KEY`, a dedicated capped key and a writable project mount for reservations and outputs. The offline examples in this Overview intentionally retain `--network none`; follow the [orchestration guide](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/ORCHESTRATION.md) when configuring an authorized live run.
 
 There are no automatic inference retries, model fallbacks or executable tool responses. Billing uncertainty or reserve overruns stop further requests until resolved. API costs are recorded separately from native Codex usage; end-to-end savings require real measurements. Installing helper configurations does not launch a Codex client or delegate work automatically.
 
@@ -247,7 +253,7 @@ Normal exports require review. Explicit draft exports can retain pending claims 
 
 ChatGPT output is reference Markdown for manual use. OpenRouter output contains a reference message for your own client to include in a request. This workflow does not synchronize accounts, upload conversations or execute API calls.
 
-See the [shared dialogue context guide](https://github.com/tigusigalpa/ai-kit#shared-context-from-two-dialogues).
+See the [shared dialogue context guide](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/DIALOGUE_MEMORY.md).
 
 ## Other useful commands
 
@@ -310,15 +316,18 @@ Immutable reference to this verified build:
 docker pull tigusigalpa/ai-kit@sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979
 ```
 
-Registry manifest digest: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`. Descriptive publication receipts can follow the tested image documentation snapshot without replacing its runtime or installed guidance.
+Registry manifest digest: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`.
 
 ## Documentation and license
 
 - [Source repository and README](https://github.com/tigusigalpa/ai-kit)
-- [Docker usage](https://github.com/tigusigalpa/ai-kit#run-ai-kit-with-docker)
-- [Web Design](https://github.com/tigusigalpa/ai-kit#web-design)
-- [Shared dialogue context](https://github.com/tigusigalpa/ai-kit#shared-context-from-two-dialogues)
-- [OpenRouter guidance](https://github.com/tigusigalpa/ai-kit#working-with-openrouter)
-- [Optional orchestration](https://github.com/tigusigalpa/ai-kit#optional-orchestration)
+- [Documentation site with a command configurator](https://tigusigalpa.github.io/ai-kit-docs/)
+- [All guides](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/README.md)
+- [Docker usage](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/DOCKER.md)
+- [Installer flags and options](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALLER_FLAGS.md)
+- [Web Design](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/WEB_DESIGN.md)
+- [Shared dialogue context](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/DIALOGUE_MEMORY.md)
+- [OpenRouter guidance](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/OPENROUTER.md)
+- [Optional orchestration](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/ORCHESTRATION.md)
 
 AI-KIT is licensed under MIT. Bundled Cloudflare references retain MIT licensing; bundled Strix references retain Apache-2.0 licensing.
