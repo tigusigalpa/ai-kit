@@ -1094,11 +1094,22 @@ def project_documents(settings: dict) -> set[str]:
                     if settings.get(EXTRA_SETTINGS_KEYS[extra]) is True for path in paths}
 
 
+def version_key(value) -> tuple[int, ...] | None:
+    """Parse a released X.Y.Z version; anything else is not comparable."""
+    match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", value.strip()) if isinstance(value, str) else None
+    return tuple(int(part) for part in match.groups()) if match else None
+
+
+def is_downgrade(installed, bundle) -> bool:
+    old, new = version_key(installed), version_key(bundle)
+    return old is not None and new is not None and old > new
+
+
 def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                language: str | None = None, conventions: str | None = None,
                agents: list[str] | None = None, accept_local: list[str] | None = None,
                extras: list[str] | None = None, preset: str | None = None,
-               docker_cleanup: str | None = None) -> dict:
+               docker_cleanup: str | None = None, allow_downgrade: bool = False) -> dict:
     if docker_cleanup is not None and docker_cleanup not in DOCKER_CLEANUP_MODES:
         raise ValueError("Docker cleanup must be one of: " + ", ".join(DOCKER_CLEANUP_MODES))
     if preset is not None and preset not in PRESETS:
@@ -1295,6 +1306,14 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     legacy = {"AGENTS.md", "/AGENTS.md", "/ai-kit/", "ai-kit/", "/.agents/", "/.agents/skills/",
               "PROJECT_CONTEXT.md", "/PROJECT_CONTEXT.md", "/.claude/", "SKILL.md"}
     warnings = ["Existing ignore rules outside the managed block need project-specific visibility review."]
+    bundle_version = (root / "VERSION").read_text(encoding="utf-8").strip()
+    downgrade_from = state.get("accepted_version") if is_downgrade(state.get("accepted_version"),
+                                                                   bundle_version) else None
+    if downgrade_from:
+        warnings.append(f"This project has AI-KIT {downgrade_from}, newer than this installer ({bundle_version}); "
+                        "applying would replace managed files with older versions. Upgrade the CLI first"
+                        + ("; --allow-downgrade permits it deliberately." if allow_downgrade else
+                           ", or pass --allow-downgrade to downgrade deliberately."))
     if "ci" in enabled_extras and mode == "private":
         warnings.append("The CI check validates committed AI-KIT files, but private sharing mode keeps them "
                         "out of Git; use team mode for a meaningful check.")
@@ -1442,7 +1461,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             "adapter_conflicts": sorted(retirements), "preserved": preserved,
             "detected_profiles": detected, "detected_agents": detected_agents,
             "suggested_agents": suggested_agents, "extras": sorted(enabled_extras), "preset": preset,
-            "warnings": warnings}
+            "warnings": warnings, "downgrade_from": downgrade_from, "allow_downgrade": allow_downgrade}
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -1487,6 +1506,10 @@ def needs_review(plan: dict) -> bool:
 
 def apply_plan(plan: dict) -> bool:
     target: Path = plan["target"]
+    if plan.get("downgrade_from") and not plan.get("allow_downgrade"):
+        # An older CLI would otherwise silently replace newer managed files.
+        raise ValueError(f"Refusing to downgrade AI-KIT {plan['downgrade_from']} to {plan['version']}; upgrade the "
+                         "CLI (for example `pipx upgrade ai-kit-python`) or pass --allow-downgrade deliberately")
     if needs_review(plan):
         for relative, data in plan["conflicts"].items():
             info = plan["candidates"][relative]
@@ -1616,6 +1639,8 @@ def build_parser(root: Path = ROOT) -> argparse.ArgumentParser:
                         help="Install optional Codex helpers and disabled OpenRouter configuration; no calls")
     parser.add_argument("--with-web-design", action="store_true",
                         help="Install Web Design workflows and project documents; no external tool setup")
+    parser.add_argument("--allow-downgrade", action="store_true",
+                        help="Apply even when the project has a newer AI-KIT version than this installer")
     return parser
 
 
@@ -1691,7 +1716,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         plan = build_plan(args.target, mode=mode, language=language,
                           conventions=conventions, agents=agents, accept_local=args.accept_local,
-                          extras=extras, preset=preset, docker_cleanup=args.docker_cleanup)
+                          extras=extras, preset=preset, docker_cleanup=args.docker_cleanup,
+                          allow_downgrade=args.allow_downgrade)
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
                           "preset": plan["preset"],
                           "preview": not args.apply, "writes": sorted(plan["actions"]),

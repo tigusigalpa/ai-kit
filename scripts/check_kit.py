@@ -262,7 +262,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml",
                 "tests/build_distribution.py", "tests/test_pypi_events.py",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md",
-                "scripts/flags.py", FLAG_SCHEMA, FLAG_GUIDE,
+                "scripts/flags.py", FLAG_SCHEMA, FLAG_GUIDE, "scripts/mcp_report.py",
                 ]
     for name in install.OPTIONAL_SKILLS:
         required.extend(["integrations/" + name + ".json", "template/.agents/skills/" + name + "/SKILL.md",

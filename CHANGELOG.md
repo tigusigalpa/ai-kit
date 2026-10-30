@@ -1,5 +1,12 @@
 # AI-KIT changelog
 
+## v1.5.0 (2026-10-30)
+
+- New `aikit mcp report TARGET`: lists MCP servers from project client files (Claude Code, Cursor, VS Code/Copilot, Gemini CLI, Codex, Roo, Kimi Code) with transport, command, URL origin, variable names, approval and tool settings and Git tracking. It never prints secret values and warns about literal credentials, inline OAuth client secrets, credentials in URLs, plain remote HTTP and auto-approval. Read-only: no server is started or contacted. The installed MCP posture points to it. [Guide](docs/guide/INSTALL.md#review-mcp-servers).
+- Downgrade guard: when a project records a newer AI-KIT than the installer, preview warns and `--apply` (also `doctor --fix --apply`) refuses unless the new `--allow-downgrade` flag is passed.
+- `aikit doctor` names the upgrade commands when a newer AI-KIT is available and warns when the CLI is older than the installation; `doctor --fix` output includes the plan warnings.
+- [Decision](docs/adr/0018-mcp-report-and-downgrade-guard.md), [release record](docs/V1_5_0.md).
+
 ## v1.4.7 (2026-10-30)
 
 - New `aikit flags` command prints every `aikit install` option as JSON (value type, choices, repeatability, exclusions, saved setting, fresh default, help, presets); the committed copy [installer-flags.json](integrations/installer-flags.json) is the source for documentation tools such as the [documentation site](https://tigusigalpa.github.io/ai-kit-docs/).

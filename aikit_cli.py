@@ -20,6 +20,7 @@ _COMMANDS = {
     "memory": ("memory", None),
     "orchestrate": ("orchestrate", None),
     "adapters": ("adapters", None),
+    "mcp": ("mcp_report", None),
     "route": ("router", "route"),
     "configure": ("router", "configure"),
     "providers": ("router", "providers"),

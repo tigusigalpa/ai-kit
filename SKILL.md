@@ -46,6 +46,7 @@ Existing project documents and context are preserved; customized instructions be
 | `--with-web-design` | Four UI skills, conditional guides and preserved project design documents; no external tool setup |
 | `--interactive`, `--check`, `--dry-run` | Guided prompts, doctor after apply, explicit preview |
 | `--accept-local PATH` | Record a reviewed semantic merge of a managed file |
+| `--allow-downgrade` | Apply although the project records a newer AI-KIT; otherwise preview warns and apply refuses |
 
 | Preset | Mode | Extras |
 | --- | --- | --- |
@@ -64,6 +65,8 @@ CI and optional integrations stay outside presets. Read the audit, Strix, Contex
 - Deselecting a client whose tracked files remain yields `adapter_conflicts`: keep the client or explicitly preview `aikit adapters retire TARGET --agent NAME`. Applying it removes only unchanged tracked adapter files, backs them up, and deselects that one client; modified/untracked paths remain untouched.
 - AI-KIT owns only its own entries in Claude Code settings (`managed_json` in installer state): `.claude/settings.local.json` in private mode, `.claude/settings.json` in team mode. Generated module rules are managed files that follow `ai-kit/project.json`; client ignore files and `.gitignore` get one marked block each.
 - Line-ending-only differences (CRLF vs LF bundles) count as unchanged: no rewrite and no conflict.
+- Version direction: doctor names the upgrade commands when the CLI is newer than the installation. When the installation is newer than the CLI, preview warns and apply refuses (also `doctor --fix --apply`); upgrade the CLI, or pass `--allow-downgrade` for a deliberate downgrade.
+- MCP review: `aikit mcp report TARGET` lists MCP servers from project client files (`.mcp.json`, `.cursor/mcp.json`, `.vscode/mcp.json`, `.gemini/settings.json`, `.codex/config.toml`, `.roo/mcp.json`, `.kimi-code/mcp.json`) with transports, commands, URL origins, variable names and approval settings. It prints no secret values, warns about literal credentials, inline client secrets, plain remote HTTP and auto-approval, and starts or contacts no server.
 - Health report: `python scripts/doctor.py TARGET`; `--fix` previews the repair plan (a full install/upgrade) and `--fix --apply` writes it (local edits stay untouched). It compares project module facts and manifest evidence; record a reviewed snapshot with `aikit context snapshot TARGET --apply`.
 
 ## Rules an agent follows in an installed project

@@ -58,6 +58,7 @@ Open the application in your AI client and invoke `$ai-kit-bootstrap` in Codex o
 - **Project context:** verified facts, module maps, commands, decisions and continuity instructions.
 - **Client adapters:** native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified.
 - **Stack guidance:** Go, PHP, Laravel, Filament, Moodle, Python, frontend, libraries, Rust, .NET, Java and Terraform/Helm, selected from project evidence.
+- **Health and review:** `aikit doctor` reports drift and names upgrade commands; an older CLI refuses to downgrade a newer installation without `--allow-downgrade`. `aikit mcp report` lists project MCP servers without printing secret values. `aikit flags` prints the installer option schema.
 - **Conservative upgrades:** existing documents, settings and local adaptations are preserved; conflicts remain reviewable.
 - **Engineering workflows:** plan, implement, test, review and document, with explicit Git authorization.
 - **Routing and measurement:** offline model role/effort recommendations (no savings are claimed), context selection, metrics and benchmark scaffolding. Live execution needs a separately configured worker.
