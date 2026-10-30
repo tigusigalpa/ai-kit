@@ -36,9 +36,9 @@ The Release path is included in **v1.4.3 and later tagged source**. Existing `v1
 
 ## Release verification records
 
-The complete evidence is in the [1.4.5 release record](../V1_4_5.md).
+The complete evidence is in the [1.4.5 release record](../V1_4_5.md); later PyPI releases are recorded in their own release records.
 
-- **Published versions:** Docker image 1.4.5 and PyPI package 1.4.5. Earlier published versions remain intact.
+- **Published versions:** Docker image 1.4.5 and PyPI package 1.4.6 ([PyPI 1.4.6 receipt](../V1_4_6.md#pypi-publication-status)). Earlier published versions remain intact.
 - **PyPI publication, verified on 2026-10-30:** GitHub Release → checks → owner approval → PyPI completed successfully. [Workflow 41076353098](https://github.com/tigusigalpa/ai-kit/actions/runs/41076353098) completed build and production upload through Trusted Publishing after the human owner's approval. Both PyPI file hashes match the validated workflow artifacts; TestPyPI was not used. [PyPI receipt](../V1_4_5.md#pypi-publication-status).
 - **Installation, verified on 2026-10-30:** a clean Windows/Python 3.12.14 environment installed `ai-kit-python==1.4.5` from PyPI with the verified wheel hash, dependencies and cache disabled. `aikit --version` returned `aikit 1.4.5`; CLI/orchestration help, memory/orchestration imports and the installed kit check passed without errors or warnings. [Published hashes and installation record](../V1_4_5.md#pypi-publication-status).
 - **Docker Hub, verified on 2026-10-30:** `tigusigalpa/ai-kit:1.4.5`, `linux/amd64`. Docker manifest/configuration/layers and immutable pull are verified and match the tested build. Existing tags are retained; no `latest` tag was assigned. [Docker receipt](../V1_4_5.md#docker-hub-publication).
