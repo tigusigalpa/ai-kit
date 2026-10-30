@@ -12,6 +12,7 @@ import unittest
 from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import install
 import memory
 import memory_import as importer
 import memory_store as store
@@ -350,19 +351,19 @@ class WorkspaceTests(unittest.TestCase):
 
     def test_install_upgrade_preserves_private_memory_in_both_sharing_modes(self):
         old_source = self.base / "prior kit"
-        shutil.copytree(memory.install.ROOT, old_source, ignore=shutil.ignore_patterns(".git", "__pycache__", "*.egg-info"))
+        shutil.copytree(install.ROOT, old_source, ignore=shutil.ignore_patterns(".git", "__pycache__", "*.egg-info"))
         for mode in ("private", "team"):
             policy = old_source / "templates" / ("gitignore." + mode)
             policy.write_bytes(policy.read_bytes().replace(b"/ai-kit/.memory/\r\n", b"").replace(b"/ai-kit/.memory/\n", b""))
             project = self.base / ("project-" + mode)
-            plan = memory.install.build_plan(project, root=old_source, mode=mode)
-            self.assertTrue(memory.install.apply_plan(plan))
+            plan = install.build_plan(project, root=old_source, mode=mode)
+            self.assertTrue(install.apply_plan(plan))
             private = project / "ai-kit/.memory/session"
             store.write(private, {"imports/a.json": b'{"private":"preserve exactly"}'}, apply=True)
             saved = (private / "imports/a.json").read_bytes()
-            plan = memory.install.build_plan(project, mode=mode)
+            plan = install.build_plan(project, mode=mode)
             self.assertFalse(plan["conflicts"])
-            self.assertTrue(memory.install.apply_plan(plan))
+            self.assertTrue(install.apply_plan(plan))
             self.assertEqual((private / "imports/a.json").read_bytes(), saved)
             self.assertIn("/ai-kit/.memory/", (project / ".gitignore").read_text())
 

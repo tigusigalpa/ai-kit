@@ -237,8 +237,11 @@ class ContextSnapshotTests(ProjectTestCase):
 
 class EntryFileTests(unittest.TestCase):
     def test_tracked_root_entries_do_not_import_local_maintainer_files(self):
-        for name in ("CLAUDE.md", "KIMI.md", "MANUS.md"):
-            text = (install.ROOT / name).read_text(encoding="utf-8")
+        entries = [install.ROOT / name for name in ("CLAUDE.md", "KIMI.md", "MANUS.md")]
+        if not any(entry.is_file() for entry in entries):
+            self.skipTest("Root maintainer entries are not part of this packaged distribution")
+        for entry in entries:
+            text = entry.read_text(encoding="utf-8")
             self.assertIn("CONTRIBUTING.md", text)
             self.assertNotRegex(text, r"(?m)^\s*@(AGENTS|PROJECT_CONTEXT|WIKI)\.md\s*$")
 

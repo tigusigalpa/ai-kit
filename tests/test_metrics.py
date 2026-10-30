@@ -166,7 +166,7 @@ class JournalTests(unittest.TestCase):
         lock = self.project / metrics.LOCK
         lock.parent.mkdir(parents=True)
         lock.write_bytes(b"other writer\n")
-        with self.assertRaises(FileExistsError):
+        with self.assertRaisesRegex(ValueError, "if no aikit process is running"):
             metrics.record_task(self.project, task(), apply=True)
         self.assertEqual(lock.read_bytes(), b"other writer\n")
         self.assertFalse(self.journal.exists())
