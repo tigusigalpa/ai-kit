@@ -19,11 +19,11 @@ Execution claims require evidence.
 | Provider-specific router details | Shared capability/risk policy; model IDs and supported efforts in reviewed provider JSON; controls and unknown mappings explicit |
 | Model escalation | Latest owner policy retained: inexpensive bounded work, substantive engineering, justified higher-capability escalation; no switching is simulated |
 | License and public maintenance | Owner-selected MIT; CONTRIBUTING, separate reporting SECURITY, version source, checks and CI workflow |
-| Docker CLI and cleanup | [Standalone image](DOCKER.md); read-only cleanup evidence helper, deletion governed by ownership/disposability/size rules |
+| Docker CLI and cleanup | [Standalone image](DOCKER.md); read-only evidence helper; mandatory maximum disposable cleanup and host RAM/disk reclamation |
 | Dogfooding and source accuracy | Root context describes AI-KIT itself; checker validates reference boundaries, anchors, skills, and Git visibility |
 | ADR/change history | Kit ADRs stay under root docs/; clean project ADR/decision templates; CHANGELOG updates remain required after tasks changing files |
 
-Owner defaults remain: English files/Russian chat, Laravel conventions, explicit commits/pushes, Docker preflight, Kubernetes readiness and cleanup threshold. Installation can select another chat language or standard conventions without converting existing code.
+Owner defaults remain: English files/Russian chat, Laravel conventions, explicit commits/pushes, Docker preflight, Kubernetes readiness and maximum disposable cleanup without a size threshold. Installation can select another chat language or standard conventions without converting existing code.
 
 ## Policy ownership
 
@@ -34,7 +34,7 @@ Owner defaults remain: English files/Russian chat, Laravel conventions, explicit
 | Work cycle, tests/review/docs/migrations | [Engineering](../template/ai-kit/ENGINEERING.md) |
 | Security implementation checks | [Security baseline](../template/ai-kit/SECURITY.md) |
 | Optional security workflows | [Cloudflare](../template/ai-kit/SECURITY-AUDIT.md), [Strix](../template/ai-kit/STRIX.md) |
-| Container design and cleanup threshold | [Containers](../template/ai-kit/CONTAINERS.md) |
+| Container design, maximum cleanup and host reclamation | [Containers](../template/ai-kit/CONTAINERS.md) |
 | Owner Laravel conventions | [Owner profile](../template/ai-kit/profiles/OWNER.md) |
 | Stack practices | [Stack directory](../template/ai-kit/stacks), including Filament |
 | Routing and provider controls | [Router](../template/ai-kit/router/POLICY.md) and relevant provider |
@@ -56,7 +56,7 @@ Entry points link to policy owners; historical ADRs do not activate superseded r
 ## Deferred with reasons
 
 - Exchange/trading-specific profile: no confirmed domain requirement; the library profile covers reusable code without introducing trading assumptions.
-- Executable Docker cleanup: an inspection report cannot establish exact project bytes, exclusive builder ownership, and disposability by itself. Keep the existing actionable policy; add automation after representative resource fixtures and live trials.
+- Executable Docker cleanup: the read-only helper does not prove exclusive ownership/disposability. Agents execute the canonical maximum-cleanup policy against verified inventories; no deletion daemon or automatic host compactor is installed.
 - Runtime guards and automatic model switching: clients expose different controls. The opt-in Claude Code ask rules are supplementary confirmation, not a proven universal Git ban; other clients receive no guard.
 - Context/token cost claims: byte budgets are measured, but no tokenizer, runtime-loaded-context benchmark, or performance comparison has been run.
 - Additional model/client mappings: unsupported provider IDs and runtime settings remain unknown; no speculative model names or fake activation.

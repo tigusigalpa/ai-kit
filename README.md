@@ -19,15 +19,15 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 | --- | --- |
 | **Run AI-KIT in a ready-made container.** Includes Python, Git, the CLI, project templates and optional integration resources. No host Python installation needed. | **Install AI-KIT directly in your Python environment.** The `ai-kit-python` package provides the `aikit` command, project templates and optional integration resources. |
 | **Requires:** Docker with Linux containers. Published platform: `linux/amd64`. | **Requires:** Python 3.10+. No mandatory third-party runtime dependencies. |
-| **Download:** `docker pull tigusigalpa/ai-kit:1.4.4` | **Install or update:** `python -m pip install --upgrade ai-kit-python` |
-| **Try the CLI:** `docker run --rm tigusigalpa/ai-kit:1.4.4 --help` | **Try the CLI:** `aikit --help` |
+| **Download:** `docker pull tigusigalpa/ai-kit:1.4.5` | **Install or update:** `python -m pip install --upgrade ai-kit-python` |
+| **Try the CLI:** `docker run --rm tigusigalpa/ai-kit:1.4.5 --help` | **Try the CLI:** `aikit --help` |
 | [**Open Docker Hub →**](https://hub.docker.com/r/tigusigalpa/ai-kit) · [Project mount and launch examples](#run-ai-kit-with-docker) | [**Open PyPI →**](https://pypi.org/project/ai-kit-python/) · [Windows setup and troubleshooting](#windows-installation-and-troubleshooting) |
 
-Both distributions provide the AI-KIT CLI: preview installation into your project, apply the reviewed changes, then bootstrap your coding agent. **Published Docker image: 1.4.4. Published PyPI package: 1.4.4.** Registry files and a fresh installation from PyPI are verified; [publication record](docs/V1_4_4.md#pypi-publication-status).
+Both distributions provide the AI-KIT CLI: preview installation, apply reviewed changes, then bootstrap your coding agent. **Published Docker image: 1.4.5. Latest verified PyPI package: 1.4.4; 1.4.5 follows the protected release workflow.** [Release and verification record](docs/V1_4_5.md).
 
-**[v1.4.4](CHANGELOG.md#v144-2026-10-18):** optional [orchestration](#optional-orchestration), native Codex helper configurations and a budgeted OpenRouter text executor are available in source, [the Python package](https://pypi.org/project/ai-kit-python/1.4.4/) and [the Docker image](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.4).
+**[v1.4.5](CHANGELOG.md#v145-2026-10-30):** mandatory [maximum Docker cleanup and host reclamation](#maximum-docker-cleanup-and-host-reclamation), without a size threshold, plus the detailed [Windows guide](#windows-installation-and-troubleshooting). Project data and unrelated workloads remain protected.
 
-**Publication verified on 2026-10-18:** the **GitHub Release → checks → your approval → PyPI** workflow completed successfully. Both PyPI file hashes match the tested workflow artifacts; installation from PyPI in a clean environment, CLI version and the bundled kit check passed. The Docker registry digest and configuration also match the tested image. [PyPI verification](docs/V1_4_4.md#pypi-publication-status) · [Docker verification](docs/V1_4_4.md#docker-hub-144). Earlier published versions remain intact.
+**Docker publication verified on 2026-10-30:** the registry manifest, configuration and layers match the tested v1.4.5 image; immutable pull, CLI version and bundled checks passed. **PyPI 1.4.5 requires GitHub Release → checks → your approval.** [Docker receipt](docs/V1_4_5.md#docker-hub-publication) · [PyPI status](docs/V1_4_5.md#pypi-publication-status). Earlier published versions remain intact.
 
 [Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Windows guide](#windows-installation-and-troubleshooting) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
@@ -107,7 +107,7 @@ New containers follow the [Kubernetes-ready contract](template/ai-kit/CONTAINERS
 - **Images/runtime:** pinned multi-stage images, build secrets outside layers, non-root execution, read-only root, exec entrypoints; no privileged mode or Docker socket.
 - **Lifecycle:** startup/readiness/liveness probes, SIGTERM drain, migrations in separate Jobs.
 - **Deployment:** ConfigMap/Secret, stdout logs, stateless replicas, PVCs where needed, dropped capabilities, seccomp and resource requests.
-- **Preflight/cleanup:** verify Docker client and daemon. Cleanup needs verified disposable ownership and the 10 GB threshold; `scripts/docker_test_usage.py` collects evidence.
+- **Preflight/cleanup:** verify Docker client/daemon; leave zero eligible disposable containers, volumes, networks, intermediate images and dedicated-builder cache, without a size threshold. Reclaim host RAM/disk separately; [instructions](#maximum-docker-cleanup-and-host-reclamation).
 
 ### 🧭 Adaptive model routing
 
@@ -244,7 +244,7 @@ Every command also runs through one CLI: `python aikit_cli.py install|doctor|rou
 
 ### Packaged CLI and PyPI status
 
-**AI-KIT 1.4.4 is available on [PyPI](https://pypi.org/project/ai-kit-python/1.4.4/).** Install package `ai-kit-python` and run command `aikit`; Python 3.10+ is required with no mandatory runtime dependencies. The [release workflow](https://github.com/tigusigalpa/ai-kit/actions/runs/39133712478) completed its build and production upload through Trusted Publishing after the owner's approval. Both downloaded registry files match the exact tested workflow artifacts. TestPyPI was not used.
+**Previous verified PyPI release: [1.4.4](https://pypi.org/project/ai-kit-python/1.4.4/); release target: 1.4.5.** Install package `ai-kit-python` and run `aikit`; Python 3.10+ is required with no mandatory runtime dependencies. Production upload uses owner-approved Trusted Publishing; [current status](docs/V1_4_5.md#pypi-publication-status).
 
 **Installation verified on 2026-10-18:** a clean Windows/Python 3.12.14 environment installed `ai-kit-python==1.4.4` from `https://pypi.org/simple` with the verified wheel hash, dependencies and cache disabled. `aikit --version` returned `aikit 1.4.4`; CLI/orchestration help, orchestration and memory imports, and the installed kit check passed without errors or warnings. The identical downloaded workflow wheel also passed the full offline installation smoke. [Publication and installation record](docs/V1_4_4.md#pypi-publication-status).
 
@@ -503,7 +503,7 @@ For the isolated CLI, use `& "$cliEnv\Scripts\python.exe" -m pip ...` and `& "$c
 
 **Build AI-KIT once, then run its CLI against a mounted application folder.** The image contains Python, Git, the packaged kit and all optional integration resources. Installation and the ordinary offline helpers need no host Python or network access at runtime. Each command exits when it finishes; there is no server to keep running.
 
-This is an alternative way to run the same installer. Open your coding agent in the application afterward and bootstrap normally. Version 1.4.4 also bundles the optional bounded OpenRouter text executor; live execution requires explicit model/key configuration and authorization. Native Codex helpers require a compatible coding client. Web Design, Context7, Cloudflare security-audit and Strix remain opt-in instruction modules; their external tools and live execution require separate setup.
+This is an alternative way to run the same installer. Open your coding agent in the application afterward and bootstrap normally. Version 1.4.5 also bundles the optional bounded OpenRouter text executor; live execution requires explicit model/key configuration and authorization. Native Codex helpers require a compatible coding client. Web Design, Context7, Cloudflare security-audit and Strix remain opt-in instruction modules; their external tools and live execution require separate setup.
 
 ### Build the local image
 
@@ -536,7 +536,7 @@ The closed `.dockerignore` includes distribution sources and excludes Git, perso
 
 The [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) covers capabilities, release changes and launch examples; maintain it for every image release using the [release checklist](CONTRIBUTING.md#docker-hub-releases).
 
-**Published image:** [tigusigalpa/ai-kit:1.4.4](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.4), for `linux/amd64`. The remote digest and configuration match the tested build; [publication record](docs/V1_4_4.md#docker-hub-144). Download with `docker pull tigusigalpa/ai-kit:1.4.4`. To reuse the local build examples, run `docker tag tigusigalpa/ai-kit:1.4.4 ai-kit:1.4.4` and set `$kitVersion` (PowerShell) or `kit_version` (Bash) to `1.4.4`; alternatively use the full image name. Existing version tags are preserved; no `latest` tag or automated registry push is configured.
+**Published image:** [tigusigalpa/ai-kit:1.4.5](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.5), `linux/amd64`. [Registry/immutable-pull verification](docs/V1_4_5.md#docker-hub-publication) matches the tested build. Download with `docker pull tigusigalpa/ai-kit:1.4.5`; use that image name or tag it locally as `ai-kit:1.4.5` for the examples. Existing tags are retained; no `latest` tag was assigned.
 
 ### Preview and apply on Windows
 
@@ -620,12 +620,78 @@ Its `ai-kit:local` image with `imagePullPolicy: Never` is a local-cluster exampl
 ~~~sh
 python scripts/check_kit.py
 python -m unittest discover -s tests -v
-python tests/docker_smoke.py ai-kit:1.4.4 --context .
+python tests/docker_smoke.py ai-kit:1.4.5 --context .
 ~~~
 
 Use the tag you actually built. The Docker smoke uses disposable synthetic projects, no runtime network and Docker's actual ignore engine; it checks preview/apply, all optional modules, preservation, rerun stability, read-only refusal and SIGTERM. CI builds and tests a local image without publishing it. [Maintainer contract and results](docs/DOCKER.md) records pins, packaging, checks and unavailable environments.
 
-For an upgrade, review the new kit revision, rebuild with its `VERSION`, preview against the same application folder and then apply normally. Review base/tool updates and rerun the image checks. After testing, measure only identifiable project test volumes/cache; follow the canonical [cleanup policy](template/ai-kit/CONTAINERS.md#post-test-docker-cleanup). A shared builder does not prove project ownership, and no automatic unscoped prune is part of this workflow.
+For an upgrade, review the new revision, rebuild with VERSION, preview against the same application and apply normally. Review build inputs and rerun image checks. Complete the canonical [maximum cleanup](template/ai-kit/CONTAINERS.md#post-test-docker-cleanup) afterward; the operational guide below distinguishes resource deletion, RAM return and virtual-disk compaction.
+
+### Maximum Docker cleanup and host reclamation
+
+AI-KIT now requires housekeeping after **every Docker build, test and debugging task**, including failed or interrupted runs once diagnostic evidence is saved. There is **no size or age threshold**. The goal is **zero eligible disposable resources**, rather than retaining a cache allowance. Agents clean within established ownership and authorization; installation itself runs no cleanup daemon or host compactor. The [container contract](template/ai-kit/CONTAINERS.md#post-test-docker-cleanup) owns the rules.
+
+#### What the agent must remove
+
+| Resource | Required treatment |
+| --- | --- |
+| Temporary containers | Save necessary reports, stop completed task-owned services and remove their containers. |
+| Anonymous and named test volumes | Remove all proven-disposable, unreferenced volumes after checking their data purpose. An unused database volume can still hold important data. |
+| Test networks | Remove disposable networks after their containers are removed and references rechecked. |
+| Images | Remove unnecessary intermediate/superseded test images; preserve the required final image and documented recovery artifacts. |
+| Build cache | Use a dedicated project/run builder, remove all its reclaimable cache and retire disposable builders through Buildx. Shared caches need exact record ownership or an established host-wide scope. |
+| Host RAM and disk allocation | Perform supported reclamation separately and measure it separately from Docker's deleted bytes. |
+
+Before creating resources, record the Docker context, run identity and builder. Add project/run labels and `ai-kit.disposable=true` to temporary containers, networks and volumes. Keep reports outside disposable storage. Exact known-safe resources can be removed even if their byte count is unavailable; unknown ownership never becomes permission to erase data.
+
+For new builds, use a builder dedicated to the task. These Bash/PowerShell-compatible commands illustrate a new, previously unused builder name:
+
+```sh
+docker buildx create --name myapp-tests --driver docker-container
+docker buildx build --builder myapp-tests --load --tag myapp:test .
+docker buildx du --builder myapp-tests
+```
+
+After all work using that builder has completed and the required final image is retained:
+
+```sh
+docker buildx prune --builder myapp-tests --all --force
+docker buildx rm myapp-tests
+```
+
+Verify no active build uses it first. Do not reuse the example name if it belongs to another task. Removing a builder through Buildx is preferable to deleting its storage volume directly. The `--all` flag also includes internal/frontend cache records; supported options depend on installed Buildx. [Buildx prune](https://docs.docker.com/reference/cli/docker/buildx/prune/).
+
+For containers, images, networks and volumes, use the exact reviewed IDs/names. `docker system df -v` and the read-only `scripts/docker_test_usage.py --project NAME --builder NAME` helper provide evidence; the helper neither decides disposability nor deletes anything.
+
+**A complete local development-host cleanup is a separate scope.** Establish it once with the owner, record retained resources and reuse that agreement. `docker system prune --all --volumes` removes stopped containers, unused images/networks/cache and anonymous volumes; it does **not** remove all unused named volumes. `docker volume prune --all` can remove named volumes and their data. Do not apply these broad commands to a shared/remote daemon or unknown volumes merely because Docker reports them as unused. [Docker pruning semantics](https://docs.docker.com/engine/manage-resources/pruning/).
+
+#### Return RAM to Windows with WSL2
+
+Deleting images and volumes does not prove that Windows received RAM back. Check the installed Docker Desktop backend and WSL version. In WSL2, Resource Saver pauses the engine and reduces CPU use; it does not itself reclaim WSL RAM. Use supported WSL memory reclamation. [Docker Resource Saver](https://docs.docker.com/desktop/use-desktop/resource-saver/).
+
+When host configuration changes are authorized, merge this value into the existing user `.wslconfig` under its existing `[experimental]` section, preserving other sections and settings:
+
+```ini
+[experimental]
+autoMemoryReclaim=dropCache
+```
+
+Check whether it is already set; do not create duplicate sections or overwrite memory/CPU/network settings. Configuration applies when WSL restarts. `wsl --shutdown` stops **all** WSL distributions, so schedule it only in an authorized maintenance window after checking other terminals, services, containers and builds. Otherwise leave unrelated work running and report the pending restart. Measure actual host memory before and after; configuration alone is not proof of reclaimed bytes. [Microsoft WSL configuration](https://learn.microsoft.com/en-us/windows/wsl/wsl-config).
+
+#### Reclaim physical virtual-disk space
+
+Docker's logical usage, a virtual disk's capacity and the disk file's physical allocation are different measurements. Removing resources can leave a large VHDX on the Windows disk.
+
+1. Finish resource cleanup and preserve required data/backups. Identify the actual Docker backend, configured data location and exact virtual disk; locations vary between Docker Desktop versions and can be customized.
+2. Use that backend/version's supported trim or disk-reclaim procedure. Check the applicable release notes; automatic reclaim behavior has changed between versions.
+3. If physical allocation remains, prepare supported **offline compaction**. Verify the resolved disk path, backup/recovery method, sufficient host free space and an authorized idle maintenance window. Stop Docker/WSL gracefully only after establishing that no unrelated workloads will be interrupted.
+4. Compact only a detached or read-only dynamic disk with supported tooling, such as DiskPart `compact vdisk` where applicable. Never compact a live disk, use `clean`, erase/unregister the Docker distro, delete the data VHDX, shrink filesystem capacity or fill the disk with zero files as a shortcut.
+5. Restore the runtime if it was stopped, verify retained containers/data and compare host free space and physical allocation. Sparse-file length alone is not an allocation measurement. If the backend, privileges or maintenance window are unavailable, report the specific blocker; complete all other eligible cleanup.
+
+[Microsoft compaction requirements](https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/compact-vdisk) and [Docker release notes](https://docs.docker.com/desktop/release-notes/) define supported behavior. A running CLI container cannot compact its host's Docker disk; the image intentionally has no Docker socket or administrative host access.
+
+The completion report lists removed resources, eligible leftovers (target zero), protected resources/reasons, and separately verified Docker/cache, RAM and host-disk changes. Do not report physical reclamation merely because prune succeeded.
+
 
 ## Choose your defaults
 
@@ -1282,7 +1348,7 @@ Files are created exclusively. Edited or conflicting existing artifacts are pres
 
 ## Optional orchestration
 
-**Available in v1.4.4 source, Python package and Docker image.** Use native Codex helpers for explicitly delegated local work and the bounded OpenRouter executor for selected text tasks. Both are optional. Installing the module performs no API calls, creates no credentials, changes no global Codex configuration and launches no agents. Install `ai-kit-python==1.4.4`, use the published Docker image 1.4.4 or work from a reviewed source checkout.
+**Introduced in v1.4.4; retained in v1.4.5.** Native Codex helpers and the bounded OpenRouter text executor are optional. Installation performs no API calls, creates no credentials, changes no global Codex configuration and launches no agents. Use the selected Python/image release or a reviewed source checkout; [publication status](docs/V1_4_5.md).
 
 ### Enable the module in an existing project
 
@@ -1405,7 +1471,7 @@ Exit codes: **0** for preview, completed work or a status report; **1** for refu
 
 ### Python package, Docker and verification boundaries
 
-The published 1.4.4 wheel includes the executor, templates, native helper sources and tests, with no new runtime dependencies. The published `tigusigalpa/ai-kit:1.4.4` image contains the same executor and integration resources; `ai-kit:dev` and `ai-kit:1.4.4` remain local verification tags. Published `tigusigalpa/ai-kit:1.4.3` stays unchanged. Offline preview/status need no network; a future real `run --apply` needs outbound HTTPS and an intentionally supplied key, with a writable project mount. A read-only project mount cannot persist reservations or outputs. No Docker socket or privileged mode is needed.
+The v1.4.5 distributions include the executor, templates, helper sources and tests without new runtime dependencies; [registry status](docs/V1_4_5.md). Earlier artifacts remain intact. Offline preview/status need no network; real `run --apply` needs outbound HTTPS, an intentionally supplied key and a writable project mount for reservations/results. No Docker socket or privileged mode is needed.
 
 Code and tests use synthetic inputs and substituted provider responses. Real API calls, native client activation, account availability and measured savings remain separate. [Maintainer verification and limitations](docs/ORCHESTRATION.md).
 
@@ -1415,7 +1481,7 @@ Code and tests use synthetic inputs and substituted provider responses. Real API
 
 **AI-KIT rules can travel with your API requests.** OpenRouter can provide model access while a client or adapter supplies selected AI-KIT instructions, project facts and task material. This makes the kit useful beyond native coding-client configuration.
 
-**Integration status:** The v1.4.4 source, Python package and Docker image include the explicit [bounded text executor](#optional-orchestration). Instruction selection, dialogue exports, routing recommendations and opt-in measurements remain available. The general coding-agent/tool-loop architecture below is still a proposal; the shipped executor sends only explicitly selected text and never executes model output. Installing AI-KIT configures no API key or paid call.
+**Integration status:** AI-KIT includes the explicit [bounded text executor](#optional-orchestration). Instruction selection, dialogue exports, routing recommendations and opt-in measurements remain available. The general coding-agent/tool-loop architecture below is still a proposal; the shipped executor sends only explicitly selected text and never executes model output. Installing AI-KIT configures no API key or paid call.
 
 ### What can be reused
 

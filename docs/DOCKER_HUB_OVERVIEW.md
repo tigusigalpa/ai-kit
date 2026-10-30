@@ -6,9 +6,9 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current image:** `tigusigalpa/ai-kit:1.4.4`
+**Current image:** `tigusigalpa/ai-kit:1.4.5`
 
-**New in v1.4.4:** optional Codex helper configurations and a bounded OpenRouter text executor, with explicit inputs, request limits, budget reservations, usage accounting and result review. The image is published and verified; real model trials remain separate. PyPI currently provides 1.4.3; Python package 1.4.4 awaits separate owner-approved publication.
+**New in v1.4.5:** mandatory maximum disposable Docker cleanup without a size threshold, dedicated-builder lifecycle and separate Windows/WSL2 RAM and virtual-disk reclamation guidance. Docker publication is verified. PyPI 1.4.5 follows GitHub validation and separate human approval; the previous verified package is 1.4.4.
 
 **Published platform:** `linux/amd64`
 
@@ -33,16 +33,18 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed in v1.4.4
+## What changed in v1.4.5
 
-This image adds optional orchestration while preserving the existing installer defaults and optional modules.
+This release strengthens installed Docker housekeeping and includes the Windows installation/troubleshooting guide.
 
-- **Codex helper configurations:** exploration, implementation and review roles, inheriting parent permissions and requiring explicit delegation in a compatible client.
-- **OpenRouter text executor:** an explicitly selected model and project files, bounded input/output, request count and timeout, and provider price filters. Responses are stored for review and never executed as tools.
-- **Budget and usage accounting:** capped-key preflight, durable reservations, exclusive project locking and actual API cost/token records. Unknown billing blocks further requests; known generations can be reconciled without repeating inference. Native Codex costs remain separate.
-- **Review and preservation:** task/input identity checks, source-bound result acceptance, preserved local configuration and private state excluded from Git, archives and image builds.
-- **Independent opt-in:** `--with-orchestration` adds the module outside installation presets; its project configuration starts disabled. Preview makes no network requests or writes.
-- **Version and documentation:** `aikit --version` reports `aikit 1.4.4`. README includes the orchestration guide and prominent Docker/PyPI setup links. Python package publication remains a separate owner-approved step; the image already includes its CLI and resources.
+- **No cleanup threshold:** every Docker build, test and debugging task ends with zero eligible disposable resources, including interrupted runs after reports are saved.
+- **Complete resource coverage:** temporary containers, disposable anonymous/named volumes, networks, unnecessary test images and all reclaimable dedicated-builder cache.
+- **Host reclamation:** separate RAM return, logical Docker usage and physical disk allocation; WSL2 memory-reclaim settings and supported offline disk compaction require the actual backend and a safe maintenance window.
+- **Preserved data:** persistent databases, unrelated/active workloads and retained final/recovery images remain protected. Host-wide pruning requires an established owner scope and reviewed inventory.
+- **Clear execution boundary:** AI-KIT installs agent instructions. The CLI image does not mount the Docker socket, run a cleanup daemon or compact its host disk.
+- **Upgrade preservation:** unchanged managed rules update normally; locally adapted rules and entry points produce reviewable conflicts rather than being overwritten.
+
+Optional orchestration, dialogue memory, Web Design, Context7 and both pinned security integrations remain available.
 
 ### Project privacy and existing features
 
@@ -52,28 +54,28 @@ Shared dialogue memory, Web Design, Context7, both security integrations and pre
 
 ### Image verification
 
-Prepared and verified on 2026-10-18: **392 packaged Linux tests, 390 passed and two Windows-only skips**. Native Windows orchestration checks passed 22 of 24 tests with two environment skips. Before publication, 204 packaged resource files matched current sources and Docker smoke was repeated successfully: offline/read-only operation, installation and refusal, all optional modules, file preservation, stable reruns, actual context exclusions and SIGTERM. Root maintainer files were absent and application template counterparts present.
+Verified on 2026-10-30: **395 packaged Linux tests, 393 passed and two Windows-only skips**; three native Windows upgrade regressions; zero kit errors/warnings; source/archive privacy, strict Twine validation and fresh offline Windows wheel installation. Docker smoke passed offline/read-only operation, preview/apply/refusal, all optional modules, preserved files, stable reruns, SIGTERM and actual build-context exclusions. All 205 inspected packaged resources matched source. Anonymous registry manifest/configuration/layer read-back, immutable pull and published CLI/kit checks passed.
 
-The public registry digest, Linux manifest, filesystem layers and configuration match the tested build. Pulling by digest and running `aikit --version` and the bundled kit check succeeded. The [published tag](https://hub.docker.com/r/tigusigalpa/ai-kit/tags?name=1.4.4) and immutable pull example below identify this build. Real model calls, native Codex activation and measured cost savings remain unverified.
+The dedicated release builder reclaimed 340 MB, then its container and state volume were removed. Existing unrelated workloads remained running; no host-wide prune, WSL shutdown or physical disk compaction was performed. The image contains instructions for those host operations and does not execute them itself.
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.4.4
+docker pull tigusigalpa/ai-kit:1.4.5
 ```
 
 Check the CLI version and help:
 
 ```sh
-docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.4.4 --version
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.4.5 --version
 
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.4.4 --help
+  tigusigalpa/ai-kit:1.4.5 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -86,7 +88,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.4.4"
+image="tigusigalpa/ai-kit:1.4.5"
 
 runtime=(
   --rm --init
@@ -131,7 +133,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.4.4'
+$image = 'tigusigalpa/ai-kit:1.4.5'
 
 $runtime = @(
     '--rm', '--init',
@@ -302,13 +304,13 @@ To update a project, pull the selected image version, preview installation again
 
 Existing project documents, settings, private dialogue memory and local edits retain the normal preservation rules.
 
-For an immutable reference to this verified build:
+Immutable reference to this verified build:
 
 ```sh
-docker pull tigusigalpa/ai-kit@sha256:de5eabeb09fe738544b066006848ed3fc3854cdd9e7b7a3ed92f8c8a1fbf173e
+docker pull tigusigalpa/ai-kit@sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979
 ```
 
-Use the explicit version tag or digest. Existing tags were retained, including the verified unchanged 1.4.1 and 1.4.3 digests; this release did not assign a `latest` tag. Publication receipts and descriptive README/Overview updates are a later documentation snapshot than the bundled files; runtime and installed guidance match the tested build.
+Registry manifest digest: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`. Descriptive publication receipts can follow the tested image documentation snapshot without replacing its runtime or installed guidance.
 
 ## Documentation and license
 

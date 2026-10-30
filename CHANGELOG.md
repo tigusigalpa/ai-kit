@@ -2,15 +2,17 @@
 
 ## Unreleased
 
+## v1.4.5 (2026-10-30)
+
+- Require maximum disposable Docker cleanup after every build/test/debug task, without a size/age threshold; include containers, volumes, networks, unnecessary test images and dedicated-builder cache.
+- Require separate host RAM/disk reclamation, supported WSL2 settings and offline compaction; preserve persistent data, unrelated workloads and reviewed retention scope.
+- Updated installed AGENTS/docs; tested private/team upgrades and conflicts; published Docker Hub 1.4.5. PyPI follows owner approval. [Release record](docs/V1_4_5.md).
 - Added a detailed Windows README guide covering setup, inherited/stale PATH, persistent user PATH, isolated CLI, common errors and project updates.
 
 ## v1.4.4 (2026-10-18)
 
-- Verified owner-approved PyPI 1.4.4 publication, matching hosted/archive hashes, fresh online installation and offline wheel smoke; updated README and the [publication record](docs/V1_4_4.md#pypi-publication-status).
-- Published Docker Hub 1.4.4 after source/resource and Docker smoke verification; registry configuration/layers, immutable pull and CLI/kit checks passed. Refreshed README/Overview; [receipt](docs/V1_4_4.md#docker-hub-144). PyPI upload followed separate owner approval.
-- Added a prominent README comparison of the Docker image and Python package, with registry links, requirements, install commands and setup guides.
-- Added opt-in Codex helpers and a bounded OpenRouter text executor: explicit scope, capped-key preflight, durable reservations, private accounting, source-bound review and billing reconciliation without replay.
-- Preserved installer defaults, presets, settings, helper edits and private/team runtime exclusions; added mocked regressions, detailed [instructions](README.md#optional-orchestration), package/image preparation and [verification](docs/V1_4_4.md).
+- Added opt-in Codex helpers and a bounded OpenRouter executor with capped-key preflight, reservations, private accounting, source-bound review and billing reconciliation; preserved installer defaults/edits and added tests, packaging and instructions.
+- Published and verified Docker Hub/PyPI 1.4.4, exact hosted hashes, registry installation and image behavior; refreshed README/Overview. [Complete entry and evidence](docs/V1_4_4.md).
 
 ## v1.4.3 (2026-10-16)
 
