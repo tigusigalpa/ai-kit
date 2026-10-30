@@ -53,7 +53,7 @@ Open the application in your AI client and invoke `$ai-kit-bootstrap` in Codex o
 - **Conservative upgrades:** existing documents, settings and local adaptations are preserved; conflicts remain reviewable.
 - **Engineering workflows:** plan, implement, test, review and document, with explicit Git authorization.
 - **Routing and measurement:** offline recommendations, context selection, metrics and benchmark scaffolding. Live execution needs a separately configured worker.
-- **Container guidance:** non-root execution, lifecycle, image freshness, mounts and Kubernetes readiness appropriate to the workload.
+- **Container guidance:** Kubernetes readiness, image freshness and mandatory maximum disposable cleanup without a size threshold, including separate host RAM/disk reclamation. Persistent data and unrelated workloads remain protected; installation starts no cleanup or compaction process.
 
 ## Optional integrations
 
