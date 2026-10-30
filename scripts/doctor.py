@@ -158,13 +158,17 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
     if project_json_path.is_file():
         try:
             project_value = json.loads(project_json_path.read_text(encoding="utf-8"))
+            if not isinstance(project_value, dict):
+                raise ValueError("Project facts must be a JSON object")
             if type(project_value.get("schema")) is not int or project_value["schema"] != 1:
                 raise ValueError("Unsupported project schema; expected schema 1")
             modules = project_value.get("modules")
             if not isinstance(modules, list) or any(not isinstance(m, dict) for m in modules):
                 raise ValueError("Project modules must be a list of objects")
-        except (ValueError, json.JSONDecodeError) as exc:
+        except (ValueError, json.JSONDecodeError, UnicodeError) as exc:
             warnings.append(f"Invalid project.json: {exc}")
+            # Later comparisons assume the validated shape.
+            project_value = None
     context_path = target / "PROJECT_CONTEXT.md"
     if project_value is not None and context_path.is_file():
         try:
@@ -258,17 +262,24 @@ def freshness_warnings(target: Path, project: dict, warnings: list[str], info: l
 def link_warnings(target: Path) -> list[str]:
     """Report broken relative links/anchors in the installed project's Markdown."""
     problems = []
-    excluded = {".git", ".upstream-cache", "node_modules", "vendor", ".venv", "__pycache__"}
+    excluded = {".git", ".upstream-cache", "node_modules", "vendor", ".venv", "venv", "env", "__pycache__",
+                ".tox", ".nox", "build", "dist", "target", "site-packages", ".mypy_cache", ".pytest_cache"}
+    # Private runtime data stays out of reports: its text may quote dialogues or task inputs.
+    private = {".metrics", ".memory", ".design", ".orchestration", ".upstream-cache"}
     for directory, dirs, files in os.walk(target, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded and not install.is_link(Path(directory) / d)]
         if Path(directory) == target / "ai-kit":
-            dirs[:] = [d for d in dirs if d != ".metrics"]
+            dirs[:] = [d for d in dirs if d not in private]
         for name in files:
             path = Path(directory) / name
             if path.suffix != ".md":
                 continue
             relative = path.relative_to(target).as_posix()
-            text = path.read_text(encoding="utf-8")
+            try:
+                text = path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError):
+                problems.append(f"{relative}: not readable as UTF-8; links were not checked")
+                continue
             for link in check_kit.links(text):
                 if re.match(r"^[a-z][a-z0-9+.-]*:", link, re.I):
                     continue
@@ -282,7 +293,11 @@ def link_warnings(target: Path) -> list[str]:
                 if not destination.exists():
                     problems.append(f"{relative}: missing link: {link}")
                 elif anchor and destination.is_file() and destination.suffix == ".md":
-                    if anchor not in check_kit.headings(destination.read_text(encoding="utf-8")):
+                    try:
+                        headings = check_kit.headings(destination.read_text(encoding="utf-8"))
+                    except (OSError, UnicodeError):
+                        continue
+                    if anchor not in headings:
                         problems.append(f"{relative}: missing heading: {link}")
     return problems
 
@@ -293,23 +308,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=install.ROOT,
                         help="Reference distribution used for the bundle version comparison")
     parser.add_argument("--fix", action="store_true",
-                        help="Re-run the installer to restore missing/baseline files; local edits are preserved")
+                        help="Preview the installer repair plan (a full install/upgrade); local edits are preserved")
+    parser.add_argument("--apply", action="store_true",
+                        help="With --fix, write the previewed repair plan")
     args = parser.parse_args(argv)
+    if args.apply and not args.fix:
+        parser.error("--apply requires --fix")
     if args.fix:
         try:
             plan = install.build_plan(args.target, root=args.root)
-            applied = install.apply_plan(plan)
+            applied = install.apply_plan(plan) if args.apply else False
             report = examine(args.target, root=args.root)
-        except (OSError, ValueError, json.JSONDecodeError) as exc:
+        except (OSError, ValueError, UnicodeError, json.JSONDecodeError) as exc:
             print(f"Fix refused: {exc}", file=sys.stderr)
             return 1
-        print(json.dumps({"fix": {"writes": sorted(plan["actions"]),
+        print(json.dumps({"fix": {"preview": not args.apply, "writes": sorted(plan["actions"]),
                                   "conflicts": sorted(plan["conflicts"]), "applied": applied},
                           "report": report}, indent=2))
         return 2 if (plan["conflicts"] or report["errors"]) else 0
     try:
         report = examine(args.target, root=args.root)
-    except OSError as exc:
+    except (OSError, UnicodeError) as exc:
         print(f"Examination failed: {exc}", file=sys.stderr)
         return 1
     print(json.dumps(report, indent=2))

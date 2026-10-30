@@ -505,9 +505,13 @@ class InstallerTests(unittest.TestCase):
     def test_ci_extra_installs_workflow_and_warns_in_private_mode(self):
         plan = self.plan(extras=["ci"])
         self.assertIn(".github/workflows/ai-kit.yml", plan["actions"])
-        self.assertTrue(any("team mode is the intended companion" in warning for warning in plan["warnings"]))
+        self.assertTrue(any("use team mode for a meaningful check" in warning for warning in plan["warnings"]))
         self.apply(extras=["ci"])
-        self.assertIn("AI-KIT project check", (self.target / ".github/workflows/ai-kit.yml").read_text())
+        workflow = (self.target / ".github/workflows/ai-kit.yml").read_text()
+        self.assertIn("AI-KIT project check", workflow)
+        # The project check validates committed files; it never fetches or runs AI-KIT itself.
+        self.assertNotIn("git clone", workflow)
+        self.assertNotIn("install.py", workflow)
 
     def test_unknown_extra_is_refused(self):
         with self.assertRaises(ValueError):

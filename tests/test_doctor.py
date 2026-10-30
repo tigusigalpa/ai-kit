@@ -132,11 +132,24 @@ class DoctorTests(unittest.TestCase):
         (self.target / "ai-kit/CORE.md").unlink()
         self.assertTrue(any("Missing managed file: ai-kit/CORE.md" in error
                             for error in self.examine()["errors"]))
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            doctor.main([str(self.target), "--root", str(self.source), "--fix"])
+        # --fix alone previews the repair plan and writes nothing.
+        preview = json.loads(output.getvalue())["fix"]
+        self.assertTrue(preview["preview"])
+        self.assertIn("ai-kit/CORE.md", preview["writes"])
+        self.assertFalse((self.target / "ai-kit/CORE.md").exists())
         with contextlib.redirect_stdout(io.StringIO()):
-            code = doctor.main([str(self.target), "--root", str(self.source), "--fix"])
+            code = doctor.main([str(self.target), "--root", str(self.source), "--fix", "--apply"])
         self.assertEqual(code, 0)
         self.assertTrue((self.target / "ai-kit/CORE.md").is_file())
         self.assertEqual(self.examine()["errors"], [])
+
+    def test_apply_without_fix_is_refused(self):
+        self.apply()
+        with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit):
+            doctor.main([str(self.target), "--root", str(self.source), "--apply"])
 
     def test_fix_is_a_noop_for_a_healthy_installation(self):
         self.apply()

@@ -11,7 +11,6 @@ import sys
 import unicodedata
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import install
 import memory_import as importer
 import memory_store as store
 
@@ -109,8 +108,15 @@ def candidates(sources: dict[str, dict]) -> list[dict]:
                     remaining.append(line)
                     continue
                 match = line_pattern.fullmatch(line) if fence is None else None
+                claim_key = None
                 if match and message["role"] in {"user", "assistant", "unknown"}:
-                    entries.append((key(match[2]), match[1].lower() if match[1] else "note", match[3]))
+                    try:
+                        claim_key = key(match[2])
+                    except ValueError:
+                        # A label whose case folding leaves marks (e.g. Turkish "İ") stays part of the note.
+                        claim_key = None
+                if claim_key is not None:
+                    entries.append((claim_key, match[1].lower() if match[1] else "note", match[3]))
                 else:
                     remaining.append(line)
                 if len(entries) + len(result) > 8000:

@@ -76,6 +76,8 @@ SCOPED_FORMATS = {"claude-paths": ".md", "cline-paths": ".md", "cursor-globs": "
 MODULE_PATH = re.compile(r"/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*/)*")
 # Recorded commands become allow rules only when they are one plain command.
 UNSAFE_COMMAND = re.compile(r"[;&|<>`$()*\\\"'\r\n]")
+UPSTREAM_TEST_FILE = re.compile(r"\.test\.[cm]?[jt]s$")
+DOCKER_CLEANUP_MODES = ("maximum", "keep-cache")
 # tr strips CR so a CRLF checkout of the hook script still runs under sh.
 SESSION_START_COMMAND = "tr -d '\\r' < \"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\" | sh"
 # Entries written by v0.3.6-v0.4.6, which managed the whole client settings file.
@@ -275,6 +277,8 @@ def validate_settings(settings: dict) -> None:
     for field in EXTRA_SETTINGS_KEYS.values():
         if field in settings and not isinstance(settings[field], bool):
             raise ValueError(f"Settings {field} must be a boolean")
+    if "docker_cleanup" in settings and settings["docker_cleanup"] not in DOCKER_CLEANUP_MODES:
+        raise ValueError("Settings docker_cleanup must be one of: " + ", ".join(DOCKER_CLEANUP_MODES))
     upstream = settings.get("upstream")
     if upstream is not None:
         if not isinstance(upstream, dict):
@@ -282,11 +286,6 @@ def validate_settings(settings: dict) -> None:
         for field in ("url", "ref", "source_directory"):
             if field in upstream and not isinstance(upstream[field], str):
                 raise ValueError(f"Settings upstream.{field} must be a string")
-
-
-def security_audit_files(root: Path = ROOT) -> dict[str, bytes]:
-    """Return the verified Cloudflare payload (retained for existing callers)."""
-    return upstream_skill_files("security-audit", root)
 
 
 def upstream_skill_files(name: str, root: Path = ROOT) -> dict[str, bytes]:
@@ -362,6 +361,9 @@ def upstream_skill_files(name: str, root: Path = ROOT) -> dict[str, bytes]:
         if (total > 5 * 1024 * 1024 or len(data) != record["size"]
                 or digest(data) != record["sha256"] or blob != record["git_blob"]):
             raise ValueError(f"{name} upstream integrity mismatch: {filename}")
+        if UPSTREAM_TEST_FILE.search(filename):
+            # Verified with the payload, but never installed: host test runners would collect it.
+            continue
         incoming[package_prefix + filename] = data
     incoming[package_prefix + "UPSTREAM.json"] = manifest_bytes
     return incoming
@@ -531,7 +533,9 @@ def claude_allow_rules(modules: list[dict]) -> list[str]:
     for module in modules:
         for key in ("test", "lint", "build"):
             command = module["commands"].get(key)
-            if command and command == command.strip() and not UNSAFE_COMMAND.search(command):
+            # Repository wrapper scripts such as ./mvnw or ./gradlew download toolchains; keep them prompted.
+            if (command and command == command.strip() and not UNSAFE_COMMAND.search(command)
+                    and not command.startswith("./")):
                 # A trailing " *" also matches the bare command.
                 rule = f"Bash({command} *)"
                 if rule not in rules:
@@ -933,7 +937,9 @@ def detect_facts(target: Path) -> dict:
                 facts["language"] = cargo["language"]
             if facts["version"] is None:
                 facts["version"] = cargo["version"]
-            facts["commands"].update(cargo["commands"])
+            # Secondary stacks fill gaps only; a primary language keeps its test/lint/build commands.
+            for key, value in cargo["commands"].items():
+                facts["commands"].setdefault(key, value)
         if any(name.endswith((".csproj", ".fsproj", ".vbproj")) for name in files) or "global.json" in files:
             project_files = [name for name in sorted(files)
                            if name.endswith((".csproj", ".fsproj", ".vbproj"))]
@@ -944,7 +950,8 @@ def detect_facts(target: Path) -> dict:
                 facts["language"] = dotnet["language"]
             if facts["version"] is None:
                 facts["version"] = dotnet["version"]
-            facts["commands"].update(dotnet["commands"])
+            for key, value in dotnet["commands"].items():
+                facts["commands"].setdefault(key, value)
         if any(name in files for name in ("pom.xml", "mvnw", "build.gradle", "build.gradle.kts", "gradlew")):
             java_manifest = next(name for name in ("pom.xml", "mvnw", "build.gradle", "build.gradle.kts", "gradlew")
                                  if name in files)
@@ -955,32 +962,59 @@ def detect_facts(target: Path) -> dict:
                 facts["language"] = java["language"]
             if facts["version"] is None:
                 facts["version"] = java["version"]
-            facts["commands"].update(java["commands"])
+            for key, value in java["commands"].items():
+                facts["commands"].setdefault(key, value)
         infra_manifests, infra = _infra_facts(module, files)
         if infra_manifests:
             facts["manifests"].extend(infra_manifests)
             facts["profiles"].append("INFRA")
             if facts["language"] is None:
                 facts["language"] = infra["language"]
-            facts["commands"].update(infra["commands"])
+            for key, value in infra["commands"].items():
+                facts["commands"].setdefault(key, value)
         if facts["manifests"]:
             facts["profiles"] = sorted(set(facts["profiles"]))
             modules[prefix] = facts
     return {"modules": [modules[key] for key in sorted(modules)]}
 
 
+def as_lf(data: bytes) -> bytes:
+    return data.replace(b"\r\n", b"\n")
+
+
+def eol_variant_hashes(data: bytes) -> set[str]:
+    """Hashes of the same text with LF and CRLF endings; earlier bundles shipped either form."""
+    lf = as_lf(data)
+    return {digest(data), digest(lf), digest(lf.replace(b"\n", b"\r\n"))}
+
+
+def readable_project_file(target: Path, relative: str) -> Path | None:
+    """Resolve a project file for reading only; links inside the project are fine, escapes are skipped."""
+    parts = relative.replace("\\", "/").split("/")
+    if not parts or any(part in {"", ".", ".."} for part in parts):
+        return None
+    path = target.joinpath(*parts)
+    try:
+        resolved = path.resolve()
+        resolved.relative_to(target.resolve())
+    except (OSError, ValueError):
+        return None
+    return resolved if resolved.is_file() else None
+
+
 def project_fact_evidence(target: Path, facts: dict) -> dict:
-    """Return stable, path-safe manifest digests for doctor freshness checks."""
+    """Return stable manifest digests for doctor freshness checks without write-time path guards."""
     modules = []
     for module in facts["modules"]:
         prefix = "" if module["path"] == "/" else module["path"].strip("/") + "/"
         manifests = {}
         for name in sorted(module["manifests"]):
-            path = safe_path(target, prefix + name)
-            if is_link(path):
-                raise ValueError("Refusing linked project manifest: " + prefix + name)
-            if path.is_file():
-                manifests[name] = digest(path.read_bytes())
+            path = readable_project_file(target, prefix + name)
+            if path is not None:
+                try:
+                    manifests[name] = digest(path.read_bytes())
+                except OSError:
+                    continue
         modules.append({"path": module["path"], "manifests": manifests,
                         "profiles": list(module["profiles"]), "commands": dict(module["commands"])})
     return {"schema": 1, "modules": modules}
@@ -1059,7 +1093,10 @@ def project_documents(settings: dict) -> set[str]:
 def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                language: str | None = None, conventions: str | None = None,
                agents: list[str] | None = None, accept_local: list[str] | None = None,
-               extras: list[str] | None = None, preset: str | None = None) -> dict:
+               extras: list[str] | None = None, preset: str | None = None,
+               docker_cleanup: str | None = None) -> dict:
+    if docker_cleanup is not None and docker_cleanup not in DOCKER_CLEANUP_MODES:
+        raise ValueError("Docker cleanup must be one of: " + ", ".join(DOCKER_CLEANUP_MODES))
     if preset is not None and preset not in PRESETS:
         raise ValueError(f"Unknown preset: {preset}; choose one of {', '.join(sorted(PRESETS))}")
     target = target.absolute()
@@ -1109,6 +1146,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if name in enabled_extras:
             settings[key] = True
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
+    if docker_cleanup is not None:
+        settings["docker_cleanup"] = docker_cleanup
     validate_settings(settings)
     owned_documents = project_documents(settings)
     facts = detect_facts(target)
@@ -1230,10 +1269,13 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             accepted[relative] = {"installed_hash": source_hash, "source_hash": source_hash}
             if current != data:
                 actions[relative] = {"data": data, "old": current}
-        elif previous.get("source_hash") == source_hash:
-            # No upstream change: retain local adaptations without rewriting them.
-            accepted[relative] = previous
+        elif previous.get("source_hash") in eol_variant_hashes(data):
+            # No upstream change (line endings alone do not count): retain local bytes without rewriting.
+            accepted[relative] = {**previous, "source_hash": source_hash}
             preserved.append(relative)
+        elif not previous and as_lf(current) == as_lf(data):
+            # An untracked file that differs only in line endings is the same content.
+            accepted[relative] = {"installed_hash": digest(current), "source_hash": source_hash}
         elif not previous.get("local_adaptation") and previous.get("installed_hash") == digest(current):
             actions[relative] = {"data": data, "old": current}
             accepted[relative] = {"installed_hash": source_hash, "source_hash": source_hash}
@@ -1250,8 +1292,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
               "PROJECT_CONTEXT.md", "/PROJECT_CONTEXT.md", "/.claude/", "SKILL.md"}
     warnings = ["Existing ignore rules outside the managed block need project-specific visibility review."]
     if "ci" in enabled_extras and mode == "private":
-        warnings.append("The CI check reads installer state that private sharing mode excludes from Git; "
-                        "team mode is the intended companion.")
+        warnings.append("The CI check validates committed AI-KIT files, but private sharing mode keeps them "
+                        "out of Git; use team mode for a meaningful check.")
     if "claude" not in agents and ({"guards", "session-start"} & enabled_extras):
         warnings.append("guards/session-start client wiring requires the claude agent selection; "
                         "only the shared files were installed.")
@@ -1405,10 +1447,22 @@ def atomic_write(path: Path, data: bytes) -> None:
     try:
         with temp.open("xb") as stream:
             stream.write(data)
+            stream.flush()
+            os.fsync(stream.fileno())
         os.replace(temp, path)
     finally:
         if temp.exists():
             temp.unlink()
+
+
+def exclusive_lock(path: Path) -> int:
+    """Create a cooperative writer lock; a lock left by a crash needs an informed manual removal."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        return os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+    except FileExistsError:
+        raise ValueError(f"Another AI-KIT writer holds {path}; if no aikit process is running, "
+                         "remove that lock file and retry") from None
 
 
 def write_once(path: Path, data: bytes) -> bool:
@@ -1520,6 +1574,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--mode", choices=["private", "team"])
     parser.add_argument("--chat-language")
     parser.add_argument("--conventions", choices=["owner", "standard"])
+    parser.add_argument("--docker-cleanup", choices=list(DOCKER_CLEANUP_MODES),
+                        help="Post-Docker cleanup: maximum (default) removes every eligible disposable resource "
+                             "and reclaims host resources; keep-cache keeps the dedicated project builder cache")
     parser.add_argument("--agent", choices=sorted(load_agent_registry()["names"]), action="append")
     parser.add_argument("--interactive", action="store_true",
                         help="Prompt for sharing mode, language, conventions, agents, and extras")
@@ -1580,7 +1637,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         plan = build_plan(args.target, mode=mode, language=language,
                           conventions=conventions, agents=agents, accept_local=args.accept_local,
-                          extras=extras, preset=preset)
+                          extras=extras, preset=preset, docker_cleanup=args.docker_cleanup)
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
                           "preset": plan["preset"],
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
@@ -1594,7 +1651,12 @@ def main(argv: list[str] | None = None) -> int:
             applied = apply_plan(plan)
             if applied and args.check:
                 import doctor
-                report = doctor.examine(plan["target"], root=ROOT)
+                try:
+                    report = doctor.examine(plan["target"], root=ROOT)
+                except (OSError, ValueError, UnicodeError) as exc:
+                    # The writes above already succeeded; report the check failure as such.
+                    print(f"Installation applied; doctor check failed: {exc}", file=sys.stderr)
+                    return 1
                 print(json.dumps({"doctor": report}, indent=2))
                 return 1 if report["errors"] else 0
         return 2 if needs_review(plan) else 0

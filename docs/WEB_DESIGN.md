@@ -2,7 +2,7 @@
 
 ## Scope and ownership
 
-The optional module turns a brief and annotated references into project design memory, stack-aware implementation and recorded UI acceptance. The [README guide](../README.md#web-design) is human onboarding; [WEB-DESIGN](../template/ai-kit/WEB-DESIGN.md) owns the installed workflow. Conditional references own [Blade implementation](../template/ai-kit/web-design/LARAVEL.md), [libraries](../template/ai-kit/web-design/LIBRARIES.md), [tools](../template/ai-kit/web-design/TOOLS.md) and [UI evidence](../template/ai-kit/web-design/REVIEW.md). Existing Core/engineering/security/stack policies remain canonical.
+The optional module turns a brief and annotated references into project design memory, stack-aware implementation and recorded UI acceptance. The [README guide](guide/WEB_DESIGN.md) is human onboarding; [WEB-DESIGN](../template/ai-kit/WEB-DESIGN.md) owns the installed workflow. Conditional references own [Blade implementation](../template/ai-kit/web-design/LARAVEL.md), [libraries](../template/ai-kit/web-design/LIBRARIES.md), [tools](../template/ai-kit/web-design/TOOLS.md) and [UI evidence](../template/ai-kit/web-design/REVIEW.md). Existing Core/engineering/security/stack policies remain canonical.
 
 No external skill/runtime bytes are bundled. Local skills use normal relevant discovery and check `web_design=true`; extraction describes requested reference work without automatically starting a CLI. TypeUI/MCP authentication, external skill/package setup and website publication remain separate actions.
 

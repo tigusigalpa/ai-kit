@@ -22,11 +22,13 @@ def docker(arguments: list[str], *, expected: int = 0, timeout: int = 180) -> st
 
 def runtime_arguments(image: str, project: Path | None = None, *, readonly: bool = False,
                       entrypoint: str | None = None, create: bool = False,
-                      name: str | None = None) -> list[str]:
+                      name: str | None = None, init: bool = True) -> list[str]:
     arguments = ["create" if create else "run"]
     if not create:
         arguments.append("--rm")
-    arguments.extend(["--init", "--network", "none", "--read-only", "--cap-drop", "ALL",
+    if init:
+        arguments.append("--init")
+    arguments.extend(["--network", "none", "--read-only", "--cap-drop", "ALL",
                       "--security-opt", "no-new-privileges", "--tmpfs", "/tmp:rw,nosuid,nodev,size=256m",
                       "--label", "ai-kit.disposable=true"])
     if hasattr(os, "getuid") and os.getuid() != 0:
@@ -77,11 +79,12 @@ def context_smoke(source: Path, base: Path, builder: str | None) -> None:
     print("Build context: required sources included; synthetic secrets/private state excluded.", flush=True)
 
 
-def signal_smoke(image: str, project: Path) -> None:
+def signal_smoke(image: str, project: Path, *, init: bool) -> None:
+    """Without --init the CLI is PID 1, as in a Kubernetes Job, and must handle SIGTERM itself."""
     name = "aikit-cli-signal-" + uuid.uuid4().hex[:12]
     created = False
     try:
-        docker([*runtime_arguments(image, project, readonly=True, create=True, name=name),
+        docker([*runtime_arguments(image, project, readonly=True, create=True, name=name, init=init),
                 "install", "/workspace", "--interactive"])
         created = True
         docker(["start", name])
@@ -94,7 +97,8 @@ def signal_smoke(image: str, project: Path) -> None:
         state = json.loads(docker(["inspect", name]))[0]
         if state["State"]["Running"] or state["State"]["ExitCode"] != 143:
             raise RuntimeError("SIGTERM did not terminate the CLI without a forced kill")
-        print("SIGTERM reached the foreground CLI; preview terminated with exit 143.", flush=True)
+        mode = "with --init" if init else "as PID 1 without --init"
+        print(f"SIGTERM reached the foreground CLI {mode}; preview terminated with exit 143.", flush=True)
     finally:
         if created:
             record = json.loads(docker(["inspect", name]))[0]
@@ -115,6 +119,15 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
     identity = json.loads(docker([*runtime_arguments(image, entrypoint="python"), "-c", identity_code]))
     if identity["uid"] == 0 or identity["version"] != config["Labels"]["org.opencontainers.image.version"]:
         raise RuntimeError("Runtime UID/version does not match the image contract")
+    # Every distribution must carry LF text; vendored upstream bytes are pinned separately.
+    newline_code = ("import pathlib,aikit.aikit_cli as c; root=c.ROOT; "
+                    "bad=[p.relative_to(root).as_posix() for p in root.rglob('*') if p.is_file() "
+                    "and 'vendor' not in p.relative_to(root).parts and b'\\r' in p.read_bytes()[:1048576] "
+                    "and p.suffix in {'.md','.py','.json','.toml','.yml','.yaml','.txt','.sh','.mdc','.cfg','.in'}]; "
+                    "print(len(bad), *bad[:5])")
+    crlf = docker([*runtime_arguments(image, entrypoint="python"), "-c", newline_code]).split()
+    if crlf[0] != "0":
+        raise RuntimeError("Packaged text files contain CR line endings: " + " ".join(crlf[1:]))
     docker([*runtime_arguments(image), "--help"])
     docker([*runtime_arguments(image), "route", "implement a feature"])
     docker([*runtime_arguments(image), "check"])
@@ -153,7 +166,8 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
         repeated = json.loads(docker([*runtime_arguments(image, project), "install", "/workspace", "--apply"]))
         if repeated["writes"]:
             raise RuntimeError("Repeated installation was not stable")
-        signal_smoke(image, project)
+        signal_smoke(image, project, init=True)
+        signal_smoke(image, project, init=False)
         if source:
             context_smoke(source, base, builder)
     print("CLI image smoke passed: offline/read-only runtime, preview, refusal, all extras, preservation and rerun.", flush=True)

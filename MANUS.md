@@ -1,3 +1,3 @@
 # Manus project entry
 
-Read `AGENTS.md` and the current `PROJECT_CONTEXT.md` before making changes. Open relevant rules through `WIKI.md`; maintain context and skills according to `ai-kit/SKILLS.md`. Supply this file explicitly if the environment does not read it automatically.
+Read `CONTRIBUTING.md` before making changes; also read the optional local maintainer files `AGENTS.md` and `PROJECT_CONTEXT.md` when they exist. Maintain skills according to `template/ai-kit/SKILLS.md`. Supply this file explicitly if the environment does not read it automatically.

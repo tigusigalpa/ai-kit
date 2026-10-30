@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import check_distribution
 
 ROOT = Path(__file__).resolve().parents[1]
-PRIVATE_PROBES = ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "auth.json",
+PRIVATE_PROBES = ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "CLAUDE.local.md", "auth.json",
                   "ai-kit/.orchestration/state.json", "ai-kit/.memory/session/private.json", "ai-kit/.metrics/private.json",
                   "ai-kit/.upstream-cache/private.md", "ai-kit/.design/private.md",
                   "docs/.private/private.md", "docs/auth.json", "docs/.env.release",

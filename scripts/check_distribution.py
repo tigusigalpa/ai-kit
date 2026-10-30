@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PROJECT_NAME = "ai-kit-python"
 LICENSES = ("LICENSE", "template/ai-kit/vendor/security-audit/LICENSE",
             "template/ai-kit/vendor/strix/LICENSE")
-LOCAL_FILES = {"AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"}
+LOCAL_FILES = {"AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "CLAUDE.local.md"}
 PRIVATE_PARTS = {".git", ".aws", ".codex", ".claude", ".secrets", ".metrics", ".memory",
                  ".upstream-cache", ".design", ".orchestration", ".private", "__pycache__"}
 REQUIRED = {"VERSION", "LICENSE", "aikit_cli.py", "scripts/install.py", "scripts/check_distribution.py",

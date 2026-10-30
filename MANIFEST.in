@@ -1,5 +1,5 @@
 include VERSION LICENSE README.md CHANGELOG.md SECURITY.md SKILL.md BOOTSTRAP_PROMPT.md CONTRIBUTING.md
-exclude AGENTS.md PROJECT_CONTEXT.md WIKI.md
+exclude AGENTS.md PROJECT_CONTEXT.md WIKI.md CLAUDE.local.md
 include .gitignore .gitattributes
 include Dockerfile .dockerignore
 include pyproject.toml Makefile MANIFEST.in

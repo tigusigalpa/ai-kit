@@ -16,10 +16,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import install
 
 ROOT = Path(__file__).resolve().parents[1]
-# User-facing onboarding/publication copy has no size quota; instruction budgets remain scoped.
-DOC_BUDGET = 12000
+# User-facing onboarding/publication copy has no size quota; always-loaded instruction budgets stay separate.
+DOC_BUDGET = 24000
 UNBOUNDED_DOCUMENTS = frozenset(("README.md", "docs/DOCKER_HUB_OVERVIEW.md"))
 LOCAL_MAINTAINER_FILES = frozenset(("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"))
+# Local-only root files: the maintainer files (which have template counterparts) plus a personal Claude entry.
+LOCAL_ONLY_FILES = LOCAL_MAINTAINER_FILES | {"CLAUDE.local.md"}
 
 
 
@@ -33,7 +35,7 @@ def source_files(root: Path):
             dirs[:] = [d for d in dirs if d not in {".metrics", ".memory", ".orchestration"}]
         for name in files:
             path = Path(directory) / name
-            if path.parent == root and name in LOCAL_MAINTAINER_FILES:
+            if path.parent == root and name in LOCAL_ONLY_FILES:
                 continue
             if path.suffix != ".pyc":
                 yield path
@@ -41,17 +43,16 @@ def source_files(root: Path):
 
 def headings(text: str) -> set[str]:
     result, counts = set(), {}
-    fenced = False
-    marker = ""
+    opening = None
     for line in text.splitlines():
-        if re.match(r"^\s*([~]{3,}|[\x60]{3,})", line):
-            token = line.strip()[0]
-            if not fenced:
-                fenced, marker = True, token
-            elif token == marker:
-                fenced = False
+        if opening is None and fence(line):
+            opening = fence(line)
             continue
-        if fenced or not re.match(r"^#{1,6}\s", line):
+        if opening is not None:
+            if closes(line, opening):
+                opening = None
+            continue
+        if not re.match(r"^#{1,6}\s", line):
             continue
         label = re.sub(r"^#{1,6}\s+", "", line).strip().lower()
         label = re.sub(r"<[^>]+>", "", label)
@@ -82,9 +83,33 @@ def metadata(text: str) -> dict[str, str]:
     return fields
 
 
+def fence(line: str) -> str | None:
+    """Return the fence run that opens or closes a code block on this line, if any."""
+    match = re.match(r"^\s*([\x60]{3,}|~{3,})", line)
+    return match.group(1) if match else None
+
+
+def closes(line: str, opening: str) -> bool:
+    """CommonMark: a block closes only on a same-character fence at least as long as its opening."""
+    run = fence(line)
+    return bool(run) and run[0] == opening[0] and len(run) >= len(opening) and line.strip() == run
+
+
+def strip_fences(text: str) -> str:
+    kept, opening = [], None
+    for line in text.splitlines(keepends=True):
+        if opening is None:
+            opening = fence(line)
+            if opening is None:
+                kept.append(line)
+        elif closes(line, opening):
+            opening = None
+    return "".join(kept)
+
+
 def links(text: str):
-    # Fenced examples are data, not Markdown links.
-    text = re.sub(r"(?ms)^\s*(?:~~~|[\x60]{3}).*?^\s*(?:~~~|[\x60]{3})\s*$", "", text)
+    # Fenced examples, including exported dialogues with longer fences, are data, not Markdown links.
+    text = strip_fences(text)
     return re.findall(r"!?\[[^\]]*\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)", text)
 
 
@@ -103,7 +128,7 @@ def visibility(root: Path, git: str) -> list[str]:
             return result.returncode == 0
 
         (scratch / ".gitignore").write_bytes((root / ".gitignore").read_bytes())
-        for relative in sorted(LOCAL_MAINTAINER_FILES):
+        for relative in sorted(LOCAL_ONLY_FILES):
             if not ignored(relative):
                 errors.append("Local maintainer file must be ignored: " + relative)
         for p in source_files(root):
@@ -219,6 +244,16 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     for relative in required:
         if not (root / relative).is_file():
             errors.append("Missing: " + relative)
+    # Tracked root entries must work in a clean clone, where local maintainer files are absent.
+    for entry in ("CLAUDE.md", "KIMI.md", "MANUS.md"):
+        path = root / entry
+        if path.is_file():
+            text = path.read_text(encoding="utf-8")
+            for name in sorted(LOCAL_MAINTAINER_FILES):
+                if re.search(r"(?m)^\s*@" + re.escape(name) + r"\s*$", text):
+                    errors.append(f"{entry} imports local-only {name}; import CONTRIBUTING.md instead")
+            if "CONTRIBUTING.md" not in text:
+                errors.append(f"{entry} must point to CONTRIBUTING.md")
     pyproject = root / "pyproject.toml"
     if pyproject.is_file():
         text = pyproject.read_text(encoding="utf-8")
@@ -231,9 +266,10 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     vendored_files: set[Path] = set()
     for name in install.OPTIONAL_SKILLS:
         try:
-            package_files = install.upstream_skill_files(name, root)
-            vendored_files.update(root / "template" / path for path in package_files
-                                 if path != "ai-kit/vendor/" + name + "/UPSTREAM.json")
+            install.upstream_skill_files(name, root)
+            # The verified tree includes upstream tests that are pinned but not installed into projects.
+            vendored_files.update(path for path in (root / "template/ai-kit/vendor" / name).rglob("*")
+                                  if path.is_file())
         except (OSError, ValueError) as exc:
             errors.append(f"Invalid pinned {name} package: " + str(exc))
     for p in source_files(root):
@@ -281,7 +317,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
             except ValueError:
                 errors.append(f"{p}: link escapes reference: {target}")
                 continue
-            if destination.parent == root.resolve() and destination.name in LOCAL_MAINTAINER_FILES:
+            if destination.parent == root.resolve() and destination.name in LOCAL_ONLY_FILES:
                 errors.append(f"{p}: public link depends on local maintainer file: {target}")
                 continue
             if not destination.exists():

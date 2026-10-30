@@ -20,7 +20,7 @@ python -m pip install ai-kit-python
 aikit --version
 ~~~
 
-Keep that environment local; it is not an application dependency. For a reviewed checkout, `python -m pip install .` remains available. Update via `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`. Upgrading the CLI does not rewrite installed project instructions: preview `aikit install TARGET` and apply after review. [Usage](../README.md#packaged-cli-and-pypi-status).
+Keep that environment local; it is not an application dependency. For a reviewed checkout, `python -m pip install .` remains available. Update via `pipx upgrade ai-kit-python` or `python -m pip install --upgrade ai-kit-python`. Upgrading the CLI does not rewrite installed project instructions: preview `aikit install TARGET` and apply after review. [Usage](guide/INSTALL.md#get-the-cli).
 
 ## Build and validate without uploading
 
@@ -31,7 +31,6 @@ $releaseEnv = Join-Path ([System.IO.Path]::GetTempPath()) ('ai-kit-build-env-' +
 python -m venv "$releaseEnv"
 & "$releaseEnv\Scripts\Activate.ps1"
 python -m pip install --require-hashes -r docker/build-requirements.txt
-python -m pip install -r docker/pypi-requirements.txt
 
 python scripts/check_kit.py
 python -m unittest discover -s tests -v
@@ -39,8 +38,16 @@ python -m unittest discover -s tests -v
 $distPath = Join-Path ([System.IO.Path]::GetTempPath()) ('ai-kit-dist-' + [guid]::NewGuid())
 python tests/build_distribution.py "$distPath"
 python scripts/check_distribution.py archives "$distPath"
-python -m twine check --strict "$distPath/*"
 python tests/wheel_smoke.py "$distPath"
+~~~
+
+Run the description check from a separate environment so its unpinned dependencies never touch the build (CI uses a separate `twine-check` job):
+
+~~~powershell
+$twineEnv = Join-Path ([System.IO.Path]::GetTempPath()) ('ai-kit-twine-env-' + [guid]::NewGuid())
+python -m venv "$twineEnv"
+& "$twineEnv\Scripts\python.exe" -m pip install -r docker/pypi-requirements.txt
+& "$twineEnv\Scripts\python.exe" -m twine check --strict "$distPath/*"
 ~~~
 
 Use separate commands or stop on each nonzero exit. The build helper copies public source inputs into a disposable directory, injects synthetic private files, runs `build` to create sdist then wheel from sdist, and rejects leaked markers. Output inside the checkout or mixed with old archives refuses. The archive checker inspects paths without extracting, confirms metadata/version, description, CLI, resources, licenses and private-file exclusions, and reports SHA-256. Fresh-venv smoke exercises the installed CLI, optional resources and dialogue pipeline offline. Also check Python 3.10 compatibility and preserve the cross-platform CI matrix. Synthetic probes never read real credentials or conversations.
@@ -68,14 +75,14 @@ Configure these account settings separately when publication is authorized. PyPI
 
 The verified production environment requires reviewer `tigusigalpa` (GitHub user ID 2721390). Its custom deployment policy is **type `tag`, pattern `v*`**; matching branch names are not admitted. The same reviewer and all other environment protections were preserved when replacing the earlier v1.4.2-only policy. Self-review remains allowed so the sole owner can approve a run they started. The required confirmation must be performed by the human owner: agents must not approve or bypass it. [Contribution policy](../CONTRIBUTING.md#python-package-releases).
 
-Keep publisher/environment names identical. No PyPI API token is stored: the pinned PyPA action exchanges GitHub OIDC identity for a short-lived credential after approval. Only upload jobs receive `id-token: write`; build/tests have read-only repository access. Upload jobs consume the validated same-run artifact without checking out or building source. Manual and Release production runs share a per-tag concurrency group and do not cancel each other during approval.
+Keep publisher/environment names identical. No PyPI API token is stored: the pinned PyPA action exchanges GitHub OIDC identity for a short-lived credential after approval. Only upload jobs receive `id-token: write`; build/tests have read-only repository access. The build job installs only hash-pinned tools (`build`, `setuptools`, `wheel` and their dependencies) and publishes the SHA-256 of every artifact as a job output. A separate `twine-check` job runs the unpinned description checker on downloaded copies. Upload jobs need both jobs, consume the same-run artifact without checking out or building source, and verify every file against the build job's digests before publishing. Manual and Release production runs share a per-tag concurrency group and do not cancel each other during approval.
 
 ## Release to PyPI with owner approval
 
 1. Review VERSION, metadata, description, README, licenses and changes since the prior release; complete checks and Docker-impact handling. Any Git commit/tag/push needs its own authorization. The reviewed release commit must contain the updated workflow and event guard. Existing tags, including v1.4.2, stay unchanged.
 2. Prepare a new version, for example VERSION `1.5.0`, and a new tag `v1.5.0` at that commit. The automatic path accepts canonical stable `vMAJOR.MINOR.PATCH` tags; release tag, runner ref and the tag's VERSION must agree exactly. The guard also checks the event's repository against the canonical runner repository. Release notes/body are not commands or publication inputs.
 3. Publish a stable GitHub Release for that tag. The workflow first verifies event identity, then validates the kit, runs tests, builds sdist followed by wheel, checks metadata/resources/privacy/licenses/description and smoke-installs offline. A failure stops the upload job.
-4. In **Actions → Prepare or publish Python package**, wait for `build` to succeed. The `pypi` job then pauses at **Review deployments**. The human owner inspects the tag, commit and checks, selects `pypi`, and clicks **Approve and deploy**. Rejecting or leaving it pending uploads nothing. GitHub's required reviewer is the final gate; the agent does not submit this approval.
+4. In **Actions → Prepare or publish Python package**, wait for `build` and `twine-check` to succeed. The `pypi` job then pauses at **Review deployments**. The human owner inspects the tag, commit and checks, selects `pypi`, and clicks **Approve and deploy**. Rejecting or leaving it pending uploads nothing. GitHub's required reviewer is the final gate; the agent does not submit this approval.
 5. The approved upload job obtains OIDC credentials and publishes only that run's tested files. Verify the public version, metadata, files, hashes and fresh installation from PyPI; compare downloads against the actual hosted artifacts. Update publication receipts after read-back. The README badge follows PyPI availability, not GitHub Release creation.
 
 ### Manual runs and recovery

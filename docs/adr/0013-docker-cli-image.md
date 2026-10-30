@@ -21,4 +21,4 @@ SIGTERM stops the foreground CLI. This does not promise a transactional rollback
 
 Users can run the installer without host Python; native client activation and external toolchains remain separate. Builds need network access and regular base/tool review. Git package resolution means rebuild bytes can differ; distribution requires a reviewed final image identity and explicit publication authorization.
 
-The [README](../../README.md#run-ai-kit-with-docker) documents usage. [Docker verification](../DOCKER.md#verification-results) records actual builds, offline/non-root/read-only behavior, all extras, preservation, reruns, signals, wheel resources, full regressions and schema coverage. Synthetic tests do not establish application, hosted CI or cluster acceptance.
+The [README](../guide/DOCKER.md) documents usage. [Docker verification](../DOCKER.md#verification-results) records actual builds, offline/non-root/read-only behavior, all extras, preservation, reruns, signals, wheel resources, full regressions and schema coverage. Synthetic tests do not establish application, hosted CI or cluster acceptance.

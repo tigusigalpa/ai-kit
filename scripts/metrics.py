@@ -167,7 +167,7 @@ def record_task(project: Path, record: dict, *, apply: bool = False) -> dict:
     if apply:
         lock.parent.mkdir(parents=True, exist_ok=True)
         # Exclusive lock protects cooperating writers. Never remove another writer's lock.
-        descriptor = os.open(install.safe_path(project, LOCK), os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+        descriptor = install.exclusive_lock(install.safe_path(project, LOCK))
         try:
             os.close(descriptor)
             records = read_records(project)

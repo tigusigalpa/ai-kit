@@ -1,6 +1,6 @@
 # Optional orchestration implementation
 
-The [user guide](../README.md#optional-orchestration) owns launch examples; [installed contract](../template/ai-kit/ORCHESTRATION.md) owns execution policy. VERSION 1.4.4 is release preparation, not a publication claim.
+The [user guide](guide/ORCHESTRATION.md) owns launch examples; [installed contract](../template/ai-kit/ORCHESTRATION.md) owns execution policy. VERSION 1.4.4 is release preparation, not a publication claim.
 
 ## Boundaries
 

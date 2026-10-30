@@ -3,6 +3,7 @@
   "chat_language": "Russian",
   "sharing_mode": "private",
   "conventions": "owner",
+  "docker_cleanup": "maximum",
   "upstream": {
     "url": "https://github.com/tigusigalpa/ai-kit",
     "ref": "main",

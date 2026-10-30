@@ -16,6 +16,8 @@
 | Isolated benchmarks, measured recommendations, proposal history and scoped context | [ADR 0012](adr/0012-measurement-led-routing.md) |
 | Standalone Docker CLI, non-root mounts and Kubernetes preview Job | [ADR 0013](adr/0013-docker-cli-image.md) |
 | Local dialogue import, explicit conflict review and shared client exports | [ADR 0014](adr/0014-local-dialogue-memory.md) |
+| Optional bounded orchestration: Codex helpers and a budgeted OpenRouter text executor | [ADR 0015](adr/0015-optional-bounded-orchestration.md) |
+| LF distributions, install-free project CI, SIGTERM, hash-pinned release builds, selectable Docker cleanup | [ADR 0016](adr/0016-consistent-distributions-and-safer-defaults.md) |
 | MIT selected by the owner on 2026-10-08 | [License](../LICENSE) |
 | Preserve candidate drafts and require review before adapter retirement | [Manus patch decisions](MANUS_REVIEW.md#decisions) |
 

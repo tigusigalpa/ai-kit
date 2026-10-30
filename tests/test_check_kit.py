@@ -74,9 +74,9 @@ class CheckerTests(unittest.TestCase):
         for document in documents:
             document.write_bytes(document.read_bytes() + b"\n" + b"Reader documentation.\n" * 6000)
         guide = self.root / "template/ai-kit/WEB-DESIGN.md"
-        guide.write_bytes(guide.read_bytes() + b"\n" + b"Conditional instructions.\n" * 600)
+        guide.write_bytes(guide.read_bytes() + b"\n" + b"Conditional instructions.\n" * (check_kit.DOC_BUDGET // 20))
         scoped_overview = self.root / "template/ai-kit/DOCKER_HUB_OVERVIEW.md"
-        scoped_overview.write_bytes(b"# Scoped instructions\n\n" + b"Conditional instructions.\n" * 600)
+        scoped_overview.write_bytes(b"# Scoped instructions\n\n" + b"Conditional instructions.\n" * (check_kit.DOC_BUDGET // 20))
         with patch.object(check_kit, "visibility", return_value=[]):
             errors, warnings = check_kit.check(self.root, git="not-invoked")
         self.assertEqual(errors, [])

@@ -9,43 +9,35 @@ jobs:
   ai-kit:
     runs-on: ubuntu-latest
     steps:
-      # Pin these actions to a reviewed SHA for stronger supply-chain control.
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      # Same reviewed action revisions as the AI-KIT repository's own CI; refresh them deliberately.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: '3.10'
-      - name: Install AI-KIT when not already installed (private mode)
-        run: |
-          if [ -f ai-kit/.install-state.json ]; then
-            echo "AI-KIT already installed; validating the committed installation."
-          else
-            # Pin this clone to a reviewed revision (tag or SHA) before relying on the workflow.
-            git clone --depth 1 https://github.com/tigusigalpa/ai-kit.git /tmp/ai-kit-ref
-            python /tmp/ai-kit-ref/scripts/install.py . --apply
-          fi
-      - name: Check installed AI-KIT health
+      # Validates the committed AI-KIT files only: nothing is cloned, installed or rewritten here.
+      # Team sharing mode keeps these files in Git; private mode ignores them, so nothing can be checked.
+      - name: Check committed AI-KIT files
         run: |
           python3 - <<'PY'
           import json
+          import re
           from pathlib import Path
 
           root = Path.cwd()
           failures = []
 
-          state_path = root / "ai-kit" / ".install-state.json"
-          if not state_path.is_file():
-              failures.append("missing ai-kit/.install-state.json")
-              state = {"files": {}}
-          else:
+          def load(relative):
+              path = root / relative
+              if not path.is_file():
+                  failures.append(f"missing {relative}")
+                  return None
               try:
-                  state = json.loads(state_path.read_text(encoding="utf-8"))
+                  return json.loads(path.read_text(encoding="utf-8"))
               except ValueError as exc:
-                  failures.append(f"invalid installer state: {exc}")
-                  state = {"files": {}}
-
-          for relative in sorted(state.get("files", {})):
-              if not (root / relative).is_file():
-                  failures.append(f"missing managed file: {relative}")
+                  failures.append(f"invalid JSON in {relative}: {exc}")
+                  return None
 
           agents = root / "AGENTS.md"
           if not agents.is_file():
@@ -53,9 +45,41 @@ jobs:
           elif len(agents.read_bytes()) > 2500:
               failures.append("AGENTS.md exceeds the 2500-byte always-loaded budget")
 
-          for relative in ("PROJECT_CONTEXT.md", "WIKI.md", "CHANGELOG.md", "docs/DECISIONS.md"):
+          for relative in ("ai-kit/CORE.md", "PROJECT_CONTEXT.md", "WIKI.md", "CHANGELOG.md",
+                           "docs/DECISIONS.md"):
               if not (root / relative).is_file():
-                  failures.append(f"missing owned document: {relative}")
+                  failures.append(f"missing {relative}")
+
+          settings = load("ai-kit/settings.json")
+          if isinstance(settings, dict):
+              for field in ("project_language", "chat_language", "sharing_mode", "conventions"):
+                  if not isinstance(settings.get(field), str):
+                      failures.append(f"ai-kit/settings.json lacks {field}")
+          elif settings is not None:
+              failures.append("ai-kit/settings.json must be a JSON object")
+          if (root / "ai-kit/project.json").is_file():
+              project = load("ai-kit/project.json")
+              if not isinstance(project, dict) or not isinstance(project.get("modules"), list):
+                  failures.append("ai-kit/project.json must be an object with a modules list")
+
+          # Installer state is ignored by default; when a team commits it deliberately, check its files.
+          if (root / "ai-kit/.install-state.json").is_file():
+              state = load("ai-kit/.install-state.json")
+              records = state.get("files", {}) if isinstance(state, dict) else {}
+              for relative in sorted(records if isinstance(records, dict) else {}):
+                  if not (root / relative).is_file():
+                      failures.append(f"missing managed file: {relative}")
+
+          link = re.compile(r"\]\(([^)\s#]+)(?:#[^)\s]*)?\)")
+          for document in [agents, *sorted((root / "ai-kit").glob("*.md"))]:
+              if not document.is_file():
+                  continue
+              text = document.read_text(encoding="utf-8", errors="replace")
+              for target in link.findall(text):
+                  if re.match(r"^[a-z][a-z0-9+.-]*:", target, re.I):
+                      continue
+                  if not (document.parent / target).exists():
+                      failures.append(f"{document.relative_to(root)}: missing link {target}")
 
           if failures:
               print("AI-KIT project check failed:")
