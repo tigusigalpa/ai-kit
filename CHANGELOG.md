@@ -18,6 +18,7 @@ CLI, packaging and image:
 - The PyPI build job installs only hash-pinned tools (now including `build`), records artifact SHA-256 digests, and leaves twine to a separate job; upload jobs verify the digests before publishing. A workflow-security test guards pinned actions, token scope and these steps.
 - README is a 23 KB landing page with install paths (PyPI `ai-kit-python`, the image, a checkout), visible defaults (Russian chat, owner conventions) and honest feature wording; the reference material moved to [user guides](docs/guide/README.md). README installer flag tables, defaults, persistence and command examples now live in the [flag reference](docs/guide/INSTALLER_FLAGS.md).
 - Tracked CLAUDE.md, KIMI.md and MANUS.md point to CONTRIBUTING.md and work in a clean clone; a local ignored CLAUDE.local.md can import the private AGENTS.md. The conditional document budget rises to 24000 bytes; always-loaded budgets stay 2500/3000.
+- README features the [documentation site](https://tigusigalpa.github.io/ai-kit-docs/) (command configurator, CLI installation, flag reference) in a highlighted block, badge and navigation link; the guides index, PyPI description, Docker Hub Overview, SKILL.md and the PyPI `Documentation` project URL point to it.
 - [Decision](docs/adr/0016-consistent-distributions-and-safer-defaults.md), [release record](docs/V1_4_6.md).
 
 ## v1.4.5 (2026-10-30)

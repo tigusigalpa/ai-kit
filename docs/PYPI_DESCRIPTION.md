@@ -105,6 +105,7 @@ Package releases follow GitHub Release, automated checks and owner approval befo
 ## Documentation and license
 
 - [Repository and README](https://github.com/tigusigalpa/ai-kit)
+- [Documentation site with a command configurator](https://tigusigalpa.github.io/ai-kit-docs/)
 - [All guides](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/README.md)
 - [Installation and upgrades](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALL.md)
 - [Installer flags and options](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALLER_FLAGS.md)

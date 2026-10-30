@@ -6,7 +6,7 @@ description: "Use when installing, configuring, upgrading, explaining, or mainta
 # AI-KIT
 
 AI-KIT is an offline instruction/installer distribution: project memory, conditional stack/UI workflows, Kubernetes-ready containers, guardrails, adaptive routing and 11 client adapters. [README](README.md) lists supported stacks and workflows.
-Source: https://github.com/tigusigalpa/ai-kit. Commands below run from the repository root; read [VERSION](VERSION) instead of assuming a version.
+Source: https://github.com/tigusigalpa/ai-kit. The [documentation site](https://tigusigalpa.github.io/ai-kit-docs/) builds install commands interactively; check its flags against this repository's VERSION and `--help`. Commands below run from the repository root; read [VERSION](VERSION) instead of assuming a version.
 Packages: the PyPI package is `ai-kit-python` (`pipx install ai-kit-python`), which installs the `aikit` command; never suggest `pip install aikit`, a different name. The Docker image is `tigusigalpa/ai-kit`, tagged with VERSION.
 
 ## Two places, never mixed

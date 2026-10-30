@@ -12,10 +12,33 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 [![AI clients: 11](https://img.shields.io/badge/AI%20clients-11-7c3aed)](#works-with-your-ai-clients)
 [![Docker Hub](https://img.shields.io/badge/Docker%20Hub-ai--kit-2496ED?logo=docker&logoColor=white)](https://hub.docker.com/r/tigusigalpa/ai-kit)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+[![Docs site](https://img.shields.io/badge/docs-ai--kit--docs-7c3aed?logo=githubpages&logoColor=white)](https://tigusigalpa.github.io/ai-kit-docs/)
 
 What changed in each release: [CHANGELOG](CHANGELOG.md).
 
-[Get AI-KIT](#get-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
+[Get AI-KIT](#get-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
+
+<div align="center">
+<table>
+<tr>
+<td align="center">
+
+### 📘 Interactive documentation site
+
+**Build your install command in the browser instead of reading flag tables.**
+
+Pick your AI clients, preset, sharing mode, chat language and optional modules: the configurator writes the exact preview and apply commands for PowerShell or Bash and shows the resulting `settings.json` and file list. Every option is a real installer flag, and the commands are generated locally in your browser.
+
+[![Open the documentation site](https://img.shields.io/badge/Open%20the%20docs-ai--kit--docs-7c3aed?style=for-the-badge&logo=githubpages&logoColor=white)](https://tigusigalpa.github.io/ai-kit-docs/)
+
+[⚙️ Command configurator](https://tigusigalpa.github.io/ai-kit-docs/#configure) · [💻 Install the CLI](https://tigusigalpa.github.io/ai-kit-docs/#install) · [🩺 After install](https://tigusigalpa.github.io/ai-kit-docs/#commands) · [📖 Flag reference](https://tigusigalpa.github.io/ai-kit-docs/#reference) · [❓ FAQ](https://tigusigalpa.github.io/ai-kit-docs/#faq)
+
+<sub>English and Russian · light and dark themes · Windows PowerShell and Linux/macOS Bash</sub>
+
+</td>
+</tr>
+</table>
+</div>
 
 ## Get AI-KIT
 
@@ -275,6 +298,7 @@ Existing project documents and context are never overwritten; customized instruc
 
 ## Documentation
 
+- **[Documentation site](https://tigusigalpa.github.io/ai-kit-docs/)**: an interactive command configurator, CLI installation for Windows and Linux/macOS, post-install commands and a searchable flag reference, in English and Russian
 - [All guides](docs/guide/README.md)
 - [Install AI-KIT and set up a project](docs/guide/INSTALL.md): CLI, defaults, presets, what lands in your project, sharing, updates
 - [Installer flags and options](docs/guide/INSTALLER_FLAGS.md)

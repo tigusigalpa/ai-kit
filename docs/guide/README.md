@@ -1,6 +1,6 @@
 # AI-KIT user guides
 
-Start with the [root README](../../README.md) for the overview, defaults and a three-step quick start. These guides hold the detailed instructions.
+Start with the [root README](../../README.md) for the overview, defaults and a three-step quick start. These guides hold the detailed instructions. To build an install command interactively, use the [documentation site](https://tigusigalpa.github.io/ai-kit-docs/) and its command configurator.
 
 ## Guides
 

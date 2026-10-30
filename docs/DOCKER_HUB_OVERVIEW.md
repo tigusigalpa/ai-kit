@@ -321,6 +321,7 @@ Registry manifest digest: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8a
 ## Documentation and license
 
 - [Source repository and README](https://github.com/tigusigalpa/ai-kit)
+- [Documentation site with a command configurator](https://tigusigalpa.github.io/ai-kit-docs/)
 - [All guides](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/README.md)
 - [Docker usage](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/DOCKER.md)
 - [Installer flags and options](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALLER_FLAGS.md)

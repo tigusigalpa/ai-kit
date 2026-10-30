@@ -31,7 +31,7 @@ dynamic = ["version"]
 
 [project.urls]
 Homepage = "https://github.com/tigusigalpa/ai-kit"
-Documentation = "https://github.com/tigusigalpa/ai-kit#readme"
+Documentation = "https://tigusigalpa.github.io/ai-kit-docs/"
 Source = "https://github.com/tigusigalpa/ai-kit"
 Issues = "https://github.com/tigusigalpa/ai-kit/issues"
 Changelog = "https://github.com/tigusigalpa/ai-kit/blob/main/CHANGELOG.md"
