@@ -18,6 +18,7 @@
 | Local dialogue import, explicit conflict review and shared client exports | [ADR 0014](adr/0014-local-dialogue-memory.md) |
 | Optional bounded orchestration: Codex helpers and a budgeted OpenRouter text executor | [ADR 0015](adr/0015-optional-bounded-orchestration.md) |
 | LF distributions, install-free project CI, SIGTERM, hash-pinned release builds, selectable Docker cleanup | [ADR 0016](adr/0016-consistent-distributions-and-safer-defaults.md) |
+| Installer flag schema as the checked documentation source; declared Gemini thinking levels | [ADR 0017](adr/0017-installer-flag-schema-and-gemini-thinking.md) |
 | MIT selected by the owner on 2026-10-08 | [License](../LICENSE) |
 | Preserve candidate drafts and require review before adapter retirement | [Manus patch decisions](MANUS_REVIEW.md#decisions) |
 
