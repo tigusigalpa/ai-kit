@@ -56,6 +56,12 @@ class WorkflowSecurityTests(unittest.TestCase):
             if line.strip() and not line.startswith("#"):
                 self.assertRegex(line, r"==\S+.*--hash=sha256:[0-9a-f]{64}$")
 
+    def test_build_tools_pin_conditional_dependencies_for_python_310(self):
+        # build requires tomli below Python 3.11; hash mode refuses any unpinned transitive requirement.
+        requirements = (ROOT / "docker/build-requirements.txt").read_text(encoding="utf-8")
+        self.assertRegex(requirements, r'(?m)^tomli==\S+ ; python_version < "3\.11" --hash=sha256:[0-9a-f]{64}$')
+        self.assertIn("'3.10'", self.read(WORKFLOWS[1]))
+
     def test_uploads_need_twine_check_and_verify_build_digests(self):
         blocks = jobs(self.read(WORKFLOWS[0]))
         self.assertIn("twine check --strict", blocks["twine-check"])
