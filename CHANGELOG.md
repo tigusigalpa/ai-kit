@@ -6,7 +6,7 @@
 
 - Require maximum disposable Docker cleanup after every build/test/debug task, without a size/age threshold; include containers, volumes, networks, unnecessary test images and dedicated-builder cache.
 - Require separate host RAM/disk reclamation, supported WSL2 settings and offline compaction; preserve persistent data, unrelated workloads and reviewed retention scope.
-- Updated installed AGENTS/docs; tested private/team upgrades and conflicts; published Docker Hub 1.4.5. PyPI follows owner approval. [Release record](docs/V1_4_5.md).
+- Updated installed AGENTS/docs; tested private/team upgrades and conflicts; published/verified Docker Hub and owner-approved PyPI 1.4.5, including a fresh registry installation. [Release record](docs/V1_4_5.md).
 - Added a detailed Windows README guide covering setup, inherited/stale PATH, persistent user PATH, isolated CLI, common errors and project updates.
 
 ## v1.4.4 (2026-10-18)
