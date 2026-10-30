@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added README installer flag tables, defaults, persistence and command examples.
+
 ## v1.4.5 (2026-10-30)
 
 - Require maximum disposable Docker cleanup after every build/test/debug task, without a size/age threshold; include containers, volumes, networks, unnecessary test images and dedicated-builder cache.
