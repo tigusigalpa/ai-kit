@@ -23,11 +23,11 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 | **Try the CLI:** `docker run --rm tigusigalpa/ai-kit:1.4.5 --help` | **Try the CLI:** `aikit --help` |
 | [**Open Docker Hub →**](https://hub.docker.com/r/tigusigalpa/ai-kit) · [Project mount and launch examples](#run-ai-kit-with-docker) | [**Open PyPI →**](https://pypi.org/project/ai-kit-python/) · [Windows setup and troubleshooting](#windows-installation-and-troubleshooting) |
 
-Both distributions provide the AI-KIT CLI: preview installation, apply reviewed changes, then bootstrap your coding agent. **Published Docker image: 1.4.5. Latest verified PyPI package: 1.4.4; 1.4.5 follows the protected release workflow.** [Release and verification record](docs/V1_4_5.md).
+Both distributions provide the AI-KIT CLI: preview installation, apply reviewed changes, then bootstrap your coding agent. **Published Docker image: 1.4.5. Published PyPI package: 1.4.5.** [Release and verification record](docs/V1_4_5.md).
 
 **[v1.4.5](CHANGELOG.md#v145-2026-10-30):** mandatory [maximum Docker cleanup and host reclamation](#maximum-docker-cleanup-and-host-reclamation), without a size threshold, plus the detailed [Windows guide](#windows-installation-and-troubleshooting). Project data and unrelated workloads remain protected.
 
-**Docker publication verified on 2026-10-30:** the registry manifest, configuration and layers match the tested v1.4.5 image; immutable pull, CLI version and bundled checks passed. **PyPI 1.4.5 requires GitHub Release → checks → your approval.** [Docker receipt](docs/V1_4_5.md#docker-hub-publication) · [PyPI status](docs/V1_4_5.md#pypi-publication-status). Earlier published versions remain intact.
+**Publication verified on 2026-10-30:** GitHub Release → checks → your approval → PyPI completed successfully. Both PyPI file hashes match the validated workflow artifacts; fresh registry installation, CLI/version and bundled checks passed. Docker manifest/configuration/layers and immutable pull are verified too. [PyPI receipt](docs/V1_4_5.md#pypi-publication-status) · [Docker receipt](docs/V1_4_5.md#docker-hub-publication). Earlier published versions remain intact.
 
 [Features](#features-at-a-glance) · [Shared context](#shared-context-from-two-dialogues) · [Web Design](#web-design) · [Windows guide](#windows-installation-and-troubleshooting) · [Docker CLI](#run-ai-kit-with-docker) · [Security workflows](#security-workflows) · [Context7](#library-documentation-with-context7) · [OpenRouter](#working-with-openrouter) · [Quick start](#install) · [Stacks](#-built-for-your-stack) · [Presets](#presets) · [Update](#update-an-application-project)
 
@@ -244,9 +244,9 @@ Every command also runs through one CLI: `python aikit_cli.py install|doctor|rou
 
 ### Packaged CLI and PyPI status
 
-**Previous verified PyPI release: [1.4.4](https://pypi.org/project/ai-kit-python/1.4.4/); release target: 1.4.5.** Install package `ai-kit-python` and run `aikit`; Python 3.10+ is required with no mandatory runtime dependencies. Production upload uses owner-approved Trusted Publishing; [current status](docs/V1_4_5.md#pypi-publication-status).
+**AI-KIT 1.4.5 is available on [PyPI](https://pypi.org/project/ai-kit-python/1.4.5/).** Install package `ai-kit-python` and run `aikit`; Python 3.10+ is required with no mandatory runtime dependencies. [Workflow 41076353098](https://github.com/tigusigalpa/ai-kit/actions/runs/41076353098) completed build and production upload through Trusted Publishing after the human owner's approval. Both downloaded files match the exact validated artifacts; TestPyPI was not used.
 
-**Installation verified on 2026-10-18:** a clean Windows/Python 3.12.14 environment installed `ai-kit-python==1.4.4` from `https://pypi.org/simple` with the verified wheel hash, dependencies and cache disabled. `aikit --version` returned `aikit 1.4.4`; CLI/orchestration help, orchestration and memory imports, and the installed kit check passed without errors or warnings. The identical downloaded workflow wheel also passed the full offline installation smoke. [Publication and installation record](docs/V1_4_4.md#pypi-publication-status).
+**Installation verified on 2026-10-30:** a clean Windows/Python 3.12.14 environment installed `ai-kit-python==1.4.5` from PyPI with the verified wheel hash, dependencies and cache disabled. `aikit --version` returned `aikit 1.4.5`; CLI/orchestration help, memory/orchestration imports and the installed kit check passed without errors or warnings. [Published hashes and installation record](docs/V1_4_5.md#pypi-publication-status).
 
 Install into a virtual environment:
 

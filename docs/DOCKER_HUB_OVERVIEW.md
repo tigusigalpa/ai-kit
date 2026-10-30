@@ -8,7 +8,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 **Current image:** `tigusigalpa/ai-kit:1.4.5`
 
-**New in v1.4.5:** mandatory maximum disposable Docker cleanup without a size threshold, dedicated-builder lifecycle and separate Windows/WSL2 RAM and virtual-disk reclamation guidance. Docker publication is verified. PyPI 1.4.5 follows GitHub validation and separate human approval; the previous verified package is 1.4.4.
+**New in v1.4.5:** mandatory maximum disposable Docker cleanup without a size threshold, dedicated-builder lifecycle and separate Windows/WSL2 RAM and virtual-disk reclamation guidance. Docker Hub and [PyPI 1.4.5](https://pypi.org/project/ai-kit-python/1.4.5/) are published and verified; PyPI upload followed the human owner's approval.
 
 **Published platform:** `linux/amd64`
 
