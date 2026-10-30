@@ -1,0 +1,216 @@
+{
+  "schema": 1,
+  "command": "aikit install",
+  "options": [
+    {
+      "option": "TARGET",
+      "value": "path",
+      "required": true,
+      "help": "Application directory to set up or update"
+    },
+    {
+      "option": "--apply",
+      "value": "switch",
+      "excludes": [
+        "--dry-run"
+      ],
+      "help": "Write the previewed plan; without it nothing is written"
+    },
+    {
+      "option": "--dry-run",
+      "value": "switch",
+      "excludes": [
+        "--apply"
+      ],
+      "help": "Explicitly request the read-only preview (the default)"
+    },
+    {
+      "option": "--mode",
+      "value": "choice",
+      "choices": [
+        "private",
+        "team"
+      ],
+      "setting": "sharing_mode",
+      "fresh_default": "private",
+      "help": "Git visibility of AI-KIT files: private keeps them local, team shares instructions"
+    },
+    {
+      "option": "--chat-language",
+      "value": "text",
+      "setting": "chat_language",
+      "fresh_default": "Russian",
+      "help": "Language for chat replies and plans; project files stay English"
+    },
+    {
+      "option": "--conventions",
+      "value": "choice",
+      "choices": [
+        "owner",
+        "standard"
+      ],
+      "setting": "conventions",
+      "fresh_default": "owner",
+      "help": "Stack preferences: owner applies the owner's conventions, standard follows the project"
+    },
+    {
+      "option": "--docker-cleanup",
+      "value": "choice",
+      "choices": [
+        "maximum",
+        "keep-cache"
+      ],
+      "setting": "docker_cleanup",
+      "fresh_default": "maximum",
+      "help": "Post-Docker cleanup: maximum (default) removes every eligible disposable resource and reclaims host resources; keep-cache keeps the dedicated project builder cache"
+    },
+    {
+      "option": "--agent",
+      "value": "choice",
+      "choices": [
+        "aider",
+        "claude",
+        "cline",
+        "codex",
+        "copilot",
+        "cursor",
+        "gemini",
+        "kimi",
+        "manus",
+        "roo",
+        "windsurf"
+      ],
+      "repeatable": true,
+      "fresh_default": [
+        "codex"
+      ],
+      "help": "AI client adapter to install; repeat for several clients"
+    },
+    {
+      "option": "--interactive",
+      "value": "switch",
+      "help": "Prompt for sharing mode, language, conventions, agents, and extras"
+    },
+    {
+      "option": "--check",
+      "value": "switch",
+      "help": "Run the project doctor after a successful --apply"
+    },
+    {
+      "option": "--accept-local",
+      "value": "text",
+      "repeatable": true,
+      "help": "Record an explicitly reviewed semantic merge of a managed path"
+    },
+    {
+      "option": "--with-session-start",
+      "value": "switch",
+      "setting": "session_start",
+      "help": "Install the session-start hook file and client wiring"
+    },
+    {
+      "option": "--with-guards",
+      "value": "switch",
+      "setting": "guards",
+      "help": "Install client confirmation (ask) rules for Git commit/push"
+    },
+    {
+      "option": "--with-ci",
+      "value": "switch",
+      "setting": "ci",
+      "help": "Install the self-contained AI-KIT project check workflow"
+    },
+    {
+      "option": "--with-data-guards",
+      "value": "switch",
+      "setting": "data_guards",
+      "help": "Ask before destructive file, Docker, and detected migration commands (Claude Code)"
+    },
+    {
+      "option": "--with-native-settings",
+      "value": "switch",
+      "setting": "native_settings",
+      "help": "Allow recorded checks, deny secret reads, and write client ignore files"
+    },
+    {
+      "option": "--with-scoped-rules",
+      "value": "switch",
+      "setting": "scoped_rules",
+      "help": "Generate path-scoped rules per module for clients that support them"
+    },
+    {
+      "option": "--with-security-audit",
+      "value": "switch",
+      "setting": "security_audit",
+      "help": "Install the pinned, user-invoked security-audit skill without running an audit"
+    },
+    {
+      "option": "--with-strix",
+      "value": "switch",
+      "setting": "strix",
+      "help": "Install pinned Strix skills and a user-invoked entry point without installing or running Strix"
+    },
+    {
+      "option": "--with-context7",
+      "value": "switch",
+      "setting": "context7",
+      "help": "Install the Context7 documentation skill; MCP connection/authentication stays separate"
+    },
+    {
+      "option": "--preset",
+      "value": "choice",
+      "choices": [
+        "minimal",
+        "solo",
+        "team",
+        "strict"
+      ],
+      "help": "Apply a selection bundle; explicit --mode and --with-* flags take precedence"
+    },
+    {
+      "option": "--with-orchestration",
+      "value": "switch",
+      "setting": "orchestration",
+      "help": "Install optional Codex helpers and disabled OpenRouter configuration; no calls"
+    },
+    {
+      "option": "--with-web-design",
+      "value": "switch",
+      "setting": "web_design",
+      "help": "Install Web Design workflows and project documents; no external tool setup"
+    }
+  ],
+  "presets": {
+    "minimal": {
+      "mode": null,
+      "extras": []
+    },
+    "solo": {
+      "mode": "private",
+      "extras": [
+        "session-start",
+        "native-settings",
+        "scoped-rules"
+      ]
+    },
+    "team": {
+      "mode": "team",
+      "extras": [
+        "session-start",
+        "guards",
+        "native-settings",
+        "scoped-rules"
+      ]
+    },
+    "strict": {
+      "mode": null,
+      "extras": [
+        "session-start",
+        "guards",
+        "data-guards",
+        "native-settings",
+        "scoped-rules"
+      ]
+    }
+  }
+}

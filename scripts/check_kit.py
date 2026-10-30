@@ -22,6 +22,8 @@ UNBOUNDED_DOCUMENTS = frozenset(("README.md", "docs/DOCKER_HUB_OVERVIEW.md"))
 LOCAL_MAINTAINER_FILES = frozenset(("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md"))
 # Local-only root files: the maintainer files (which have template counterparts) plus a personal Claude entry.
 LOCAL_ONLY_FILES = LOCAL_MAINTAINER_FILES | {"CLAUDE.local.md"}
+FLAG_SCHEMA = "integrations/installer-flags.json"
+FLAG_GUIDE = "docs/guide/INSTALLER_FLAGS.md"
 
 
 
@@ -204,6 +206,33 @@ def agent_registry_links(root: Path) -> list[str]:
     return errors
 
 
+def installer_flag_errors(root: Path) -> list[str]:
+    """Keep the committed flag schema, the flag guide and SKILL.md in step with the installer parser."""
+    errors = []
+    schema = install.flag_schema(root)
+    committed = root / FLAG_SCHEMA
+    if committed.is_file() and json.loads(committed.read_text(encoding="utf-8")) != schema:
+        errors.append(f"Stale {FLAG_SCHEMA}: regenerate it with `aikit flags --output {FLAG_SCHEMA}`")
+    actual = {option["option"] for option in schema["options"]}
+    guide_path = root / FLAG_GUIDE
+    if guide_path.is_file():
+        guide = guide_path.read_text(encoding="utf-8")
+        documented = set(re.findall(r"(?m)^\| `(--[a-z0-9-]+|TARGET)`", guide)) - {"--help"}
+        errors.extend(f"Installer flag undocumented in {FLAG_GUIDE}: {name}" for name in sorted(actual - documented))
+        errors.extend(f"{FLAG_GUIDE} documents a missing installer flag: {name}" for name in sorted(documented - actual))
+        errors.extend(f"Installer flag value undocumented in {FLAG_GUIDE}: {option['option']} {value}"
+                      for option in schema["options"] for value in option.get("choices", [])
+                      if f"`{value}`" not in guide)
+    skill_path = root / "SKILL.md"
+    if skill_path.is_file():
+        skill = skill_path.read_text(encoding="utf-8")
+        words = [option["option"] for option in schema["options"] if option["option"] != "TARGET"]
+        words += [value for option in schema["options"] for value in option.get("choices", [])]
+        errors.extend("Installer flag or value missing from SKILL.md: " + word for word in words
+                      if not re.search(r"(?<![\w-])" + re.escape(word) + r"(?![\w-])", skill))
+    return errors
+
+
 def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
     errors, warnings = [], []
     required = ["VERSION", "LICENSE", "CONTRIBUTING.md", "README.md",
@@ -233,6 +262,7 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml",
                 "tests/build_distribution.py", "tests/test_pypi_events.py",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md",
+                "scripts/flags.py", FLAG_SCHEMA, FLAG_GUIDE,
                 ]
     for name in install.OPTIONAL_SKILLS:
         required.extend(["integrations/" + name + ".json", "template/.agents/skills/" + name + "/SKILL.md",
@@ -407,6 +437,10 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
         errors.extend(agent_registry_links(root))
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         errors.append("Invalid agent registry: " + str(exc))
+    try:
+        errors.extend(installer_flag_errors(root))
+    except (OSError, ValueError, KeyError) as exc:
+        errors.append("Installer flag schema check failed: " + str(exc))
     for p in (root / "template").rglob("*.md"):
         if p in vendored_files:
             # Upstream examples are immutable external data, not active routing selections.

@@ -66,6 +66,10 @@ PRESETS = {
     "team": {"mode": "team", "extras": ("session-start", "guards", "native-settings", "scoped-rules")},
     "strict": {"mode": None, "extras": PRESET_EXTRAS},
 }
+DEFAULT_AGENTS = ("codex",)
+# Installer options that persist a choice: argparse destination -> ai-kit/settings.json key.
+OPTION_SETTINGS = {"mode": "sharing_mode", "chat_language": "chat_language", "conventions": "conventions",
+                   "docker_cleanup": "docker_cleanup"}
 CLAUDE_SETTINGS = ".claude/settings.json"
 CLAUDE_LOCAL_SETTINGS = ".claude/settings.local.json"
 GUARDS_SOURCE = "claude-settings.git-ask.json"
@@ -1128,7 +1132,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     language = language or settings.get("chat_language", "Russian")
     conventions = conventions or settings.get("conventions", "owner")
     explicit_agents = agents is not None
-    agents = agent_selection(agents if agents is not None else state.get("agents", ["codex"]),
+    agents = agent_selection(agents if agents is not None else state.get("agents", list(DEFAULT_AGENTS)),
                              registry["names"])
     detected_agents = detect_agents(target, registry)
     suggested_agents = sorted(set(agents) | set(detected_agents))
@@ -1540,7 +1544,7 @@ def interactive_selections(read=input, *, agents_available: set[str], facts: dic
     detected_agents = detected_agents or {}
     for agent, evidence in sorted(detected_agents.items()):
         print(f"  Detected client: {agent} ({', '.join(evidence)})")
-    default_agents = sorted({"codex"} | set(detected_agents))
+    default_agents = sorted(set(DEFAULT_AGENTS) | set(detected_agents))
     preset = read(f"Preset [{'/'.join(PRESETS)}] (none): ").strip().lower() or None
     spec = PRESETS.get(preset or "", {"mode": None, "extras": ()})
     default_mode = spec["mode"] or "private"
@@ -1565,19 +1569,23 @@ def interactive_selections(read=input, *, agents_available: set[str], facts: dic
             "agents": agents, "extras": extras}
 
 
-def main(argv: list[str] | None = None) -> int:
+def build_parser(root: Path = ROOT) -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("target", type=Path)
+    parser.add_argument("target", type=Path, help="Application directory to set up or update")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--apply", action="store_true")
-    group.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--mode", choices=["private", "team"])
-    parser.add_argument("--chat-language")
-    parser.add_argument("--conventions", choices=["owner", "standard"])
+    group.add_argument("--apply", action="store_true", help="Write the previewed plan; without it nothing is written")
+    group.add_argument("--dry-run", action="store_true", help="Explicitly request the read-only preview (the default)")
+    parser.add_argument("--mode", choices=["private", "team"],
+                        help="Git visibility of AI-KIT files: private keeps them local, team shares instructions")
+    parser.add_argument("--chat-language",
+                        help="Language for chat replies and plans; project files stay English")
+    parser.add_argument("--conventions", choices=["owner", "standard"],
+                        help="Stack preferences: owner applies the owner's conventions, standard follows the project")
     parser.add_argument("--docker-cleanup", choices=list(DOCKER_CLEANUP_MODES),
                         help="Post-Docker cleanup: maximum (default) removes every eligible disposable resource "
                              "and reclaims host resources; keep-cache keeps the dedicated project builder cache")
-    parser.add_argument("--agent", choices=sorted(load_agent_registry()["names"]), action="append")
+    parser.add_argument("--agent", choices=sorted(load_agent_registry(root)["names"]), action="append",
+                        help="AI client adapter to install; repeat for several clients")
     parser.add_argument("--interactive", action="store_true",
                         help="Prompt for sharing mode, language, conventions, agents, and extras")
     parser.add_argument("--check", action="store_true",
@@ -1608,7 +1616,53 @@ def main(argv: list[str] | None = None) -> int:
                         help="Install optional Codex helpers and disabled OpenRouter configuration; no calls")
     parser.add_argument("--with-web-design", action="store_true",
                         help="Install Web Design workflows and project documents; no external tool setup")
-    args = parser.parse_args(argv)
+    return parser
+
+
+def flag_schema(root: Path = ROOT) -> dict:
+    """Describe installer options for documentation and configurators; check_kit compares the committed copy."""
+    parser = build_parser(root)
+    settings = json.loads((root / "template/ai-kit/settings.json").read_text(encoding="utf-8"))
+    excludes: dict[str, list[str]] = {}
+    for group in parser._mutually_exclusive_groups:
+        names = [action.option_strings[-1] for action in group._group_actions]
+        for name in names:
+            excludes[name] = [other for other in names if other != name]
+    extra_keys = {"--with-" + name: key for name, key in EXTRA_SETTINGS_KEYS.items()}
+    options = []
+    for action in parser._actions:
+        if isinstance(action, argparse._HelpAction):
+            continue
+        name = action.option_strings[-1] if action.option_strings else action.dest.upper()
+        entry: dict = {"option": name}
+        if action.nargs == 0:
+            entry["value"] = "switch"
+        elif action.choices:
+            entry["value"], entry["choices"] = "choice", list(action.choices)
+        else:
+            entry["value"] = "path" if action.type is Path else "text"
+        if not action.option_strings:
+            entry["required"] = True
+        if isinstance(action, argparse._AppendAction):
+            entry["repeatable"] = True
+        if name in excludes:
+            entry["excludes"] = excludes[name]
+        setting = OPTION_SETTINGS.get(action.dest) or extra_keys.get(name)
+        if setting:
+            entry["setting"] = setting
+        if setting in settings:
+            entry["fresh_default"] = settings[setting]
+        elif action.dest == "agent":
+            entry["fresh_default"] = list(DEFAULT_AGENTS)
+        if action.help:
+            entry["help"] = action.help
+        options.append(entry)
+    presets = {name: {"mode": spec["mode"], "extras": list(spec["extras"])} for name, spec in PRESETS.items()}
+    return {"schema": 1, "command": "aikit install", "options": options, "presets": presets}
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
     extras = [name for name, flag in (("session-start", args.with_session_start),
                                       ("guards", args.with_guards),
                                       ("ci", args.with_ci),

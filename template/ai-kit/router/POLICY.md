@@ -28,7 +28,7 @@ Normal work uses checks/self-review; critical correctness needs independent revi
 ## Providers
 
 Active role defaults: [openai.json](providers/openai.json), [anthropic.json](providers/anthropic.json), [kimi.json](providers/kimi.json), and [gemini.json](providers/gemini.json), interpreted by their provider references.
-[local.json](providers/local.json) maps the same roles to self-hosted models declared in [selection.json](selection.json). Gemini's reviewed model mapping is active; its thinking controls remain unknown until declared against primary documentation.
+[local.json](providers/local.json) maps the same roles to self-hosted models declared in [selection.json](selection.json). Gemini's reviewed model mapping and per-model thinking levels are active; [gemini.md](providers/gemini.md) explains the `thinking_level` mapping and fallbacks.
 Registry/configuration plus current primary docs establish capabilities; model names alone do not.
 Unavailable switching means a recommendation, not a claim of execution. Respect explicit model, cost, and latency choices.
 

@@ -113,7 +113,7 @@ class RouteTests(unittest.TestCase):
         self.assertEqual(fallback["recommended_effort"], "none")
         self.assertEqual(fallback["effort"], "low")
         self.assertTrue(fallback["adjustments"])
-        for provider_id in ("kimi", "local", None, "gemini"):
+        for provider_id in ("kimi", "local", None):
             result = router.route_result("implement feature", selection(default_provider=provider_id,
                                          local_models={"work": "user-model"}), providers())
             self.assertIsNone(result["effort"])
@@ -155,7 +155,24 @@ class RouteTests(unittest.TestCase):
                                      providers())
         self.assertEqual(result["provider"], "gemini")
         self.assertEqual(result["model"], "gemini-3.8-flash")
-        self.assertIsNone(result["effort"])
+        self.assertEqual(result["effort"], "medium")
+        self.assertEqual(result["reasoning_mode"], "thinking")
+
+    def test_gemini_thinking_levels_follow_each_model(self):
+        gemini = selection(default_provider="gemini")
+        cases = {0: ("gemini-3.5-flash-lite", "minimal", True), 1: ("gemini-3.5-flash-lite", "low", False),
+                 3: ("gemini-3.8-flash", "high", False), 4: ("gemini-3.8-flash", "medium", True),
+                 6: ("gemini-3.1-pro-preview", "high", False)}
+        for level, (model, effort, adjusted) in cases.items():
+            with self.subTest(level=level):
+                result = router.route_result("task", gemini, providers(), level=level)
+                self.assertEqual((result["model"], result["effort"]), (model, effort))
+                self.assertEqual(bool(result["adjustments"]), adjusted)
+        explicit = router.route_result("extract", gemini, providers(), role="cheap", effort="minimal")
+        self.assertEqual(explicit["effort"], "minimal")
+        # minimal belongs to the Flash-Lite model only; the work model rejects it.
+        with self.assertRaises(ValueError):
+            router.route_result("feature", gemini, providers(), role="work", effort="minimal")
 
     def test_route_resolves_local_model(self):
         selection_data = selection(roles={"work": "local"},
