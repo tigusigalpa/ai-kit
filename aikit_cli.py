@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 # Subcommand -> (module, prefix to prepend to the remaining arguments, or None).
 _COMMANDS = {
     "install": ("install", None),
+    "flags": ("flags", None),
     "doctor": ("doctor", None),
     "context": ("context", None),
     "memory": ("memory", None),

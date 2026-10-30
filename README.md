@@ -301,7 +301,7 @@ Existing project documents and context are never overwritten; customized instruc
 - **[Documentation site](https://tigusigalpa.github.io/ai-kit-docs/)**: an interactive command configurator, CLI installation for Windows and Linux/macOS, post-install commands and a searchable flag reference, in English and Russian
 - [All guides](docs/guide/README.md)
 - [Install AI-KIT and set up a project](docs/guide/INSTALL.md): CLI, defaults, presets, what lands in your project, sharing, updates
-- [Installer flags and options](docs/guide/INSTALLER_FLAGS.md)
+- [Installer flags and options](docs/guide/INSTALLER_FLAGS.md), also as JSON via `aikit flags`
 - [Windows: installation and troubleshooting](docs/guide/WINDOWS.md)
 - [Run AI-KIT with Docker](docs/guide/DOCKER.md), including Docker cleanup and host reclamation
 - [Security workflows](docs/guide/SECURITY_WORKFLOWS.md), [Web Design](docs/guide/WEB_DESIGN.md), [Context7](docs/guide/CONTEXT7.md), [shared dialogue context](docs/guide/DIALOGUE_MEMORY.md)

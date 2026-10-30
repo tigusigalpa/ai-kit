@@ -89,7 +89,7 @@ CI and optional integrations stay outside presets. Read the audit, Strix, Contex
 
 ## Unified CLI
 
-`python aikit_cli.py --help` lists commands; the `ai-kit-python` package installs the same CLI as `aikit`. [Dialogue memory](docs/DIALOGUE_MEMORY.md) imports/merges two dialogues and exports reviewed ChatGPT/OpenRouter references. [Docker](docs/guide/DOCKER.md) mounts an application. [PyPI](docs/PYPI.md) covers checks and owner-approved release publishing; preparation uploads nothing. Standalone scripts and Makefile also work.
+`python aikit_cli.py --help` lists commands; the `ai-kit-python` package installs the same CLI as `aikit`. `aikit flags` prints the installer option schema ([installer-flags.json](integrations/installer-flags.json)); after changing installer options, regenerate it with `aikit flags --output integrations/installer-flags.json` and update [the flag guide](docs/guide/INSTALLER_FLAGS.md) and the Options table here, because kit validation compares all three with the parser. [Dialogue memory](docs/DIALOGUE_MEMORY.md) imports/merges two dialogues and exports reviewed ChatGPT/OpenRouter references. [Docker](docs/guide/DOCKER.md) mounts an application. [PyPI](docs/PYPI.md) covers checks and owner-approved release publishing; preparation uploads nothing. Standalone scripts and Makefile also work.
 
 ## Maintaining AI-KIT itself
 

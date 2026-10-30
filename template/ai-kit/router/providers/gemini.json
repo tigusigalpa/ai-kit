@@ -1,13 +1,19 @@
 {
   "tier": "cloud",
-  "verified_documentation_date": "2026-10-10",
+  "verified_documentation_date": "2026-10-30",
   "reasoning_mode": "thinking",
   "roles": {
-    "cheap": {"model": "gemini-3.5-flash-lite"},
-    "work": {"model": "gemini-3.8-flash"},
-    "escalation": {"model": "gemini-3.1-pro-preview"}
+    "cheap": {"model": "gemini-3.5-flash-lite", "effort": "minimal"},
+    "work": {"model": "gemini-3.8-flash", "effort": "medium"},
+    "escalation": {"model": "gemini-3.1-pro-preview", "effort": "high"}
+  },
+  "supported_efforts": {
+    "cheap": ["minimal", "low", "medium", "high"],
+    "work": ["low", "medium", "high"],
+    "escalation": ["low", "medium", "high"]
   },
   "sources": [
-    "https://ai.google.dev/gemini-api/docs/models"
+    "https://ai.google.dev/gemini-api/docs/models",
+    "https://ai.google.dev/gemini-api/docs/thinking"
   ]
 }

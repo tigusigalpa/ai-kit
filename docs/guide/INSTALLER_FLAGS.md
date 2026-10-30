@@ -8,6 +8,8 @@ The same options work with `python -m aikit.aikit_cli install` after package ins
 
 For a first installation walkthrough, defaults and updates, see [Install AI-KIT and set up a project](INSTALL.md).
 
+**Machine-readable reference.** `aikit flags` prints these options as JSON: value type, choices, repeatability, exclusions, the saved setting, the fresh default, help text and presets. The repository copy is [installer-flags.json](../../integrations/installer-flags.json); kit validation fails when that file, this guide or [SKILL.md](../../SKILL.md) drifts from the installer, so tools such as the [documentation site](https://tigusigalpa.github.io/ai-kit-docs/) can build their option lists from it.
+
 ## Main installation options
 
 | Argument or flag | Accepted value | What it does | Default or upgrade behavior |
@@ -108,6 +110,7 @@ When adding or changing options, first run the intended command without `--apply
 | `aikit doctor . --fix` | Preview the repair plan that restores missing/baseline files through the installer. Nothing is written. |
 | `aikit doctor . --fix --apply` | Write that repair plan. Local edits are preserved and conflicts still need review. `--fix` belongs to `doctor`, not `install`. Earlier releases applied `--fix` directly. |
 | `aikit check` | Validate the bundled/reference AI-KIT distribution itself, not the application selected by `install`. |
+| `aikit flags` | Print the `install` option schema as JSON (`--output FILE` writes it with LF line endings). It reads no project and installs nothing. |
 | `aikit --version` | Show the CLI version; `--version` is a top-level option, not `aikit install --version`. |
 
 Other subcommands have their own option sets and apply semantics. Use `aikit COMMAND --help` (for example, `aikit orchestrate run --help`) before combining flags from different commands; the help output of your installed version is authoritative. The tables above follow the [installer implementation](../../scripts/install.py) and [dispatcher](../../aikit_cli.py).

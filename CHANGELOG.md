@@ -1,5 +1,12 @@
 # AI-KIT changelog
 
+## v1.4.7 (2026-10-30)
+
+- New `aikit flags` command prints every `aikit install` option as JSON (value type, choices, repeatability, exclusions, saved setting, fresh default, help, presets); the committed copy [installer-flags.json](integrations/installer-flags.json) is the source for documentation tools such as the [documentation site](https://tigusigalpa.github.io/ai-kit-docs/).
+- Kit validation now fails when that schema, the [flag guide](docs/guide/INSTALLER_FLAGS.md) or SKILL.md drifts from the installer parser: stale schema, undocumented or invented options, undocumented choice values. Every installer option has help text in `aikit install --help`.
+- Gemini routing declares the documented `thinking_level` values per model (Flash-Lite: minimal-high; Flash and Pro: low-high) with each model's default as the role default, replacing the "effort unknown" fallback. Installed router guidance explains the mapping.
+- Maintenance: release receipts stay in release records rather than maintainer context; build-tool changes are exercised on Python 3.10. [Decision](docs/adr/0017-installer-flag-schema-and-gemini-thinking.md), [release record](docs/V1_4_7.md).
+
 ## v1.4.6 (2026-10-30)
 
 For installed projects:
