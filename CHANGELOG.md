@@ -2,6 +2,8 @@
 
 ## v1.6.0 (2026-10-31)
 
+- Published GitHub Release, Docker Hub 1.6.0 and owner-approved PyPI 1.6.0. Registry/immutable-pull checks, same-run public package hashes and a fresh hashed PyPI installation passed; 319 package files match the release image. [Publication receipts](docs/V1_6_0.md).
+
 - Add a prominent [Update AI-KIT](README.md#update-ai-kit) section with exact pip/pipx upgrade, version, current-project preview and apply/check commands; distinguish package updates from per-project upgrades and unpublished source features.
 - Default new-project and interactive chat language to English; preserve saved languages on upgrades and support explicit `--chat-language Russian`/`English` changes.
 - Add current Devin (Windsurf) local/desktop rules with `--agent devin`, detection and module-scoped generation; retain the legacy `windsurf` selection and explicit, conflict-aware retirement without deleting custom rules.
