@@ -6,13 +6,15 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Release image:** `tigusigalpa/ai-kit:1.6.0`
+**Current published image:** `tigusigalpa/ai-kit:1.6.0`
 
 **New in v1.6.0:** English chat defaults with saved-language preservation, current Devin (Windsurf) rules, a JavaScript/Node.js profile, optional public UUIDs and human Claude GitHub identity, plus detailed TypeUI setup for Codex and Claude. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_6_0.md).
 
 **Published platform:** `linux/amd64`
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
+
+**PyPI:** [ai-kit-python 1.6.0](https://pypi.org/project/ai-kit-python/1.6.0/) is also published and installs from the public index. The package and image contain the same 319 source files.
 
 ## What AI-KIT provides
 
@@ -47,9 +49,17 @@ AI-KIT still includes the read-only MCP report, downgrade protection, shared dia
 
 ## Image verification
 
-The implementation passed 458 native Windows tests (14 environment/platform skips) and 458 packaged Linux tests (three platform/distribution skips) before release labeling. Isolated wheel/sdist metadata/privacy checks, strict Twine, fresh offline wheel installation and Docker smoke passed; 318 packaged files matched the reviewed source, wheel and development image. The versioned release is rebuilt from its committed source; exact final checks and registry identity are recorded in [v1.6.0](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_6_0.md).
+Published on 2026-10-31 from tagged commit `d4cdaaacf54dd46d0dd34ce7387341594140d28e`. All 32 PR checks succeeded. The final image passed 458 Linux tests (455 passed, three platform/distribution skips), offline/read-only installation smoke, preservation/reruns, actual build-context exclusions and SIGTERM with and without init. The incorrect image-version guard refused a mismatched label. All 319 packaged files equal committed source, the hosted release wheel and the verified PyPI package.
 
-Publication status is verified separately from local preparation. Live TypeUI/Claude activation and real model/scanner calls are not established by these offline tests. Task builders/cache are removed after verification; unrelated workloads and data stay protected. Host RAM/virtual-disk compaction is not inferred from Docker cache cleanup.
+Anonymous registry read-back matched the tested configuration and layers. An immutable pull passed version 1.6.0, kit check (zero errors/warnings) and the new flag/default checks. Earlier version tags stay unchanged and no `latest` tag is assigned. [Full release receipts](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_6_0.md).
+
+**Immutable digest:** `sha256:0fa4b24681b5a03f49674342d3460e90cbfec76a9d7fcf17e7c7cd8046dcace1`
+
+```sh
+docker pull tigusigalpa/ai-kit@sha256:0fa4b24681b5a03f49674342d3460e90cbfec76a9d7fcf17e7c7cd8046dcace1
+```
+
+The dedicated release builder, 342.3MB cache and state volume were removed. Unrelated workloads and persistent data were preserved; no host-wide prune, WSL shutdown or physical disk compaction ran. Later descriptive receipts retain the tested image with its earlier bundled documentation snapshot. Live TypeUI/Claude activation and real model/scanner trials remain separate.
 
 ## Pull and check the image
 
@@ -190,7 +200,7 @@ Optional modules are selected explicitly and remain independent of installation 
 | `--with-strix` | Pinned Strix workflow references and an explicit entry point. |
 | `--with-orchestration` | Codex helper configurations, an orchestration guide and preserved configuration for bounded OpenRouter text tasks. |
 
-For example, in the Bash session above, preview a Codex and Claude Code installation with all five modules:
+For example, in the Bash session above, preview a Codex and Claude Code installation with the design, documentation, security and orchestration modules:
 
 ```bash
 docker run "${runtime[@]}" \

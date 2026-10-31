@@ -18,6 +18,8 @@ What changed in each release: [CHANGELOG](CHANGELOG.md).
 
 **v1.6.0:** English chat defaults, Devin (Windsurf), JavaScript/Node.js, optional UUIDs and human Claude GitHub identity. [Release verification and publication status](docs/V1_6_0.md).
 
+**Published and verified:** [PyPI `ai-kit-python 1.6.0`](https://pypi.org/project/ai-kit-python/1.6.0/) installs from the public index; [Docker Hub `tigusigalpa/ai-kit:1.6.0`](https://hub.docker.com/r/tigusigalpa/ai-kit) passed an immutable pull and offline checks. Both carry the same 319 packaged source files. [Checks, hashes and digest](docs/V1_6_0.md).
+
 [Get AI-KIT](#get-ai-kit) · [Update AI-KIT](#update-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
 
 <div align="center">
@@ -53,7 +55,7 @@ aikit --version
 
 The PyPI package is **`ai-kit-python`**; the command it installs is **`aikit`**. Never run `pip install aikit`: that is not this project's package name. Without pipx, run `python -m pip install ai-kit-python` inside a virtual environment. On Windows, the [Windows guide](docs/guide/WINDOWS.md) covers PATH and interpreter problems.
 
-**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example `1.6.0` (see the release status above):
+**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example the verified `1.6.0`:
 
 ~~~sh
 docker pull tigusigalpa/ai-kit:1.6.0
