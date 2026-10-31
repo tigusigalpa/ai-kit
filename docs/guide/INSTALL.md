@@ -162,6 +162,8 @@ Unchanged managed files update, while your context and history are preserved. Sa
 aikit install /path/to/project --accept-local AGENTS.md --apply
 ~~~
 
+Version direction matters. When the CLI is newer than the project, `aikit doctor` names these upgrade commands. When the project records a newer AI-KIT than the CLI (for example a teammate upgraded first), preview warns and `--apply` refuses, so an older CLI cannot replace newer managed files; upgrade the CLI, or pass `--allow-downgrade` only for a deliberate downgrade.
+
 Kit text files use LF line endings in every distribution (Git, PyPI and Docker). Upgrades treat line-ending-only differences, such as CRLF copies produced by a Windows checkout, as unchanged rather than as local edits.
 
 Exit codes: 0 success, 1 refusal, 2 unresolved conflicts. The installer works offline; agents check the configured upstream through [UPSTREAM](../../template/ai-kit/UPSTREAM.md).
@@ -171,3 +173,7 @@ Exit codes: 0 success, 1 refusal, 2 unresolved conflicts. The installer works of
 Run `aikit doctor /path/to/project` (or `python scripts/doctor.py /path/to/project` from a checkout) anytime for a health report covering managed-file, link, provider and context drift.
 
 `aikit doctor /path/to/project --fix` previews a repair plan that restores missing/baseline files through the installer; nothing is written. `aikit doctor /path/to/project --fix --apply` writes that plan. Local edits are preserved and conflicts still need review. Earlier releases applied `--fix` directly.
+
+### Review MCP servers
+
+`aikit mcp report /path/to/project` lists MCP servers configured in the project's client files: `.mcp.json` (Claude Code), `.cursor/mcp.json`, `.vscode/mcp.json` (VS Code/Copilot), `.gemini/settings.json`, `.codex/config.toml`, `.roo/mcp.json` and `.kimi-code/mcp.json`. For each server it shows the transport, command, URL origin, environment/header variable names, auto-approval and tool settings, and whether the file is tracked in Git. It never prints secret values; it warns about literal credentials, inline OAuth client secrets, plain HTTP to remote hosts and auto-approval. It only reads files: no server is started, contacted or authorized. Windsurf and Cline keep MCP servers in user-level files, which the report does not read. On Python 3.10, Codex TOML lists server names only; review that file manually. Use the report with the installed [MCP posture](../../template/ai-kit/MCP.md).

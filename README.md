@@ -255,7 +255,8 @@ The `tigusigalpa/ai-kit` image runs the installer and helpers with a read-only r
 ### More built in
 
 - **Language/sharing:** English files, Russian chat by default; private or team instructions. [Sharing](docs/guide/INSTALL.md#sharing).
-- **Health:** `aikit doctor TARGET` reports managed-file, link, provider and context drift; `--fix` previews a repair plan and `--fix --apply` writes it, preserving local edits.
+- **Health:** `aikit doctor TARGET` reports managed-file, link, provider and context drift and names the upgrade commands when a newer AI-KIT is available; `--fix` previews a repair plan and `--fix --apply` writes it, preserving local edits. An older CLI refuses to downgrade a newer installation unless you pass `--allow-downgrade`.
+- **MCP review:** `aikit mcp report TARGET` lists MCP servers from project client files with transports, commands and variable names, never secret values, and warns about literal credentials, plain remote HTTP and auto-approval. [Details](docs/guide/INSTALL.md#review-mcp-servers).
 - **CI:** `--with-ci` adds a workflow that validates the committed AI-KIT files; it does not clone or install AI-KIT and is meaningful in team mode.
 - **Measurements:** `aikit metrics` records supplied attempt/token/cost evidence and analyzes provider results. No automatic telemetry; evaluation checks opaque pair coverage.
 

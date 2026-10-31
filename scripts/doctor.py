@@ -55,7 +55,16 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
         errors.append(f"Invalid installer state: {exc}")
         return report
     report["installed_version"] = state.get("accepted_version")
-    if report["installed_version"] != report["bundle_version"]:
+    installed, bundle = report["installed_version"], report["bundle_version"]
+    if install.is_downgrade(installed, bundle):
+        warnings.append(f"This project has AI-KIT {installed}, newer than this CLI ({bundle}); upgrade the CLI "
+                        "(for example `pipx upgrade ai-kit-python`) before installing or fixing, or the installer "
+                        "refuses to downgrade.")
+    elif install.is_downgrade(bundle, installed):
+        info.append(f"AI-KIT {bundle} is available for this project (installed {installed}): preview with "
+                    "`aikit install .` from the project, then `aikit install . --apply --check`; saved choices "
+                    "are reused and local edits are preserved.")
+    elif installed != bundle:
         info.append("Installed baseline differs from this bundle's VERSION.")
     records = state.get("files", {})
     modified, adapted = [], []
@@ -323,7 +332,8 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Fix refused: {exc}", file=sys.stderr)
             return 1
         print(json.dumps({"fix": {"preview": not args.apply, "writes": sorted(plan["actions"]),
-                                  "conflicts": sorted(plan["conflicts"]), "applied": applied},
+                                  "conflicts": sorted(plan["conflicts"]), "applied": applied,
+                                  "warnings": plan["warnings"]},
                           "report": report}, indent=2))
         return 2 if (plan["conflicts"] or report["errors"]) else 0
     try:

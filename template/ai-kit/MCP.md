@@ -14,4 +14,6 @@ Load before adding, enabling, reviewing, or relying on an MCP server. AI-KIT nev
 
 Record confirmed servers in PROJECT_CONTEXT or a project-owned runbook, not as assumed defaults. For each server keep: name/owner, transport and endpoint class, approved capabilities (read/write/network/shell), data scope, credential location class, approval date/owner, and review trigger. Mark unknowns explicitly.
 
+To inventory project connection files, run `aikit mcp report .` (read-only; it prints variable names instead of secret values and starts no server) and review its warnings: literal credentials, inline client secrets, plain remote HTTP and auto-approval settings. User-level client files are outside its scope.
+
 A connection file is configuration, not proof that the server is safe or active. Native client activation and runtime behavior require a separate check.

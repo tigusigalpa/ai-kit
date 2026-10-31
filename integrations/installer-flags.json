@@ -178,6 +178,11 @@
       "value": "switch",
       "setting": "web_design",
       "help": "Install Web Design workflows and project documents; no external tool setup"
+    },
+    {
+      "option": "--allow-downgrade",
+      "value": "switch",
+      "help": "Apply even when the project has a newer AI-KIT version than this installer"
     }
   ],
   "presets": {
