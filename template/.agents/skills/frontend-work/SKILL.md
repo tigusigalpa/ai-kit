@@ -1,6 +1,6 @@
 ---
 name: frontend-work
-description: "Apply frontend rules for confirmed package.json browser modules, assets, JavaScript, or TypeScript."
+description: "Apply browser UI and asset rules to confirmed frontend modules; server/runtime work uses JavaScript and Node.js guidance."
 ---
 
 # frontend-work

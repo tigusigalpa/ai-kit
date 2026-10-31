@@ -16,7 +16,9 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 
 What changed in each release: [CHANGELOG](CHANGELOG.md).
 
-[Get AI-KIT](#get-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
+**v1.6.0:** English chat defaults, Devin (Windsurf), JavaScript/Node.js, optional UUIDs and human Claude GitHub identity. [Release verification and publication status](docs/V1_6_0.md).
+
+[Get AI-KIT](#get-ai-kit) · [Update AI-KIT](#update-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
 
 <div align="center">
 <table>
@@ -51,11 +53,11 @@ aikit --version
 
 The PyPI package is **`ai-kit-python`**; the command it installs is **`aikit`**. Never run `pip install aikit`: that is not this project's package name. Without pipx, run `python -m pip install ai-kit-python` inside a virtual environment. On Windows, the [Windows guide](docs/guide/WINDOWS.md) covers PATH and interpreter problems.
 
-**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example the published `1.5.0`:
+**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example `1.6.0` (see the release status above):
 
 ~~~sh
-docker pull tigusigalpa/ai-kit:1.5.0
-docker run --rm tigusigalpa/ai-kit:1.5.0 --version
+docker pull tigusigalpa/ai-kit:1.6.0
+docker run --rm tigusigalpa/ai-kit:1.6.0 --version
 ~~~
 
 Project mounts, preview/apply examples and the runtime contract are in [Run AI-KIT with Docker](docs/guide/DOCKER.md).
@@ -70,18 +72,47 @@ python scripts/install.py --help
 
 From a checkout, run `python scripts/install.py` or `python aikit_cli.py COMMAND` directly, or run `python -m pip install .` there to get the `aikit` command. Details: [Get the CLI](docs/guide/INSTALL.md#get-the-cli).
 
+## Update AI-KIT
+
+**1. Update the Python package.** If you installed with pip, run this using the same Python environment as the existing installation (activate its virtual environment first if applicable):
+
+~~~powershell
+python -m pip install --upgrade ai-kit-python
+python -m aikit.aikit_cli --version
+~~~
+
+The package name is **`ai-kit-python`**, not `aikit`. The module-based version check works even when `aikit.exe` is missing from PATH. If you installed with **pipx**, use this instead:
+
+~~~powershell
+pipx upgrade ai-kit-python
+aikit --version
+~~~
+
+These commands install the newest version published on PyPI; unreleased source changes become available there only after a release. They update the CLI without rewriting the AI-KIT files already installed in your application projects.
+
+**2. Update each application project separately.** Open a terminal in that project's root folder (`.` means the current directory), inspect the preview, then apply the update and run its health check:
+
+~~~powershell
+python -m aikit.aikit_cli install .
+python -m aikit.aikit_cli install . --apply --check
+~~~
+
+For a pipx installation, use `aikit install .` and then `aikit install . --apply --check`. Omit `--agent`, `--mode` and module flags when you want to retain the project's saved choices. Existing project documents and local adaptations follow the preservation/conflict rules; review reported candidates before accepting a manual merge. Updating the CLI once does not automatically update every project.
+
+For Docker, choose and pull an explicit new version tag and rerun the installer against the project mount; there is no `latest` image. [Full update and conflict guide](docs/guide/INSTALL.md#update-an-application-project) · [Windows troubleshooting](docs/guide/WINDOWS.md) · [Docker instructions](docs/guide/DOCKER.md).
+
 ## Defaults you should know
 
 > [!IMPORTANT]
-> **Chat replies default to Russian, and conventions default to the owner's opinionated Laravel conventions**, including **no database foreign key constraints**, a public UUID beside the internal ID, Policy/Factory/Seeder per model and one table per migration. Authored project files are always English.
+> **Chat replies and authored files default to English.** Conventions default to the owner's Laravel preferences: **no database foreign key constraints**, Policy/Factory/Seeder per model and one table per migration. **Public UUIDs are optional**, enabled by `--with-uuid` for any confirmed technology.
 >
-> For English replies and your project's own conventions, add both flags to the preview and the apply command:
+> For Russian replies and your project's own conventions, add both flags to the preview and the apply command:
 >
 > ~~~sh
-> aikit install /path/to/my-app --chat-language English --conventions standard
+> aikit install /path/to/my-app --chat-language Russian --conventions standard
 > ~~~
 >
-> Other fresh defaults: private sharing mode, the `codex` client and maximum Docker cleanup. Choices are saved in `ai-kit/settings.json` and reused on upgrades. [All defaults](docs/guide/INSTALL.md#choose-your-defaults) · [Owner profile](template/ai-kit/profiles/OWNER.md)
+> Other fresh defaults: private sharing mode, the `codex` client and maximum Docker cleanup. Existing projects retain their saved language and choices; update an existing language explicitly with `--chat-language English`. Claude installs suppress its added commit credit and preserve human authorship; `--with-claude-github` adds authenticated GitHub identity verification. [All defaults](docs/guide/INSTALL.md#choose-your-defaults) · [Owner profile](template/ai-kit/profiles/OWNER.md)
 
 ## Features at a glance
 
@@ -93,7 +124,7 @@ From a checkout, run `python scripts/install.py` or `python aikit_cli.py COMMAND
 | 🧩 | **Stack profiles** | Expert rules for Go, PHP, Laravel, Filament 5, Moodle, Python, Rust, .NET, Java, Terraform/Helm, frontend, and libraries, auto-detected per module |
 | 🐳 | **Kubernetes-ready container guidance** | The kit instructs agents to make new Dockerfiles and services Kubernetes-ready: probes, graceful shutdown, non-root execution and manifests |
 | 🧭 | **Adaptive model routing** | A 0-6 capability ladder; the routing policy recommends a model role and reasoning effort per task. No savings are claimed |
-| 🤖 | **11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified |
+| 🤖 | **11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, Copilot, Gemini CLI, Devin (Windsurf), Cline, Roo, Aider, Kimi and Manus. The legacy `windsurf` adapter remains compatible. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified |
 | 🎯 | **Native client configuration** | Claude Code allow rules for the recorded test/lint/build commands (with `--with-native-settings`); module rules scoped to the paths where they apply (with `--with-scoped-rules`) |
 | 🛡️ | **Guardrails that reduce risk** | No commits without your request, optional ask rules before destructive commands, deny rules and ignore files for secret files. Not a security boundary |
 | 🔐 | **Optional security workflows** | Cloudflare's audit method and nine Strix skills, pinned and invoked explicitly in Codex or Claude Code |
@@ -148,11 +179,12 @@ flowchart LR
 | [Frontend](template/ai-kit/stacks/FRONTEND.md) | Pinned package manager, type/lint/build checks, accessibility, public-config hygiene |
 | [Library/SDK](template/ai-kit/stacks/LIBRARY.md) | Public API stability, semantic versioning, consumer examples, compatibility matrices |
 | [Rust](template/ai-kit/stacks/RUST.md) | Ownership and borrowing, unsafe discipline, Result errors, cargo fmt/clippy/test, lockfile hygiene |
+| [JavaScript / TypeScript / Node.js](template/ai-kit/stacks/JAVASCRIPT.md) | Node services, CLIs, workers and packages; ESM/CommonJS, async cancellation, input validation, actual package scripts |
 | [.NET](template/ai-kit/stacks/DOTNET.md) | Nullable types, async with CancellationToken, deterministic disposal, dotnet build/test |
 | [Java](template/ai-kit/stacks/JAVA.md) | Maven/Gradle wrappers, exception boundaries, try-with-resources, wrapper test/verify |
 | [Terraform/Helm](template/ai-kit/stacks/INFRA.md) | Remote state, plan review, pinned providers and charts, fmt/validate and lint/template gates |
 
-Profiles combine per module, so a monorepo with a Laravel app in `web/` and a Go service in `api/` gets the right rules in each place. Opinionated **owner conventions** for Laravel (no database foreign keys, public UUID beside the internal id, Policy + Factory + Seeder per model, one table per migration, Filament 5+ for new panels) are the default; use `--conventions standard` to follow your project's own conventions instead.
+Profiles combine per module, so a monorepo with a Laravel app in `web/` and a Go service in `api/` gets the right rules in each place. Opinionated **owner conventions** for Laravel (no database foreign keys, Policy + Factory + Seeder per model, one table per migration, Filament 5+ for new panels) are the default; use `--conventions standard` to follow your project's own conventions instead. Public UUID guidance is an independent opt-in; see [optional UUIDs and Claude GitHub identity](#optional-uuids-and-claude-github-identity).
 
 ### Docker-aware, Kubernetes-ready guidance
 
@@ -182,11 +214,123 @@ It is a recommendation, and no cost savings are claimed. The kit never fakes a m
 | Cursor | `.cursor/rules/` with module globs, `.cursorignore` secrets |
 | GitHub Copilot | `copilot-instructions.md` and per-module `.instructions.md` |
 | Gemini CLI | `GEMINI.md` and `.geminiignore`; reads the shared skills |
-| Windsurf, Cline, Roo | Native rule folders, with glob- or path-scoped module rules for Windsurf and Cline |
+| Devin (Windsurf) | `--agent devin`: `.devin/rules/ai-kit.md` and optional module rules; `--agent windsurf` retains the legacy `.windsurf/rules/` adapter |
+| Cline, Roo | Native rule folders, with path-scoped module rules for Cline |
 | Aider | `CONVENTIONS.md` and `.aiderignore`, plus model routing config |
 | Kimi, Manus | Short entry files |
 
 Scoped rules, ignore files, and settings come with the native-settings and scoped-rules extras. The preview spots the clients you already use from existing files and suggests the matching `--agent` list. Copying files does not prove that a client discovers or activates them, and documentation for Kimi and Manus is unverified; `aikit adapters report --project TARGET` lists each client's documentation status.
+
+For a new **Codex + Claude + Devin (Windsurf)** setup, run this from the application directory:
+
+~~~powershell
+python -m aikit.aikit_cli install . --agent codex --agent claude --agent devin --mode private --preset strict --with-security-audit --with-strix --with-context7 --with-web-design --with-claude-github --apply --check
+~~~
+
+Add `--with-uuid` only if the project should adopt public UUID guidance. Explicit `--agent` flags describe the complete selection; include every client you want to keep. To move an existing installation from `windsurf` to `devin`, temporarily include **both** adapters in the full selection and preview/apply it. Then preview `aikit adapters retire . --agent windsurf` and repeat with `--apply` after review; the retirement removes only unchanged owned legacy rules and deselects `windsurf`. Edited legacy rules remain conflicts and are preserved. Devin loads both rule directories, so inspect overlapping rules before using it. The supported current paths and legacy imports are documented in [Devin Local customizations](https://docs.devin.ai/desktop/devin-local/customizations); `--agent devin` targets the local/desktop rule format.
+
+### Optional UUIDs and Claude GitHub identity
+
+| Option | Default | Effect |
+| --- | --- | --- |
+| `--with-uuid` | Off; independent of presets and `owner`/`standard` | Installs [public UUID guidance](template/ai-kit/UUID.md), saves `uuid=true`, and adds a short AGENTS entry for any confirmed language or technology. No code, columns, primary keys or routes are changed by installation. |
+| `--with-claude-github` | Off; independent of presets | Installs [Claude GitHub identity guidance](template/ai-kit/CLAUDE-GITHUB.md), saves `claude_github=true`, and links it from the selected Claude entry. Before an authorized commit, Claude verifies the active account for the repository's GitHub host and matches human author/committer details. Missing or conflicting identity stops that commit for clarification. |
+
+All Claude installations include the baseline human-authorship rule and request `attribution.commit` as an empty string in their managed local/team settings. This suppresses Claude's commit-credit trailer; it does not change Git's author fields. Existing custom attribution values produce a reviewable conflict instead of being overwritten. Existing human co-authors, signing and PR-attribution preferences are preserved. [Claude attribution reference](https://code.claude.com/docs/en/settings-reference#attributioncommit).
+
+Example: add both policies to an existing project while preserving its saved client selection:
+
+~~~powershell
+python -m aikit.aikit_cli install . --with-uuid --with-claude-github
+python -m aikit.aikit_cli install . --with-uuid --with-claude-github --apply --check
+~~~
+
+The GitHub policy needs Claude selected; add `--agent claude` alongside the full desired client list when necessary. Nothing logs in, queries GitHub, changes global Git settings, commits or pushes during installation. These flags persist across upgrades. Omitting them later does not disable them; review and set `uuid` or `claude_github` to `false` in `ai-kit/settings.json` to deselect. Existing files/data remain preserved. Changing a setting never authorizes destructive schema changes or a Git operation.
+
+### Connect TypeUI to Codex and Claude
+
+**TypeUI supplies design guidance; the coding client implements it in your project.** AI-KIT supplies the brief, project memory and acceptance workflow. Adding `--with-web-design` installs those local resources; registering and authenticating the TypeUI MCP server is a separate step. The commands below configure the clients you run them in, rather than the AI-KIT Docker container. The hosted service is not bundled or revision-pinned by AI-KIT.
+
+#### 1. Prepare the application
+
+Open a terminal in the application directory. Install/update AI-KIT, selecting the full client list you use; preview first by omitting `--apply --check`:
+
+~~~powershell
+python -m aikit.aikit_cli install . --agent codex --agent claude --with-web-design --apply --check
+~~~
+
+Keep an already-selected `--agent devin` or other client in that list if needed. Fill `docs/design/BRIEF.md` with the goal, audience, required pages/sections, content, reference URLs, assets, supported screen sizes and constraints. Put the approved visual direction in `docs/design/SYSTEM.md` and measurable checks in `docs/design/ACCEPTANCE.md`. Existing documents are preserved; review actual frameworks and versions before asking for implementation.
+
+#### 2. Connect Codex
+
+Check that the Codex CLI is available with `codex --version`, then register the official HTTP endpoint:
+
+~~~powershell
+codex mcp add typeui --url https://mcp.typeui.sh/mcp
+codex mcp list
+codex mcp login typeui
+~~~
+
+Complete the sign-in in the browser yourself. Start/reopen Codex and use `/mcp` in its terminal interface to inspect the active connection. In an IDE extension, inspect MCP servers and restart the extension after configuration changes. Listing a server proves registration; a successful authenticated tool call proves the current connection. [TypeUI's Codex guide](https://www.typeui.sh/docs/guides/codex) · [OpenAI MCP configuration and authentication](https://learn.chatgpt.com/docs/extend/mcp).
+
+For project-scoped configuration, merge this table into the existing `.codex/config.toml` instead of replacing the file or creating a duplicate table:
+
+~~~toml
+[mcp_servers.typeui]
+url = "https://mcp.typeui.sh/mcp"
+~~~
+
+Keep credentials out of that file and the repository; the client handles sign-in separately. Check which configuration is effective in the client you actually use. A remote/web session does not inherit a local process's configuration automatically.
+
+#### 3. Connect Claude Code
+
+From the same application directory, check `claude --version` and add the HTTP connection at the private, current-project scope:
+
+~~~powershell
+claude mcp add --transport http --scope local typeui https://mcp.typeui.sh/mcp
+claude mcp list
+claude
+~~~
+
+Inside Claude Code, enter `/mcp`, choose `typeui`, authenticate and finish the TypeUI sign-in. The local scope is stored under the project's entry in your personal `~/.claude.json`. For a team-shared endpoint use `--scope project` instead; Claude writes `.mcp.json`, and each teammate authenticates separately. Review an existing registration before adding another with the same name. [TypeUI's Claude guide](https://www.typeui.sh/docs/guides/claude) · [Claude MCP scopes](https://code.claude.com/docs/en/mcp#mcp-installation-scopes).
+
+This example targets **Claude Code**. A Claude chat/desktop connector has its own setup; registering a CLI connection does not automatically configure every Claude application.
+
+#### 4. Verify access and prepare the design context
+
+Ask the client to inspect available TypeUI tools and check sign-in/access before generation. For the currently exposed tools, `typeui_check_access` and `typeui_get_usage` provide the access/usage checks. An account or plan requirement must be resolved in TypeUI; AI-KIT does not supply access or promise a free quota.
+
+For a custom visual system, create or import a draft in TypeUI, review its Markdown, then publish it for MCP. Choose one visual system for the task. Keep AI-KIT's engineering/acceptance rules and reconcile conflicting visual instructions before generating. Follow [TypeUI's MCP workflow](https://www.typeui.sh/docs/overview/mcp-server) for the current account and publishing steps.
+
+#### 5. Run a bounded design task
+
+In Codex use `$web-design`; in Claude Code use `/web-design`. Supply a concrete request such as:
+
+~~~text
+Use the web-design workflow and the connected TypeUI tools.
+Read docs/design/BRIEF.md, SYSTEM.md and ACCEPTANCE.md first.
+Confirm the actual framework and package versions. Reuse the existing application.
+Check TypeUI access, then prepare one approved visual direction.
+Propose the page structure and implement the hero section first.
+Review responsive behavior, keyboard access and real browser output.
+Continue after that section meets the acceptance criteria.
+Do not deploy or replace the project's tooling without an explicit request.
+~~~
+
+Treat generated prompts as design inputs under the project's instructions. Review any returned skill-install command before executing it; choose a project-local location and inspect existing files. For a multi-section TypeUI workflow, complete the requested cleanup/acceptance for the current section before asking for the next one. Record only reviewed decisions in the design documents. A generated layout still needs the project's actual build/tests and browser review.
+
+#### Troubleshooting TypeUI
+
+| Symptom | Check and resolution |
+| --- | --- |
+| `codex` or `claude` is not recognized | Install/repair that client's CLI and PATH using its own documentation. `python -m aikit.aikit_cli` starts AI-KIT, not either coding client. |
+| Server is listed but no tools are available | Inspect `/mcp`, verify the configured endpoint, authenticate, then restart/reconnect the client. Check whether it is using user, project, or another environment's configuration. |
+| Browser login fails or the server returns 401/403 | Reauthenticate through the client, verify the intended TypeUI account and current access, and inspect organization/network restrictions. Keep credentials out of chat and Git. |
+| `aikit mcp report .` does not show a registered server | The report inventories project files only. Codex user configuration and Claude's local-scope registration are outside that report; use their native connection status. |
+| TypeUI works in Codex but not Claude | Each client has a separate MCP registration and sign-in; complete both setup paths. |
+| Output disagrees with the brief or changes framework | Reconcile the brief, the selected visual system and the actual stack; rerun one bounded section with explicit constraints. Review changes before continuing. |
+
+These instructions are source-checked setup guidance. Live authentication and generated-site acceptance must be verified in the target clients.
 
 ### Native configuration from your project facts
 
@@ -254,7 +398,7 @@ The `tigusigalpa/ai-kit` image runs the installer and helpers with a read-only r
 
 ### More built in
 
-- **Language/sharing:** English files, Russian chat by default; private or team instructions. [Sharing](docs/guide/INSTALL.md#sharing).
+- **Language/sharing:** English files and chat by default; saved project languages remain unchanged on upgrades. Private or team instructions. [Sharing](docs/guide/INSTALL.md#sharing).
 - **Health:** `aikit doctor TARGET` reports managed-file, link, provider and context drift and names the upgrade commands when a newer AI-KIT is available; `--fix` previews a repair plan and `--fix --apply` writes it, preserving local edits. An older CLI refuses to downgrade a newer installation unless you pass `--allow-downgrade`.
 - **MCP review:** `aikit mcp report TARGET` lists MCP servers from project client files with transports, commands and variable names, never secret values, and warns about literal credentials, plain remote HTTP and auto-approval. [Details](docs/guide/INSTALL.md#review-mcp-servers).
 - **CI:** `--with-ci` adds a workflow that validates the committed AI-KIT files; it does not clone or install AI-KIT and is meaningful in team mode.

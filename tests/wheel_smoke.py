@@ -78,7 +78,13 @@ def main(argv: list[str] | None = None) -> int:
         run([aikit, "context", "select", project])
         audit_project = root / "audit project"
         run([aikit, "install", audit_project, "--with-security-audit", "--with-strix", "--with-context7", "--with-web-design", "--with-orchestration", "--agent", "codex",
-             "--agent", "claude", "--apply", "--check"])
+             "--agent", "claude", "--agent", "devin", "--with-uuid", "--with-claude-github", "--apply", "--check"])
+        for relative in ("ai-kit/UUID.md", "ai-kit/CLAUDE-GITHUB.md", ".devin/rules/ai-kit.md",
+                         "ai-kit/stacks/JAVASCRIPT.md", ".claude/skills/javascript-work/SKILL.md"):
+            if not (audit_project / relative).is_file():
+                raise RuntimeError("Wheel did not deliver a selected development resource: " + relative)
+        if json.loads((audit_project / "ai-kit/settings.json").read_text(encoding="utf-8"))["chat_language"] != "English":
+            raise RuntimeError("Wheel does not use the English fresh-install default")
         from_manifest = audit_project / "ai-kit/vendor/security-audit/UPSTREAM.json"
         if not from_manifest.is_file() or not (audit_project / ".agents/skills/security-audit/agents/openai.yaml").is_file():
             raise RuntimeError("Wheel did not install the optional audit package and invocation policy")

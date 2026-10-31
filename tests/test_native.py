@@ -12,7 +12,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import doctor
 import install
 
-ALL_SCOPED = ["codex", "claude", "cursor", "copilot", "windsurf", "cline"]
+ALL_SCOPED = ["codex", "claude", "cursor", "copilot", "devin", "windsurf", "cline"]
 
 
 class NativeConfigurationTests(unittest.TestCase):
@@ -281,7 +281,8 @@ class NativeConfigurationTests(unittest.TestCase):
         settings = self.read_json("ai-kit/settings.json")
         self.assertIs(settings["guards"], False)
         self.assertIs(settings["scoped_rules"], False)
-        self.assertNotIn("managed_json", self.read_json("ai-kit/.install-state.json"))
+        self.assertEqual(self.read_json("ai-kit/.install-state.json")["managed_json"],
+                         {".claude/settings.json": {"attribution.commit": [""]}})
         self.assertNotIn("permissions", self.read_json(".claude/settings.json"))
         # Generated rules are never deleted; the preview names them for review.
         self.assertTrue(any("retained without a current source: .claude/rules/ai-kit-web.md" in w

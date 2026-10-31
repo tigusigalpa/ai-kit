@@ -39,7 +39,7 @@
       "option": "--chat-language",
       "value": "text",
       "setting": "chat_language",
-      "fresh_default": "Russian",
+      "fresh_default": "English",
       "help": "Language for chat replies and plans; project files stay English"
     },
     {
@@ -74,6 +74,7 @@
         "codex",
         "copilot",
         "cursor",
+        "devin",
         "gemini",
         "kimi",
         "manus",
@@ -178,6 +179,20 @@
       "value": "switch",
       "setting": "web_design",
       "help": "Install Web Design workflows and project documents; no external tool setup"
+    },
+    {
+      "option": "--with-uuid",
+      "value": "switch",
+      "setting": "uuid",
+      "fresh_default": false,
+      "help": "Enable public UUID guidance for any confirmed stack; no schema/code changes"
+    },
+    {
+      "option": "--with-claude-github",
+      "value": "switch",
+      "setting": "claude_github",
+      "fresh_default": false,
+      "help": "Require the authenticated human GitHub identity for authorized Claude commits; no login"
     },
     {
       "option": "--allow-downgrade",

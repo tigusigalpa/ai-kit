@@ -21,6 +21,7 @@ These are references, not confirmed project facts. After bootstrap group active 
 - [Python](ai-kit/stacks/PYTHON.md)
 - [Moodle](ai-kit/stacks/MOODLE.md)
 - [Frontend](ai-kit/stacks/FRONTEND.md)
+- [JavaScript / TypeScript / Node.js](ai-kit/stacks/JAVASCRIPT.md)
 - [Library/SDK](ai-kit/stacks/LIBRARY.md)
 - [Rust](ai-kit/stacks/RUST.md)
 - [.NET](ai-kit/stacks/DOTNET.md)

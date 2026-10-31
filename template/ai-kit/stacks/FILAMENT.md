@@ -12,7 +12,7 @@ Apply only to confirmed Filament work. Inspect composer.json and composer.lock f
 
 - Enforce panel access, model policies, action authorization, and tenant scope on the server. Hidden navigation or controls do not protect a callable operation. Check related-owner access and additional model properties explicitly; never assume an extra property receives the resource record's checks.
 - Review the [resource authorization contract](https://filamentphp.com/docs/5.x/resources/overview#authorization) for single-record and bulk operations. Test mixed selections, denied records, and cross-tenant access. Do not remove query scopes or skip authorization to make a screen work.
-- Keep effects, retries, transactions, and money handling under the Laravel baseline. When owner conventions apply, verify public UUID URLs and bindings through Resources and relation pages.
+- Keep effects, retries, transactions, and money handling under the Laravel baseline. Preserve record URL/binding contracts; when settings.uuid is enabled, verify UUID bindings through Resources and relation pages.
 - Use the project's PHPUnit/Pest and Livewire setup. Test affected list/filter behavior, create/edit validation and persistence, direct denied requests, actions/bulk actions, and tenant isolation. A visible button or a successful page load alone is insufficient verification.
 
 Version-match the official [security guide](https://filamentphp.com/docs/5.x/advanced/security) and [resource tests](https://filamentphp.com/docs/5.x/testing/testing-resources). Report application checks that could not run; kit validation does not execute a Filament application.

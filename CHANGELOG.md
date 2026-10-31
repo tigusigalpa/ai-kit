@@ -1,5 +1,15 @@
 # AI-KIT changelog
 
+## v1.6.0 (2026-10-31)
+
+- Add a prominent [Update AI-KIT](README.md#update-ai-kit) section with exact pip/pipx upgrade, version, current-project preview and apply/check commands; distinguish package updates from per-project upgrades and unpublished source features.
+- Default new-project and interactive chat language to English; preserve saved languages on upgrades and support explicit `--chat-language Russian`/`English` changes.
+- Add current Devin (Windsurf) local/desktop rules with `--agent devin`, detection and module-scoped generation; retain the legacy `windsurf` selection and explicit, conflict-aware retirement without deleting custom rules.
+- Add a dedicated JavaScript/TypeScript/Node.js profile and skill. Package modules receive JavaScript guidance; browser/frontend suggestions require dependency evidence.
+- Move public UUID guidance out of mandatory owner Laravel/Filament conventions into independent, persistent `--with-uuid` for any confirmed technology. Installation changes no application code, schema or routes.
+- Preserve human authorship in Claude by default and manage empty native commit attribution without overriding conflicting custom values. Add independent `--with-claude-github` for active human GitHub identity verification before authorized commits; installation performs no login or Git configuration change.
+- Add the detailed [TypeUI setup walkthrough](README.md#connect-typeui-to-codex-and-claude) for Codex and Claude Code, including MCP scopes, authentication, verification and troubleshooting; synchronize flags, user guides and distribution checks. Isolated wheel/sdist metadata/privacy checks, a fresh offline wheel installation, both 458-test runs (Windows: 14 environment/platform skips; packaged Linux: three platform/distribution skips), Docker smoke and byte equality for 318 packaged files passed. The tested local image is `ai-kit:dev`; its dedicated builder/cache was retired. Later descriptive update instructions and verification notes retain the tested artifacts with their earlier documentation snapshot. Release preparation/publication is tracked in [v1.6.0](docs/V1_6_0.md); old published artifacts remain unchanged. Live TypeUI/Claude activation is unverified.
+
 ## v1.5.0 (2026-10-30)
 
 - New `aikit mcp report TARGET`: lists MCP servers from project client files (Claude Code, Cursor, VS Code/Copilot, Gemini CLI, Codex, Roo, Kimi Code) with transport, command, URL origin, variable names, approval and tool settings and Git tracking. It never prints secret values and warns about literal credentials, inline OAuth client secrets, credentials in URLs, plain remote HTTP and auto-approval. Read-only: no server is started or contacted. The installed MCP posture points to it. [Guide](docs/guide/INSTALL.md#review-mcp-servers).

@@ -242,11 +242,11 @@ class InstallerTests(unittest.TestCase):
         self.write("go.mod", b"module example.test/app\n")
         self.write("package.json", b"{}\n")
         plan = self.plan()
-        self.assertEqual(plan["detected_profiles"], {"FRONTEND": [""], "GO": [""]})
+        self.assertEqual(plan["detected_profiles"], {"JAVASCRIPT": [""], "GO": [""]})
         self.apply()
         context = (self.target / "PROJECT_CONTEXT.md").read_text(encoding="utf-8")
         self.assertIn("| / | go.mod, package.json (installer-detected) | Go (suggested) | "
-                      "FRONTEND, GO (suggested, confirm at bootstrap) | "
+                      "GO, JAVASCRIPT (suggested, confirm at bootstrap) | "
                       "build: go build ./...; lint: go vet ./...; test: go test ./... |", context)
 
     def test_detected_profiles_are_scoped_to_module_prefixes(self):
@@ -376,7 +376,8 @@ class InstallerTests(unittest.TestCase):
         self.assertEqual(merged["permissions"], {"allow": ["Bash(make test)"]})
         self.assertEqual(len(merged["hooks"]["SessionStart"]), 2)
         state = json.loads((self.target / "ai-kit/.install-state.json").read_text())
-        self.assertEqual(list(state["managed_json"][".claude/settings.json"]), ["hooks.SessionStart"])
+        self.assertEqual(sorted(state["managed_json"][".claude/settings.json"]),
+                         ["attribution.commit", "hooks.SessionStart"])
 
     def test_legacy_whole_file_claude_settings_migrate_to_managed_entries(self):
         self.apply(agents=["claude"])

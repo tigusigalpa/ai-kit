@@ -28,10 +28,10 @@ The package name is `ai-kit-python`; the executable is `aikit`. Never run `pip i
 
 ## Preview, install and initialize
 
-**Defaults you should know:** chat replies default to Russian, and conventions default to the owner's opinionated Laravel conventions, including no database foreign key constraints. Authored project files are always English. For English replies and your project's own conventions, add both flags to the preview and the apply command:
+**Defaults you should know:** new projects use English chat and files; saved project languages survive upgrades. Owner Laravel conventions include no database foreign key constraints. Public UUIDs require the independent `--with-uuid` option for any confirmed stack. For Russian replies and standard conventions, add both flags to preview and apply:
 
 ```sh
-aikit install /path/to/my-app --agent codex --mode private --chat-language English --conventions standard
+aikit install /path/to/my-app --agent codex --mode private --chat-language Russian --conventions standard
 ```
 
 Choices are saved in `ai-kit/settings.json` and reused on upgrades. See [defaults and presets](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALL.md#choose-your-defaults).
@@ -56,8 +56,8 @@ Open the application in your AI client and invoke `$ai-kit-bootstrap` in Codex o
 ## Capabilities
 
 - **Project context:** verified facts, module maps, commands, decisions and continuity instructions.
-- **Client adapters:** native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified.
-- **Stack guidance:** Go, PHP, Laravel, Filament, Moodle, Python, frontend, libraries, Rust, .NET, Java and Terraform/Helm, selected from project evidence.
+- **Client adapters:** native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Devin (Windsurf), Cline, Roo, Aider, Kimi and Manus. Use `--agent devin` for current rules; `windsurf` preserves the legacy adapter. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified.
+- **Stack guidance:** Go, PHP, Laravel, Filament, Moodle, Python, JavaScript/TypeScript/Node.js, frontend, libraries, Rust, .NET, Java and Terraform/Helm, selected from project evidence. Server package modules do not imply browser UI.
 - **Health and review:** `aikit doctor` reports drift and names upgrade commands; an older CLI refuses to downgrade a newer installation without `--allow-downgrade`. `aikit mcp report` lists project MCP servers without printing secret values. `aikit flags` prints the installer option schema.
 - **Conservative upgrades:** existing documents, settings and local adaptations are preserved; conflicts remain reviewable.
 - **Engineering workflows:** plan, implement, test, review and document, with explicit Git authorization.
@@ -70,6 +70,8 @@ Enable these modules explicitly in both preview and apply:
 
 | Option | Included guidance |
 | --- | --- |
+| `--with-uuid` | Optional public UUID guidance across confirmed languages/technologies; no automatic schema changes. |
+| `--with-claude-github` | Human GitHub account verification before authorized Claude commits; no login/config changes during installation. Claude baseline entries suppress its added commit-credit trailer and preserve human authorship. |
 | `--with-web-design` | References and briefs, visual systems, UI implementation and acceptance, including a Blade route. |
 | `--with-context7` | Version-aware documentation lookup; MCP setup is separate. |
 | `--with-security-audit` | Pinned Cloudflare security-audit resources with an explicit entry point. |

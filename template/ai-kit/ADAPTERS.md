@@ -9,11 +9,13 @@
 | Cursor | Optional .cursor/rules/ai-kit.mdc; verify native activation in the installed client |
 | Aider | Optional CONVENTIONS.md; load with --read CONVENTIONS.md rather than assuming discovery |
 | Gemini CLI | GEMINI.md project entry discovered at the project root |
-| Windsurf | Optional .windsurf/rules/ai-kit.md; verify during the Windsurf/Devin rules transition |
+| Devin (Windsurf) | --agent devin installs .devin/rules/ai-kit.md and optional scoped rules; --agent windsurf retains legacy .windsurf/rules/ paths |
 | Cline | Optional .clinerules/ai-kit.md |
 | Roo | Optional .roo/rules/ai-kit.md |
 
 Existing adapters/settings are preserved or reported as conflicts. Copied Claude skills retain their three-level relative root paths; discovery must be checked in the actual client.
+Devin loads both .devin/rules/ and legacy .windsurf/rules/. Add devin alongside the accepted legacy client list before explicitly retiring unchanged windsurf adapter files; preserve edited rules and review duplicates. [Current formats](https://docs.devin.ai/desktop/devin-local/customizations).
+All Claude installations preserve human authorship and request an empty native attribution.commit value. Custom values conflict for review; PR attribution remains unchanged. Optional --with-claude-github adds authenticated GitHub identity checks before authorized commits, without changing installation permissions or global Git configuration.
 Private mode excludes local adapters and AI client configuration folders (.agents, .claude, .codex, .cursor, .gemini, .windsurf, .devin, .roo, .clinerules, Copilot instructions, prompts, and agents); team mode keeps shared instruction sources visible. Personal client settings and AI client history remain excluded in both modes.
 Reference integrations/ guards are the reviewed source for the optional ask rules below; they are supplementary confirmation, not a universal command ban.
 
@@ -45,6 +47,8 @@ Opt-in flags add machinery beyond the standard entries; accepted choices persist
 
 | Extra | Flag | Installed | Boundary |
 | --- | --- | --- | --- |
+| UUID identifiers | --with-uuid | Optional public identifier policy and a short AGENTS entry | Cross-stack; no automatic code/schema changes; independent of owner/standard conventions and presets |
+| Claude GitHub identity | --with-claude-github | Optional human account verification policy linked from the selected Claude entry | No login, Git config, commit or push at installation; account mismatch requires resolution before an authorized commit |
 | Session start | --with-session-start | .agents/hooks/session-start.md and session-start.sh; selected Claude gets a hook with instructions, first 8000 context bytes and Git status | Needs POSIX sh/tr/head; verify actual session output; settings ownership below |
 | Guards | --with-guards | Ask rules for Git commit/push in .claude/settings.json from integrations/claude-settings.git-ask.json | Confirmation, not a universal ban: Core allows an explicitly requested commit; test in the client. Requires the claude selection |
 | Project CI | --with-ci | .github/workflows/ai-kit.yml self-contained health check (state validity, managed files, budgets, owned documents) | Team mode is the intended companion: private mode excludes installer state from Git. Pin referenced actions to reviewed SHAs |
@@ -91,7 +95,7 @@ Module facts come from ai-kit/project.json when it lists modules, otherwise from
 | Claude Code | .claude/rules/ai-kit-MODULE.md | paths YAML list |
 | Cursor | .cursor/rules/ai-kit-MODULE.mdc | globs with alwaysApply false |
 | Copilot | .github/instructions/ai-kit-MODULE.instructions.md | applyTo |
-| Windsurf | .windsurf/rules/ai-kit-MODULE.md | trigger glob with globs |
+| Devin (Windsurf) | .devin/rules/ai-kit-MODULE.md; legacy .windsurf/rules/ with --agent windsurf | trigger glob with globs |
 | Cline | .clinerules/ai-kit-MODULE.md | paths YAML list |
 
 Codex reads AGENTS.md only from the repository root down to its working directory, so no nested AGENTS.md is generated; start Codex in a module directory for module-local instructions. Roo, Aider, Gemini, Kimi, and Manus have no generated scoped rules. AI-KIT writes no Codex config.toml: approval and sandbox choices stay with the user.

@@ -23,7 +23,7 @@ Execution claims require evidence.
 | Dogfooding and source accuracy | Root context describes AI-KIT itself; checker validates reference boundaries, anchors, skills, and Git visibility |
 | ADR/change history | Kit ADRs stay under root docs/; clean project ADR/decision templates; CHANGELOG updates remain required after tasks changing files |
 
-Owner defaults remain: English files/Russian chat, Laravel conventions, explicit commits/pushes, Docker preflight, Kubernetes readiness and maximum disposable cleanup without a size threshold. Installation can select another chat language or standard conventions without converting existing code.
+Defaults: English files and chat, owner Laravel conventions, explicit commits/pushes, Docker preflight, Kubernetes readiness and maximum disposable cleanup without a size threshold. Saved languages survive upgrades. Public UUIDs require the independent --with-uuid option across stacks; --with-claude-github adds authenticated human identity verification. Claude entries preserve human authorship and suppress native added commit credit. Installation can select another chat language or standard conventions without converting existing code.
 
 ## Policy ownership
 
@@ -36,6 +36,8 @@ Owner defaults remain: English files/Russian chat, Laravel conventions, explicit
 | Optional security workflows | [Cloudflare](../template/ai-kit/SECURITY-AUDIT.md), [Strix](../template/ai-kit/STRIX.md) |
 | Container design, maximum cleanup and host reclamation | [Containers](../template/ai-kit/CONTAINERS.md) |
 | Owner Laravel conventions | [Owner profile](../template/ai-kit/profiles/OWNER.md) |
+| Optional public UUID identifiers across stacks | [UUID policy](../template/ai-kit/UUID.md), selected by settings.uuid |
+| Claude human authorship and optional GitHub account verification | [Claude entry](../template/CLAUDE.md), optional [GitHub identity](../template/ai-kit/CLAUDE-GITHUB.md); Core retains Git authorization |
 | Stack practices | [Stack directory](../template/ai-kit/stacks), including Filament |
 | Routing and provider controls | [Router](../template/ai-kit/router/POLICY.md) and relevant provider |
 | Optional local measurement contract | [Metrics](../template/ai-kit/METRICS.md) |

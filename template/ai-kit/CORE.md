@@ -5,7 +5,7 @@ This is the canonical owner of authorization, language, and fact-verification ru
 ## Language
 
 All authored project files and artifacts use English, including code/comments, identifiers, docs, context, skills, synthetic fixtures, UI/log text, prompts, structured decisions, and saved reports.
-Chat uses the configured chat_language, default Russian. Code and reusable artifacts shown in chat remain English with explanations in the chat language.
+Chat uses the configured chat_language, default English. Code and reusable artifacts shown in chat remain English with explanations in the chat language.
 Preserve exact external identifiers, protocol values, quotes, user data, and public contracts; additional project languages require an explicit request.
 
 ## Git authorization

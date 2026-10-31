@@ -28,8 +28,9 @@ PROJECT_FILES = (
     ("roo", ".roo/mcp.json", "mcpServers"),
     ("kimi", ".kimi-code/mcp.json", "mcpServers"),
 )
-USER_LEVEL_NOTE = ("Windsurf and Cline keep MCP servers only in user-level files, and Aider has no MCP "
-                   "configuration; this report reads project files only.")
+USER_LEVEL_NOTE = ("Legacy Windsurf and Cline user-level MCP files and Devin (Windsurf) configuration "
+                   "are not inventoried here; Aider has no MCP configuration. This report reads only "
+                   "the listed project client files.")
 SENSITIVE = re.compile(r"key|token|secret|passw|auth|credential|bearer|cookie|session", re.I)
 REFERENCE = re.compile(r"\$\{[^}]+\}|\$[A-Za-z_][A-Za-z0-9_]*|%[A-Za-z_][A-Za-z0-9_]*%")
 OPAQUE = re.compile(r"(?=[A-Za-z0-9_+=-]*\d)(?=[A-Za-z0-9_+=-]*[A-Za-z])[A-Za-z0-9_+=-]{20,}")

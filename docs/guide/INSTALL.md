@@ -86,16 +86,18 @@ Project choices live in `ai-kit/settings.json`; defaults are in [the settings te
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | Project language | English | Authored project files use English |
-| Chat language | Russian | Plans, explanations, and replies use Russian |
+| Chat language | English | Plans, explanations, and replies use English; upgrades preserve the saved language |
 | Sharing mode | private | Local AI-KIT files are excluded from Git |
 | Conventions | owner | The owner's opinionated Laravel conventions apply when that stack is confirmed, including no database foreign key constraints |
 | Agent selection | codex | Default entry points and source skills |
+| Public UUID guidance | off | Enable for any stack with `--with-uuid`; owner conventions do not enable it |
+| Claude GitHub identity | off | `--with-claude-github` verifies the active human account before authorized commits; all Claude installs suppress its added commit-credit trailer |
 | Docker cleanup | maximum | After every Docker task, agents remove all eligible disposable resources, including the dedicated builder and its cache, and reclaim host resources (setting `docker_cleanup`, added after 1.4.5) |
 
-To switch to English chat replies and your project's own conventions, add these flags to both preview and apply:
+To select Russian chat replies and your project's own conventions, add these flags to both preview and apply. To change an existing project's saved Russian language to English, use `--chat-language English` explicitly:
 
 ~~~sh
-aikit install /path/to/project --chat-language English --conventions standard
+aikit install /path/to/project --chat-language Russian --conventions standard
 ~~~
 
 A fuller example that also selects team sharing and two clients:
@@ -117,7 +119,7 @@ To keep the dedicated project builder cache between Docker tasks, add `--docker-
 | team | team | The solo extras plus Git commit/push confirmation |
 | strict | Keep saved mode; fresh default is private | Session-start, Git guards, data guards, native settings and scoped rules |
 
-Explicit `--mode` and `--with-*` flags override presets; previews report disabled extras. CI, security-audit, Strix, Context7, Web Design and orchestration stay outside presets. Claude hook/permission wiring requires Claude selection; a preset does not select clients for you. [Flag reference and combinations](INSTALLER_FLAGS.md) · [All extras and client formats](../../template/ai-kit/ADAPTERS.md#optional-install-extras).
+Explicit `--mode` and `--with-*` flags override presets; previews report disabled extras. CI, security-audit, Strix, Context7, Web Design, orchestration, UUID and Claude GitHub stay outside presets. Claude hook/permission wiring requires Claude selection; a preset does not select clients for you. [Flag reference and combinations](INSTALLER_FLAGS.md) · [All extras and client formats](../../template/ai-kit/ADAPTERS.md#optional-install-extras).
 
 ## What lands in your project
 
@@ -142,7 +144,7 @@ Selected clients add their own entry files and configuration; see [the client ta
 | private | Ignored | Local instructions installed separately |
 | team | Visible | Teammates and agents working from fresh clones |
 
-Both modes exclude secrets, personal overrides, installer state, caches, IDE folders, AI client history, and extracted AI-KIT bundles; private mode also keeps AI client configuration folders (`.cursor`, `.codex`, `.gemini`, `.windsurf`, `.roo`, Copilot prompts and agents) out of Git. The installer owns one marked `.gitignore` block; your other rules survive, and lockfiles and manifests stay visible. Composer, Moodle, Node, and Python exclusions are scoped to detected modules, preserving deliberate Go vendoring. See [ignore adaptation](../../template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
+Both modes exclude secrets, personal overrides, installer state, caches, IDE folders, AI client history, and extracted AI-KIT bundles; private mode also keeps AI client configuration folders (`.cursor`, `.codex`, `.gemini`, `.devin`, legacy `.windsurf`, `.roo`, Copilot prompts and agents) out of Git. The installer owns one marked `.gitignore` block; your other rules survive, and lockfiles and manifests stay visible. Composer, Moodle, Node, and Python exclusions are scoped to detected modules, preserving deliberate Go vendoring. See [ignore adaptation](../../template/ai-kit/BOOTSTRAP.md#ignore-adaptation).
 
 The optional `--with-ci` workflow validates the AI-KIT files committed to the repository, so it is meaningful in team mode. In private mode those files stay out of Git and the workflow has nothing to validate.
 
@@ -155,6 +157,14 @@ Updating the CLI package and updating a project are separate steps. First update
 ~~~sh
 aikit install /path/to/project
 ~~~
+
+After reviewing the preview, apply and check that same project:
+
+~~~sh
+aikit install /path/to/project --apply --check
+~~~
+
+The [README update commands](../../README.md#update-ai-kit) also show the complete pip/pipx and Windows module-based sequence for the current directory.
 
 Unchanged managed files update, while your context and history are preserved. Saved agent, module and sharing selections are reused when omitted; pass selection flags only when intentionally changing them. Locally adapted files become candidates under `ai-kit/.upstream-cache/candidates/` for review, and changed files are backed up first. After merging a candidate, accept it:
 

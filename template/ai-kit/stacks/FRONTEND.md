@@ -1,6 +1,7 @@
 # Frontend / JavaScript / TypeScript
 
 Confirm package.json, lockfile/package manager, Node version, bundler, and framework/module boundaries. Do not assume Vite/Inertia/Livewire solely from Laravel.
+Use the [JavaScript/Node.js baseline](JAVASCRIPT.md) for language/runtime work; this profile adds browser and asset concerns.
 - Honor the pinned package manager/Node version and use reproducible lock-based installation. Keep generated assets separate from source.
 - Run actual type/lint/unit/build commands; new TypeScript code should have a documented strictness baseline. Avoid unrelated tool migrations.
 - Check accessibility, keyboard/focus behavior, loading/error states, escaping, and server-side authorization boundaries.

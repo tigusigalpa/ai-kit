@@ -21,18 +21,19 @@ AGENT_REGISTRY_PATH = "integrations/agents.json"
 PROFILE_MANIFESTS = {
     "GO": ("go.mod",),
     "PYTHON": ("pyproject.toml", "requirements.txt", "setup.py", "setup.cfg"),
-    "FRONTEND": ("package.json",),
+    "JAVASCRIPT": ("package.json",),
 }
 FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
                      "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
 EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci", "security-audit", "strix",
-          "context7", "web-design", "orchestration"}
+          "context7", "web-design", "orchestration", "uuid", "claude-github"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
 EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "data-guards": "data_guards",
                        "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci",
                        "security-audit": "security_audit", "strix": "strix", "context7": "context7",
-                       "web-design": "web_design", "orchestration": "orchestration"}
+                       "web-design": "web_design", "orchestration": "orchestration",
+                       "uuid": "uuid", "claude-github": "claude_github"}
 SECURITY_AUDIT_SKILL = ".agents/skills/security-audit/"
 SECURITY_AUDIT_PACKAGE = "ai-kit/vendor/security-audit/"
 SECURITY_AUDIT_MANIFEST = "integrations/security-audit.json"
@@ -54,7 +55,8 @@ OPTIONAL_SKILLS = {
 OPTIONAL_ENTRY_POINTS = {**{name: (name,) for name in OPTIONAL_SKILLS}, "context7": ("context7-docs",),
                          "web-design": ("web-design", "laravel-blade-ui", "ui-review", "design-extract")}
 OPTIONAL_DOCUMENTS = {"orchestration": ("ai-kit/orchestration.json",), "web-design": ("docs/design/BRIEF.md", "docs/design/SYSTEM.md", "docs/design/ACCEPTANCE.md")}
-OPTIONAL_RESOURCES = {"orchestration": ("ai-kit/ORCHESTRATION.md",), "web-design": ("ai-kit/WEB-DESIGN.md", "ai-kit/web-design/LARAVEL.md",
+OPTIONAL_RESOURCES = {"uuid": ("ai-kit/UUID.md",), "claude-github": ("ai-kit/CLAUDE-GITHUB.md",),
+                     "orchestration": ("ai-kit/ORCHESTRATION.md",), "web-design": ("ai-kit/WEB-DESIGN.md", "ai-kit/web-design/LARAVEL.md",
                                     "ai-kit/web-design/LIBRARIES.md", "ai-kit/web-design/TOOLS.md",
                                     "ai-kit/web-design/REVIEW.md")}
 # Presets set every extra they manage on or off; explicit --with-* flags add on top. CI is left
@@ -76,7 +78,8 @@ GUARDS_SOURCE = "claude-settings.git-ask.json"
 DATA_GUARDS_SOURCE = "claude-settings.data-ask.json"
 SECRETS_SOURCE = "agent-secrets.ignore"
 SCOPED_FORMATS = {"claude-paths": ".md", "cline-paths": ".md", "cursor-globs": ".mdc",
-                  "copilot-applyto": ".instructions.md", "windsurf-trigger": ".md"}
+                  "copilot-applyto": ".instructions.md", "windsurf-trigger": ".md", "devin-trigger": ".md"}
+CLAUDE_SCALAR_ENTRIES = {"attribution.commit"}
 MODULE_PATH = re.compile(r"/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*/)*")
 # Recorded commands become allow rules only when they are one plain command.
 UNSAFE_COMMAND = re.compile(r"[;&|<>`$()*\\\"'\r\n]")
@@ -407,20 +410,31 @@ def validate_state(state: dict, target: Path, agents: set[str] | None = None, *,
         else:
             safe_path(target, relative)
         for key, values in entries.items():
-            if (not isinstance(key, str) or not re.fullmatch(r"(?:permissions|hooks)\.[A-Za-z]+", key) or
+            if (not isinstance(key, str) or not (re.fullmatch(r"(?:permissions|hooks)\.[A-Za-z]+", key)
+                                                or key in CLAUDE_SCALAR_ENTRIES) or
                     not isinstance(values, list) or any(not isinstance(value, str) for value in values)):
                 raise ValueError(f"Invalid state managed_json entry for {relative}")
+            if key in CLAUDE_SCALAR_ENTRIES and values != [""]:
+                raise ValueError(f"Invalid scalar ownership for {relative}: {key}")
 
 
 def merge_managed_json(current: dict, remove: dict[str, list[str]], add: dict[str, list[str]]) -> dict:
     """Drop stale AI-KIT-owned entries and add missing ones; all other content is preserved.
 
     Keys name a settings list: permissions.<list> holds rule strings, hooks.<event> holds
-    command hook groups identified by their command.
+    command hook groups identified by their command. Known scalar keys use a singleton list
+    in ownership state; conflicting user values are preserved and reported for review.
     """
     result = json.loads(json.dumps(current))
     for key, values in remove.items():
         section, name = key.split(".", 1)
+        if key in CLAUDE_SCALAR_ENTRIES:
+            container = result.get(section)
+            if key not in add and isinstance(container, dict) and container.get(name) in values:
+                del container[name]
+                if not container:
+                    del result[section]
+            continue
         stale = [value for value in values if value not in add.get(key, [])]
         container = result.get(section)
         if not stale or not isinstance(container, dict) or not isinstance(container.get(name), list):
@@ -452,6 +466,13 @@ def merge_managed_json(current: dict, remove: dict[str, list[str]], add: dict[st
         container = result.setdefault(section, {})
         if not isinstance(container, dict):
             raise ValueError(f"{section} must be an object")
+        if key in CLAUDE_SCALAR_ENTRIES:
+            if values != [""]:
+                raise ValueError(f"Unsupported scalar value: {key}")
+            if name in container and container[name] != values[0]:
+                raise ValueError(f"User setting conflicts with {key}; review the candidate")
+            container[name] = values[0]
+            continue
         items = container.setdefault(name, [])
         if not isinstance(items, list):
             raise ValueError(f"{key} must be a list")
@@ -549,7 +570,7 @@ def claude_allow_rules(modules: list[dict]) -> list[str]:
 
 def claude_managed_entries(root: Path, extras: set[str], modules: list[dict] | None = None) -> dict[str, list[str]]:
     """Client settings entries AI-KIT owns for the enabled extras."""
-    entries: dict[str, list[str]] = {}
+    entries: dict[str, list[str]] = {"attribution.commit": [""]}
 
     def add(key: str, values: list[str]) -> None:
         bucket = entries.setdefault(key, [])
@@ -759,6 +780,14 @@ def _package_facts(pkg: dict, manager: str = "npm") -> dict:
     return {"language": "Node", "version": version, "commands": commands}
 
 
+def _browser_package(pkg: dict) -> bool:
+    """Only suggest browser guidance when dependencies establish a frontend toolchain."""
+    names = {name for section in ("dependencies", "devDependencies", "peerDependencies")
+             for name in (pkg.get(section) if isinstance(pkg.get(section), dict) else {})}
+    return bool(names & {"react", "react-dom", "vue", "svelte", "next", "nuxt", "astro", "vite",
+                         "webpack", "parcel", "tailwindcss", "@angular/core", "@sveltejs/kit"})
+
+
 def _python_commands(module: Path, target: Path, files: list[str]) -> dict:
     """Suggest pytest/ruff only when manifests or config files reference them."""
     texts = []
@@ -901,9 +930,11 @@ def detect_facts(target: Path) -> dict:
             facts["commands"].update(_python_commands(module, target, files))
         if "package.json" in files:
             facts["manifests"].append("package.json")
-            facts["profiles"].append("FRONTEND")
-            package = _package_facts(_manifest_json(module / "package.json") or {},
-                                     _node_manager(module, target))
+            manifest = _manifest_json(module / "package.json") or {}
+            facts["profiles"].append("JAVASCRIPT")
+            if _browser_package(manifest):
+                facts["profiles"].append("FRONTEND")
+            package = _package_facts(manifest, _node_manager(module, target))
             if facts["language"] is None:
                 facts["language"] = package["language"]
             if facts["version"] is None:
@@ -1140,7 +1171,7 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                 preset_disabled.append(name)
             settings[key] = enabled
     mode = mode or settings.get("sharing_mode", "private")
-    language = language or settings.get("chat_language", "Russian")
+    language = language or settings.get("chat_language", "English")
     conventions = conventions or settings.get("conventions", "owner")
     explicit_agents = agents is not None
     agents = agent_selection(agents if agents is not None else state.get("agents", list(DEFAULT_AGENTS)),
@@ -1194,6 +1225,10 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             continue
         incoming[relative] = src.read_bytes()
     incoming.update(upstream_files)
+    if "uuid" in enabled_extras:
+        incoming["AGENTS.md"] += b"\nFor identifier changes apply the enabled [UUID policy](ai-kit/UUID.md) across confirmed stacks.\n"
+    if "claude-github" in enabled_extras and "claude" in agents:
+        incoming["CLAUDE.md"] += b"\nBefore an authorized GitHub commit read [human GitHub identity](ai-kit/CLAUDE-GITHUB.md).\n"
     if "orchestration" in enabled_extras:
         incoming["AGENTS.md"] += b"\nFor explicitly requested orchestration read [the optional contract](ai-kit/ORCHESTRATION.md).\n"
         if "codex" in agents:
@@ -1320,6 +1355,11 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     if "claude" not in agents and ({"guards", "session-start"} & enabled_extras):
         warnings.append("guards/session-start client wiring requires the claude agent selection; "
                         "only the shared files were installed.")
+    if "claude-github" in enabled_extras and "claude" not in agents:
+        warnings.append("claude-github guidance requires --agent claude; no GitHub identity was queried or changed.")
+    if "devin" in agents and "windsurf" in detected_agents:
+        warnings.append("Devin (Windsurf) also loads legacy .windsurf rules; review duplicate guidance. "
+                        "Previously managed legacy rules require explicit adapter retirement, never deletion here.")
     if mode == "team" and legacy.intersection(line.strip() for line in outside.splitlines()):
         conflicts[".gitignore"] = merged.encode()
         conflict_local_hashes[".gitignore"] = digest(old_ignore) if old_ignore is not None else None
@@ -1572,7 +1612,7 @@ def interactive_selections(read=input, *, agents_available: set[str], facts: dic
     spec = PRESETS.get(preset or "", {"mode": None, "extras": ()})
     default_mode = spec["mode"] or "private"
     mode = (read(f"Sharing mode [private/team] ({default_mode}): ").strip() or default_mode).lower()
-    language = read("Chat language (Russian): ").strip() or "Russian"
+    language = read("Chat language (English): ").strip() or "English"
     conventions = (read("Conventions [owner/standard] (owner): ").strip() or "owner").lower()
     agent_text = read(f"Agents, comma-separated ({', '.join(sorted(agents_available))}) "
                       f"[{','.join(default_agents)}]: ").strip()
@@ -1639,6 +1679,10 @@ def build_parser(root: Path = ROOT) -> argparse.ArgumentParser:
                         help="Install optional Codex helpers and disabled OpenRouter configuration; no calls")
     parser.add_argument("--with-web-design", action="store_true",
                         help="Install Web Design workflows and project documents; no external tool setup")
+    parser.add_argument("--with-uuid", action="store_true",
+                        help="Enable public UUID guidance for any confirmed stack; no schema/code changes")
+    parser.add_argument("--with-claude-github", action="store_true",
+                        help="Require the authenticated human GitHub identity for authorized Claude commits; no login")
     parser.add_argument("--allow-downgrade", action="store_true",
                         help="Apply even when the project has a newer AI-KIT version than this installer")
     return parser
@@ -1697,7 +1741,8 @@ def main(argv: list[str] | None = None) -> int:
                                       ("security-audit", args.with_security_audit), ("strix", args.with_strix),
                                       ("context7", args.with_context7),
                                       ("web-design", args.with_web_design),
-                                      ("orchestration", args.with_orchestration)) if flag]
+                                      ("orchestration", args.with_orchestration),
+                                      ("uuid", args.with_uuid), ("claude-github", args.with_claude_github)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
     preset = args.preset
     if args.interactive:
