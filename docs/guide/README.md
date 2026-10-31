@@ -38,7 +38,7 @@ Installed agent rules live under [template/ai-kit](../../template/ai-kit/CORE.md
 
 ## Changes after 1.4.5
 
-These behaviors are in the current source and are not part of the published 1.4.5 packages and image. Check `aikit --version` and `aikit COMMAND --help` for what your installed version supports.
+These behaviors arrived between 1.4.6 and 1.5.0 (items from 1.4.7 and 1.5.0 are marked). Packages and images from that version on include them; 1.4.5 and earlier do not. Check `aikit --version` and `aikit COMMAND --help` for what your installed version supports.
 
 - `aikit doctor TARGET --fix` previews the repair plan; `--fix --apply` writes it. [Health checks](INSTALL.md#check-project-health).
 - The `--with-ci` workflow validates the committed AI-KIT files without cloning or installing AI-KIT; it is meaningful in team mode. [Module flags](INSTALLER_FLAGS.md#optional-module-flags).
@@ -46,6 +46,8 @@ These behaviors are in the current source and are not part of the published 1.4.
 - `--with-security-audit` no longer installs the upstream `*.test.cjs` files. [Security workflows](SECURITY_WORKFLOWS.md).
 - Kit text files are LF in every distribution; upgrades treat line-ending-only differences as unchanged. [Updates](INSTALL.md#update-an-application-project).
 - The Docker image handles SIGTERM as PID 1, so `--init` is optional. [Runtime contract](DOCKER.md#other-commands-and-writable-paths).
+- 1.4.7: `aikit flags` prints every installer option as JSON. [Flag reference](INSTALLER_FLAGS.md).
+- 1.5.0: `aikit mcp report` reviews project MCP servers, and `--allow-downgrade` overrides the new downgrade refusal. [MCP review](INSTALL.md#review-mcp-servers).
 
 ## Where former README sections live
 

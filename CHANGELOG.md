@@ -6,6 +6,7 @@
 - Downgrade guard: when a project records a newer AI-KIT than the installer, preview warns and `--apply` (also `doctor --fix --apply`) refuses unless the new `--allow-downgrade` flag is passed.
 - `aikit doctor` names the upgrade commands when a newer AI-KIT is available and warns when the CLI is older than the installation; `doctor --fix` output includes the plan warnings.
 - The [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) describes image 1.5.0, including the 1.4.6 and 1.4.7 changes it brings to Docker Hub; the registry digest is recorded after publication.
+- Published Docker Hub `tigusigalpa/ai-kit:1.5.0` (linux/amd64) from the v1.5.0 tag: anonymous manifest/configuration/layer read-back and an immutable pull matched the tested image, whose packaged files equal the hosted release wheel. README and the Docker guides now name 1.5.0. [Docker receipt](docs/V1_5_0.md#docker-hub-publication).
 - [Decision](docs/adr/0018-mcp-report-and-downgrade-guard.md), [release record](docs/V1_5_0.md).
 
 ## v1.4.7 (2026-10-30)
@@ -13,6 +14,7 @@
 - New `aikit flags` command prints every `aikit install` option as JSON (value type, choices, repeatability, exclusions, saved setting, fresh default, help, presets); the committed copy [installer-flags.json](integrations/installer-flags.json) is the source for documentation tools such as the [documentation site](https://tigusigalpa.github.io/ai-kit-docs/).
 - Kit validation now fails when that schema, the [flag guide](docs/guide/INSTALLER_FLAGS.md) or SKILL.md drifts from the installer parser: stale schema, undocumented or invented options, undocumented choice values. Every installer option has help text in `aikit install --help`.
 - Gemini routing declares the documented `thinking_level` values per model (Flash-Lite: minimal-high; Flash and Pro: low-high) with each model's default as the role default, replacing the "effort unknown" fallback. Installed router guidance explains the mapping.
+- Published `ai-kit-python` 1.4.7 after the owner's approval; PyPI hashes match the workflow artifacts and a fresh hashed installation passed. [PyPI receipt](docs/V1_4_7.md#pypi-publication-status).
 - Maintenance: release receipts stay in release records rather than maintainer context; build-tool changes are exercised on Python 3.10. [Decision](docs/adr/0017-installer-flag-schema-and-gemini-thinking.md), [release record](docs/V1_4_7.md).
 
 ## v1.4.6 (2026-10-30)

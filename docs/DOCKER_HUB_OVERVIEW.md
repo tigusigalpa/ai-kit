@@ -64,7 +64,9 @@ The image contains no private dialogue memory, journals, design output, credenti
 
 Verified on 2026-10-30 from a clean source export: **443 packaged Linux tests passed with three expected skips** (non-root, offline, read-only root) and 443 native Windows tests; zero kit errors/warnings; wheel/sdist metadata, resource, privacy and license checks, strict Twine and an offline fresh-venv wheel installation. Docker smoke passed offline/read-only operation, preview/apply/refusal, all optional modules, preserved files, stable reruns, `aikit mcp report` on a read-only root and SIGTERM with and without `--init`. All 312 packaged files in the wheel and the image are byte-identical.
 
-The dedicated builder and its 341.9 MB cache were removed after verification. No host-wide prune, WSL shutdown or physical disk compaction was performed. The image contains instructions for those host operations and does not execute them itself.
+The published image was rebuilt from tag v1.5.0 on 2026-10-31 and passed the same smoke and 443 packaged tests; its 312 packaged files match the wheel built by the hosted release workflow. Anonymous registry read-back verified the manifest, configuration and layers, and an immutable pull by digest passed `--version`, `check`, `flags` and `mcp report` offline on a read-only root.
+
+The dedicated builders and their caches (341.9 MB and 361.7 MB) were removed after verification. No host-wide prune, WSL shutdown or physical disk compaction was performed. The image contains instructions for those host operations and does not execute them itself.
 
 ## Pull and check the image
 
@@ -337,13 +339,13 @@ To update a project, pull the selected image version, preview installation again
 
 Existing project documents, settings, private dialogue memory and local edits retain the normal preservation rules.
 
-The registry digest of `1.5.0` is recorded here after publication and read-back. The previous verified image remains available by its immutable reference:
+Immutable reference to this verified build:
 
 ```sh
-docker pull tigusigalpa/ai-kit@sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979
+docker pull tigusigalpa/ai-kit@sha256:a224498c211db3e9e7c416dc91b3a1eacc85d675b71ab0c87c1faead4342a11b
 ```
 
-Registry manifest digest of `1.4.5`: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`.
+Registry manifest digest: `sha256:a224498c211db3e9e7c416dc91b3a1eacc85d675b71ab0c87c1faead4342a11b`. The previous image `1.4.5` keeps `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`.
 
 ## Documentation and license
 
