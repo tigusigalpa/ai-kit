@@ -26,7 +26,9 @@ REQUIRED = {"VERSION", "LICENSE", "aikit_cli.py", "scripts/install.py", "scripts
             "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml", "tests/build_distribution.py",
             "tests/test_pypi_events.py", "scripts/orchestrate.py", "template/ai-kit/ORCHESTRATION.md",
             "template/ai-kit/orchestration.json", "integrations/codex-agents/aikit_worker.toml",
-            "scripts/flags.py", "integrations/installer-flags.json", "scripts/mcp_report.py", *LICENSES}
+            "scripts/flags.py", "integrations/installer-flags.json", "scripts/mcp_report.py",
+            "template/ai-kit/UUID.md", "template/ai-kit/CLAUDE-GITHUB.md", "template/ai-kit/stacks/JAVASCRIPT.md",
+            "template/.agents/skills/javascript-work/SKILL.md", "integrations/ai-kit-devin.md", *LICENSES}
 
 
 def release_identity(version: str, expected: str, destination: str, ref: str, repository: str) -> dict:

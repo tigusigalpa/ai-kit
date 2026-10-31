@@ -10,6 +10,6 @@ For confirmed Filament UI work also apply the [Filament profile](FILAMENT.md).
 - Check N+1 queries, pagination, indexes, mass assignment, cache invalidation, and transaction/deletion races.
 - Use exact money representation. Factories create valid minimal records; seeders are safe to rerun. migrate:fresh is only for an isolated disposable database.
 - Use configured PHPUnit/Pest tests. For a new application prefer Pint, an explicitly chosen Larastan level, and a documented test runner; preserve existing tooling.
-- Test UUID route binding, policies, lifecycle, fresh/upgrade migrations, and factories/seeders when affected.
+- Test existing identifier/route binding, policies, lifecycle, fresh/upgrade migrations, and factories/seeders when affected. Introduce public UUIDs only when settings.uuid is true or the user explicitly requests them.
 
 Version-match the official [configuration](https://laravel.com/framework/docs/configuration), [queues](https://laravel.com/framework/docs/queues), [HTTP client](https://laravel.com/framework/docs/http-client), and [Eloquent](https://laravel.com/framework/docs/eloquent) docs to the installed major version.

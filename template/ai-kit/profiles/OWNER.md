@@ -12,8 +12,7 @@ Existing incompatible schema/contracts require an explicit adaptation plan rathe
 ## Models and Filament
 
 - Every new Eloquent model gets a Policy, Factory, and registered Seeder; keep them synchronized with its contract and test allowed/denied actions.
-- Keep an auto-incrementing internal id and a separate unique public uuid assigned on creation by shared App\Traits\UuidTrait. Preserve uuid on updates; internal relations use id.
-- New Filament Resources use UUID record URLs with verified route binding and Policy checks.
+- Preserve existing identifier contracts. Public UUIDs and UUID-based Filament routes are enabled only through settings.uuid (`--with-uuid`); owner conventions alone do not require them.
 - New Filament installations use version 5 or later after verifying PHP/Laravel/Tailwind compatibility. Surface upgrades of existing projects explicitly.
 
-The built-in UUID trait can be evaluated as an explicit implementation choice; do not silently replace this agreed UuidTrait contract.
+When UUID guidance is enabled, follow the optional UUID policy through AGENTS; choose an existing project mechanism before introducing a trait or library.

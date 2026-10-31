@@ -24,6 +24,7 @@ Bootstrap, review and context-sync workflows run on an explicit request: /ai-kit
 | [python-work](../.agents/skills/python-work/SKILL.md) | PYTHON |
 | [moodle-work](../.agents/skills/moodle-work/SKILL.md) | MOODLE |
 | [frontend-work](../.agents/skills/frontend-work/SKILL.md) | FRONTEND |
+| [javascript-work](../.agents/skills/javascript-work/SKILL.md) | JAVASCRIPT |
 | [library-work](../.agents/skills/library-work/SKILL.md) | LIBRARY |
 | [rust-work](../.agents/skills/rust-work/SKILL.md) | RUST |
 | [dotnet-work](../.agents/skills/dotnet-work/SKILL.md) | DOTNET |

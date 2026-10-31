@@ -148,7 +148,14 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
         if (project / "ai-kit").exists():
             raise RuntimeError("Read-only mount refusal left project writes")
         docker([*runtime_arguments(image, project), "install", "/workspace", "--agent", "codex", "--agent", "claude",
-                "--with-web-design", "--with-context7", "--with-security-audit", "--with-strix", "--with-orchestration", "--apply", "--check"])
+                "--agent", "devin", "--with-uuid", "--with-claude-github", "--with-web-design", "--with-context7",
+                "--with-security-audit", "--with-strix", "--with-orchestration", "--apply", "--check"])
+        for relative in ("ai-kit/UUID.md", "ai-kit/CLAUDE-GITHUB.md", ".devin/rules/ai-kit.md",
+                         "ai-kit/stacks/JAVASCRIPT.md", ".claude/skills/javascript-work/SKILL.md"):
+            if not (project / relative).is_file():
+                raise RuntimeError("Image did not deliver a selected development resource: " + relative)
+        if json.loads((project / "ai-kit/settings.json").read_text(encoding="utf-8"))["chat_language"] != "English":
+            raise RuntimeError("Image does not use the English fresh-install default")
         if not (project / ".codex/agents/aikit_worker.toml").is_file():
             raise RuntimeError("Orchestration helper was not installed")
         (project / "task.json").write_text('{"schema":1,"id":"image-smoke","instruction":"Summarize","input_files":[]}', encoding="utf-8")

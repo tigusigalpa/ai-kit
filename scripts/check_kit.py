@@ -164,7 +164,8 @@ def visibility(root: Path, git: str) -> list[str]:
                          ".agents/skills/ai-kit-bootstrap/SKILL.md", ".claude/rules/ai-kit-web.md",
                          ".cursor/rules/ai-kit-web.mdc", ".github/instructions/ai-kit-web.instructions.md",
                          ".windsurf/rules/ai-kit-web.md", ".clinerules/ai-kit-web.md",
-                         ".windsurf/rules/ai-kit.md", "docs/DECISIONS.md",
+                         ".windsurf/rules/ai-kit.md", ".devin/rules/ai-kit.md", ".devin/rules/ai-kit-web.md",
+                         "ai-kit/UUID.md", "ai-kit/CLAUDE-GITHUB.md", "docs/DECISIONS.md",
                          ".codex/config.toml", ".cursor/mcp.json", ".gemini/settings.json", ".clinerules",
                          ".github/prompts/review.prompt.md", ".aider.conf.yml"):
                 if ignored(path) != (mode == "private"):

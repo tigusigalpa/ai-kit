@@ -6,6 +6,8 @@
 
 AI-KIT supplies the workflow and project memory; the connected coding agent performs the work. TypeUI can supply a chosen design system, SkillUI can supply reference observations, and an available browser can verify the result. Those tools are separate, optional capabilities. Installing this module does not create an account, download npm/Composer packages, connect MCP, launch a browser, generate a site automatically or deploy it.
 
+For current Codex and Claude Code connection commands, sign-in, project scope, verification and troubleshooting, follow [the TypeUI setup walkthrough](../../README.md#connect-typeui-to-codex-and-claude).
+
 The installed [Web Design contract](../../template/ai-kit/WEB-DESIGN.md) is the canonical agent workflow. This guide explains how to use it, choose a route and understand the result. It has three parts: this page (installation, brief, design memory, context selection and visual direction), [implementation routes by stack](WEB_DESIGN_STACKS.md) and [tools, browser review, starter requests and troubleshooting](WEB_DESIGN_TOOLS.md).
 
 ```mermaid

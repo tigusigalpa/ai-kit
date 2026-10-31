@@ -1,6 +1,8 @@
 {
   "project_language": "English",
-  "chat_language": "Russian",
+  "chat_language": "English",
+  "uuid": false,
+  "claude_github": false,
   "sharing_mode": "private",
   "conventions": "owner",
   "docker_cleanup": "maximum",

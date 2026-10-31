@@ -94,6 +94,19 @@
       "ignore_file": ".aiderignore",
       "detect": [".aider.conf.yml", ".aiderignore"]
     },
+    "devin": {
+      "documentation": {
+        "status": "verified",
+        "verified_documentation_date": "2026-10-31",
+        "sources": ["https://docs.devin.ai/desktop/devin-local/customizations"],
+        "activation": "unverified"
+      },
+      "optional": [
+        {"source": "ai-kit-devin.md", "destination": ".devin/rules/ai-kit.md"}
+      ],
+      "scoped_rules": {"directory": ".devin/rules/", "format": "devin-trigger"},
+      "detect": [".devin/"]
+    },
     "windsurf": {
       "documentation": {
         "status": "verified",

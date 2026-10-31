@@ -14,6 +14,8 @@ Start with the [root README](../../README.md) for the overview, defaults and a t
 | [Web Design](WEB_DESIGN.md) | Part 1: installation, what the module installs, the brief, design memory, context selection and one visual direction |
 | [Web Design: implementation routes](WEB_DESIGN_STACKS.md) | Part 2: choosing a route; Blade, Tailwind, Bootstrap, daisyUI/Flowbite/Flux, Alpine and Livewire |
 | [Web Design: tools, review and troubleshooting](WEB_DESIGN_TOOLS.md) | Part 3: TypeUI, SkillUI, browser acceptance, starter requests, updates and troubleshooting |
+| [TypeUI in Codex and Claude Code](../../README.md#connect-typeui-to-codex-and-claude) | MCP registration, private/project scope, sign-in, verification, a bounded design task and troubleshooting |
+| [Optional UUIDs and Claude GitHub identity](../../README.md#optional-uuids-and-claude-github-identity) | Cross-stack UUID opt-in, human authorship, authenticated account checks and safe upgrade behavior |
 | [Library documentation with Context7](CONTEXT7.md) | The optional `context7-docs` workflow and its separate connection setup |
 | [Shared context from two dialogues](DIALOGUE_MEMORY.md) | Importing two conversations, reviewing facts and contradictions, exporting for ChatGPT and OpenRouter |
 | [Optional orchestration](ORCHESTRATION.md) | Codex helper agents and the bounded OpenRouter text executor: configuration, budgets, review, accounting and recovery |

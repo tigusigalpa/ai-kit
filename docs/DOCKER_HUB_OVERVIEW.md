@@ -6,9 +6,9 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current image:** `tigusigalpa/ai-kit:1.5.0`
+**Release image:** `tigusigalpa/ai-kit:1.6.0`
 
-**New in v1.5.0:** `aikit mcp report` reviews project MCP servers without printing secret values, the installer refuses accidental downgrades, and `doctor` names the upgrade commands. The image also brings 1.4.6 and 1.4.7 to Docker Hub: identical LF bytes across distributions, a selectable Docker cleanup policy, SIGTERM handling as PID 1 and the machine-readable `aikit flags` schema. The same release is published on [PyPI 1.5.0](https://pypi.org/project/ai-kit-python/1.5.0/).
+**New in v1.6.0:** English chat defaults with saved-language preservation, current Devin (Windsurf) rules, a JavaScript/Node.js profile, optional public UUIDs and human Claude GitHub identity, plus detailed TypeUI setup for Codex and Claude. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_6_0.md).
 
 **Published platform:** `linux/amd64`
 
@@ -19,8 +19,8 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 | Capability | Description |
 | --- | --- |
 | **Persistent project context** | Project facts, module maps, commands, decisions and continuity instructions that agents can reuse across chats. |
-| **Configuration for 11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified. |
-| **Stack-specific guidance** | Profiles for Go, PHP, Laravel, Filament, Moodle, Python, frontend, libraries, Rust, .NET, Java and Terraform/Helm. |
+| **Configuration for 11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Devin (Windsurf), Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified. |
+| **Stack-specific guidance** | Profiles for Go, PHP, Laravel, Filament, Moodle, Python, JavaScript/TypeScript/Node.js, frontend, libraries, Rust, .NET, Java and Terraform/Helm. |
 | **Preview-first installation** | Review proposed changes before writing. Existing project documents and local modifications follow preservation and conflict rules; an older CLI refuses to downgrade a newer installation unless explicitly allowed. |
 | **Engineering workflows** | Plan, implement, test, review and document, supported by bootstrap, review and context synchronization skills. |
 | **Optional Web Design** | Reference analysis, project briefs, visual systems, stack-aware implementation guidance and UI acceptance criteria, including a Laravel Blade route. |
@@ -34,58 +34,41 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed since v1.4.5
+## What changed in v1.6.0
 
-This image combines releases 1.4.6, 1.4.7 and 1.5.0; 1.4.5 was the previous Docker Hub image.
+- **English defaults:** new-project and interactive chat defaults to English; saved languages remain on upgrades. Use `--chat-language Russian` or `--chat-language English` explicitly to change an existing choice.
+- **Devin (Windsurf):** `--agent devin` installs `.devin/rules/`; the legacy `windsurf` adapter remains available. Preserve custom legacy rules and retire unchanged owned files explicitly.
+- **JavaScript / Node.js:** a dedicated profile covers services, CLIs, workers, TypeScript and packages. Browser/frontend suggestions require dependency evidence.
+- **Optional public UUIDs:** `--with-uuid` enables guidance across confirmed languages/technologies, independently of owner/standard conventions and presets. Installation changes no application schema or code.
+- **Human Claude authorship:** default Claude entries preserve the human Git identity and suppress added Claude commit credit. `--with-claude-github` adds authenticated human GitHub account verification before authorized commits. Conflicting native settings require review; installation performs no login, Git config, commit or push.
+- **Clear setup/update instructions:** the README includes TypeUI MCP setup for Codex and Claude Code, troubleshooting, and exact package/project update commands.
 
-**v1.5.0**
-
-- **MCP review:** `aikit mcp report /workspace` lists servers from Claude Code, Cursor, VS Code/Copilot, Gemini CLI, Codex, Roo and Kimi Code project files: transport, command, URL origin, variable names, approval and tool settings, Git tracking. Environment and header values appear only as variable references; URL queries and secret-like arguments are hidden. Literal credentials, inline OAuth client secrets, credentials in URLs, plain remote HTTP and auto-approval produce warnings. No server is started or contacted.
-- **Downgrade guard:** when a project records a newer AI-KIT than the image, preview warns and `--apply` (also `doctor --fix --apply`) refuses unless `--allow-downgrade` is passed.
-- **Upgrade hints:** `doctor` names the preview and apply commands when a newer AI-KIT is available for the project.
-
-**v1.4.7**
-
-- **Flag schema:** `aikit flags` prints every installer option as JSON (value type, choices, exclusions, saved setting, fresh default, help, presets). Kit validation fails when the schema, flag guide or SKILL.md drifts from the installer.
-- **Gemini routing:** documented per-model `thinking_level` values replace the "effort unknown" fallback.
-
-**v1.4.6**
-
-- **Identical bytes:** kit text is LF in Git, the wheel and the image; upgrades treat line-ending-only differences as unchanged.
-- **Docker cleanup choice:** `--docker-cleanup maximum|keep-cache`, saved as `docker_cleanup`. `maximum` (default) keeps the v1.4.5 policy; `keep-cache` keeps the dedicated project builder cache and reclaims host RAM/disk only on request or pressure.
-- **Safer runs:** the CLI handles SIGTERM as PID 1, so `--init` is optional; doctor previews repairs with `--fix` and writes them with `--fix --apply`; the `--with-ci` workflow validates committed files with pinned actions and installs nothing.
-- **Robust installs:** linked manifests and unusual module names no longer block fresh installs; secondary stacks fill missing commands instead of replacing them; `--with-security-audit` no longer installs upstream test files.
-
-Optional orchestration, dialogue memory, Web Design, Context7, both pinned security integrations and preservation-aware installation remain available. Existing image versions remain usable.
-
-The image contains no private dialogue memory, journals, design output, credentials or personal client configuration.
+AI-KIT still includes the read-only MCP report, downgrade protection, shared dialogue context, security/design modules and bounded optional orchestration from earlier releases. Old image tags remain intact and no `latest` tag is assigned.
 
 ## Image verification
 
-Verified on 2026-10-30 from a clean source export: **443 packaged Linux tests passed with three expected skips** (non-root, offline, read-only root) and 443 native Windows tests; zero kit errors/warnings; wheel/sdist metadata, resource, privacy and license checks, strict Twine and an offline fresh-venv wheel installation. Docker smoke passed offline/read-only operation, preview/apply/refusal, all optional modules, preserved files, stable reruns, `aikit mcp report` on a read-only root and SIGTERM with and without `--init`. All 312 packaged files in the wheel and the image are byte-identical.
+The implementation passed 458 native Windows tests (14 environment/platform skips) and 458 packaged Linux tests (three platform/distribution skips) before release labeling. Isolated wheel/sdist metadata/privacy checks, strict Twine, fresh offline wheel installation and Docker smoke passed; 318 packaged files matched the reviewed source, wheel and development image. The versioned release is rebuilt from its committed source; exact final checks and registry identity are recorded in [v1.6.0](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_6_0.md).
 
-The published image was rebuilt from tag v1.5.0 on 2026-10-31 and passed the same smoke and 443 packaged tests; its 312 packaged files match the wheel built by the hosted release workflow. Anonymous registry read-back verified the manifest, configuration and layers, and an immutable pull by digest passed `--version`, `check`, `flags` and `mcp report` offline on a read-only root.
-
-The dedicated builders and their caches (341.9 MB and 361.7 MB) were removed after verification. No host-wide prune, WSL shutdown or physical disk compaction was performed. The image contains instructions for those host operations and does not execute them itself.
+Publication status is verified separately from local preparation. Live TypeUI/Claude activation and real model/scanner calls are not established by these offline tests. Task builders/cache are removed after verification; unrelated workloads and data stay protected. Host RAM/virtual-disk compaction is not inferred from Docker cache cleanup.
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.5.0
+docker pull tigusigalpa/ai-kit:1.6.0
 ```
 
 Check the CLI version and help:
 
 ```sh
-docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.5.0 --version
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.6.0 --version
 
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.5.0 --help
+  tigusigalpa/ai-kit:1.6.0 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -98,7 +81,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.5.0"
+image="tigusigalpa/ai-kit:1.6.0"
 
 runtime=(
   --rm --init
@@ -111,7 +94,7 @@ runtime=(
 )
 ```
 
-**Defaults you should know:** chat replies default to Russian, and conventions default to the owner's opinionated Laravel conventions, including no database foreign key constraints. Authored project files are always English. For English replies and your project's own conventions, add `--chat-language English --conventions standard` after `install /workspace` in both the preview and the apply command. Docker cleanup defaults to `maximum`; `--docker-cleanup keep-cache` keeps the dedicated project builder cache. For example:
+**Defaults:** new projects use English chat and files; saved project languages survive upgrades. Owner Laravel conventions remain the default; UUID guidance now requires `--with-uuid` independently. For Russian replies and standard conventions, add `--chat-language Russian --conventions standard` after `install /workspace`. Docker cleanup defaults to `maximum`; `--docker-cleanup keep-cache` preserves the dedicated builder cache. For example:
 
 ```bash
 docker run "${runtime[@]}" \
@@ -155,7 +138,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.5.0'
+$image = 'tigusigalpa/ai-kit:1.6.0'
 
 $runtime = @(
     '--rm', '--init',
@@ -191,7 +174,7 @@ docker run @runtime `
   $image doctor /workspace
 ```
 
-The image uses UID/GID `10001:10001` by default. Docker Desktop file sharing must permit access to the mounted folder. To change the defaults (Russian chat replies, the owner's opinionated Laravel conventions), add `--chat-language English --conventions standard` to both commands.
+The image uses UID/GID `10001:10001` by default. Docker Desktop file sharing must permit access to the mounted folder. To select Russian replies and standard conventions, add `--chat-language Russian --conventions standard` to both commands; existing projects retain saved choices.
 
 ## Enable optional modules
 
@@ -199,6 +182,8 @@ Optional modules are selected explicitly and remain independent of installation 
 
 | Installer option | Installs |
 | --- | --- |
+| `--with-uuid` | Optional public UUID policy for any confirmed stack; no automatic code/schema changes. |
+| `--with-claude-github` | Authenticated human GitHub identity guidance for selected Claude, without installation-time login or Git changes. |
 | `--with-web-design` | Design skills, conditional guides and project design documents. |
 | `--with-context7` | Context7 documentation lookup guidance and skill entry points. |
 | `--with-security-audit` | Pinned Cloudflare security-audit resources and an explicit entry point. |

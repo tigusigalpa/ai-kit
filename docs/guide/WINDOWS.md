@@ -36,7 +36,7 @@ Review the proposed files and detected settings. Preview writes nothing to the p
 python -m aikit.aikit_cli install . --agent codex --mode private --apply --check
 ~~~
 
-`--apply` writes the installation; `--check` runs the project doctor afterward. Existing project documents and local edits follow the normal preservation/conflict rules. Private mode selects local instruction visibility; it does not encrypt files. Chat replies default to Russian and Laravel conventions default to the owner's opinionated profile; add `--chat-language English --conventions standard` to both commands to change that ([defaults](INSTALL.md#choose-your-defaults)).
+`--apply` writes the installation; `--check` runs the project doctor afterward. Existing project documents and local edits follow the normal preservation/conflict rules. Private mode selects local instruction visibility; it does not encrypt files. Fresh chat replies default to English and Laravel conventions default to the owner's opinionated profile; use `--chat-language Russian --conventions standard` for Russian replies and standard conventions. Upgrades retain the saved language; use `--chat-language English` to change an existing Russian selection ([defaults](INSTALL.md#choose-your-defaults)). UUID guidance requires `--with-uuid` separately.
 
 **4. Bootstrap in the coding client.** Open this application folder in Codex, then send `$ai-kit-bootstrap` in the **Codex chat**. This is a skill invocation in the client, not a PowerShell command. For Claude Code use `--agent claude` in both installer commands and `/ai-kit-bootstrap` in its chat; repeat `--agent` to configure both clients.
 

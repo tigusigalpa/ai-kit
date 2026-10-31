@@ -331,7 +331,7 @@ class RegistryTests(unittest.TestCase):
         registry = install.load_agent_registry()
         self.assertEqual(registry["names"],
                          {"codex", "claude", "kimi", "manus", "copilot", "cursor", "aider",
-                          "gemini", "windsurf", "cline", "roo"})
+                          "gemini", "devin", "windsurf", "cline", "roo"})
         self.assertEqual(registry["entries"]["CLAUDE.md"], "claude")
         self.assertEqual(registry["skills_copies"]["claude"], ".claude/skills/")
         self.assertEqual(registry["optional"]["aider"], [("CONVENTIONS.md", "CONVENTIONS.md")])
