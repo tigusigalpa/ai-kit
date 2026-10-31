@@ -7,6 +7,7 @@
 - `aikit doctor` names the upgrade commands when a newer AI-KIT is available and warns when the CLI is older than the installation; `doctor --fix` output includes the plan warnings.
 - The [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) describes image 1.5.0, including the 1.4.6 and 1.4.7 changes it brings to Docker Hub; the registry digest is recorded after publication.
 - Published Docker Hub `tigusigalpa/ai-kit:1.5.0` (linux/amd64) from the v1.5.0 tag: anonymous manifest/configuration/layer read-back and an immutable pull matched the tested image, whose packaged files equal the hosted release wheel. README and the Docker guides now name 1.5.0. [Docker receipt](docs/V1_5_0.md#docker-hub-publication).
+- Published `ai-kit-python` 1.5.0 after the owner's approval; PyPI hashes match the workflow artifacts and a fresh hashed installation passed. [PyPI receipt](docs/V1_5_0.md#pypi-publication-status).
 - [Decision](docs/adr/0018-mcp-report-and-downgrade-guard.md), [release record](docs/V1_5_0.md).
 
 ## v1.4.7 (2026-10-30)

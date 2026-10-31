@@ -8,7 +8,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 **Current image:** `tigusigalpa/ai-kit:1.5.0`
 
-**New in v1.5.0:** `aikit mcp report` reviews project MCP servers without printing secret values, the installer refuses accidental downgrades, and `doctor` names the upgrade commands. The image also brings 1.4.6 and 1.4.7 to Docker Hub: identical LF bytes across distributions, a selectable Docker cleanup policy, SIGTERM handling as PID 1 and the machine-readable `aikit flags` schema. PyPI [1.4.6](https://pypi.org/project/ai-kit-python/1.4.6/) and [1.4.7](https://pypi.org/project/ai-kit-python/1.4.7/) are published; PyPI 1.5.0 follows the owner's approval.
+**New in v1.5.0:** `aikit mcp report` reviews project MCP servers without printing secret values, the installer refuses accidental downgrades, and `doctor` names the upgrade commands. The image also brings 1.4.6 and 1.4.7 to Docker Hub: identical LF bytes across distributions, a selectable Docker cleanup policy, SIGTERM handling as PID 1 and the machine-readable `aikit flags` schema. The same release is published on [PyPI 1.5.0](https://pypi.org/project/ai-kit-python/1.5.0/).
 
 **Published platform:** `linux/amd64`
 
