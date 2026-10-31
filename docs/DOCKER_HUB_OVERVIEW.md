@@ -6,9 +6,9 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current image:** `tigusigalpa/ai-kit:1.4.5`
+**Current image:** `tigusigalpa/ai-kit:1.5.0`
 
-**New in v1.4.5:** mandatory maximum disposable Docker cleanup without a size threshold, dedicated-builder lifecycle and separate Windows/WSL2 RAM and virtual-disk reclamation guidance. Docker Hub and [PyPI 1.4.5](https://pypi.org/project/ai-kit-python/1.4.5/) are published and verified.
+**New in v1.5.0:** `aikit mcp report` reviews project MCP servers without printing secret values, the installer refuses accidental downgrades, and `doctor` names the upgrade commands. The image also brings 1.4.6 and 1.4.7 to Docker Hub: identical LF bytes across distributions, a selectable Docker cleanup policy, SIGTERM handling as PID 1 and the machine-readable `aikit flags` schema. PyPI [1.4.6](https://pypi.org/project/ai-kit-python/1.4.6/) and [1.4.7](https://pypi.org/project/ai-kit-python/1.4.7/) are published; PyPI 1.5.0 follows the owner's approval.
 
 **Published platform:** `linux/amd64`
 
@@ -21,28 +21,40 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 | **Persistent project context** | Project facts, module maps, commands, decisions and continuity instructions that agents can reuse across chats. |
 | **Configuration for 11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Windsurf, Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified. |
 | **Stack-specific guidance** | Profiles for Go, PHP, Laravel, Filament, Moodle, Python, frontend, libraries, Rust, .NET, Java and Terraform/Helm. |
-| **Preview-first installation** | Review proposed changes before writing. Existing project documents and local modifications follow preservation and conflict rules. |
+| **Preview-first installation** | Review proposed changes before writing. Existing project documents and local modifications follow preservation and conflict rules; an older CLI refuses to downgrade a newer installation unless explicitly allowed. |
 | **Engineering workflows** | Plan, implement, test, review and document, supported by bootstrap, review and context synchronization skills. |
 | **Optional Web Design** | Reference analysis, project briefs, visual systems, stack-aware implementation guidance and UI acceptance criteria, including a Laravel Blade route. |
 | **Optional security workflows** | Pinned Cloudflare security-audit references and Strix workflow skills, installed explicitly and invoked on request. |
 | **Optional Context7 guidance** | Version-aware documentation lookup workflows, with client connection setup handled separately. |
+| **MCP server review** | `aikit mcp report` lists MCP servers from seven clients' project files with transport, URL origin, variable names and approval settings. It hides secret values, warns about literal credentials, plain remote HTTP and auto-approval, and starts or contacts no server. |
 | **Shared dialogue context** | Local conversation imports, source references, contradiction review and exports for ChatGPT and OpenRouter. |
 | **Routing and evaluation helpers** | Model role and reasoning-effort recommendations (no savings are claimed), context selection, local metrics and benchmark scaffolding. |
 | **Optional orchestration** | Native Codex helper configurations and an explicitly invoked OpenRouter text executor with bounded requests, private accounting and review. Native client activation and API credentials are configured separately. |
-| **Docker and Kubernetes guidance** | Instructions that tell agents to make new Dockerfiles and services Kubernetes-ready (security, lifecycle, image freshness, deployment), plus a Kubernetes installation-preview Job example. |
+| **Docker and Kubernetes guidance** | Instructions that tell agents to make new Dockerfiles and services Kubernetes-ready (security, lifecycle, image freshness, deployment), plus a Kubernetes installation-preview Job example. Cleanup after Docker tasks is `maximum` by default or `keep-cache` to keep the dedicated builder cache. |
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed in v1.4.5
+## What changed since v1.4.5
 
-Projects installed with this image receive stronger Docker housekeeping instructions, and the Windows installation/troubleshooting guide is included.
+This image combines releases 1.4.6, 1.4.7 and 1.5.0; 1.4.5 was the previous Docker Hub image.
 
-- **No cleanup threshold:** every Docker build, test and debugging task ends with zero eligible disposable resources, including interrupted runs after reports are saved.
-- **Complete resource coverage:** temporary containers, disposable anonymous/named volumes, networks, unnecessary test images and all reclaimable dedicated-builder cache.
-- **Host reclamation:** separate RAM return, logical Docker usage and physical disk allocation; WSL2 memory-reclaim settings and supported offline disk compaction require the actual backend and a safe maintenance window.
-- **Preserved data:** persistent databases, unrelated/active workloads and retained final/recovery images remain protected. Host-wide pruning requires an established owner scope and reviewed inventory.
-- **Clear execution boundary:** AI-KIT installs agent instructions. The CLI image does not mount the Docker socket, run a cleanup daemon or compact its host disk.
-- **Upgrade preservation:** unchanged managed rules update normally; locally adapted rules and entry points produce reviewable conflicts rather than being overwritten.
+**v1.5.0**
+
+- **MCP review:** `aikit mcp report /workspace` lists servers from Claude Code, Cursor, VS Code/Copilot, Gemini CLI, Codex, Roo and Kimi Code project files: transport, command, URL origin, variable names, approval and tool settings, Git tracking. Environment and header values appear only as variable references; URL queries and secret-like arguments are hidden. Literal credentials, inline OAuth client secrets, credentials in URLs, plain remote HTTP and auto-approval produce warnings. No server is started or contacted.
+- **Downgrade guard:** when a project records a newer AI-KIT than the image, preview warns and `--apply` (also `doctor --fix --apply`) refuses unless `--allow-downgrade` is passed.
+- **Upgrade hints:** `doctor` names the preview and apply commands when a newer AI-KIT is available for the project.
+
+**v1.4.7**
+
+- **Flag schema:** `aikit flags` prints every installer option as JSON (value type, choices, exclusions, saved setting, fresh default, help, presets). Kit validation fails when the schema, flag guide or SKILL.md drifts from the installer.
+- **Gemini routing:** documented per-model `thinking_level` values replace the "effort unknown" fallback.
+
+**v1.4.6**
+
+- **Identical bytes:** kit text is LF in Git, the wheel and the image; upgrades treat line-ending-only differences as unchanged.
+- **Docker cleanup choice:** `--docker-cleanup maximum|keep-cache`, saved as `docker_cleanup`. `maximum` (default) keeps the v1.4.5 policy; `keep-cache` keeps the dedicated project builder cache and reclaims host RAM/disk only on request or pressure.
+- **Safer runs:** the CLI handles SIGTERM as PID 1, so `--init` is optional; doctor previews repairs with `--fix` and writes them with `--fix --apply`; the `--with-ci` workflow validates committed files with pinned actions and installs nothing.
+- **Robust installs:** linked manifests and unusual module names no longer block fresh installs; secondary stacks fill missing commands instead of replacing them; `--with-security-audit` no longer installs upstream test files.
 
 Optional orchestration, dialogue memory, Web Design, Context7, both pinned security integrations and preservation-aware installation remain available. Existing image versions remain usable.
 
@@ -50,28 +62,28 @@ The image contains no private dialogue memory, journals, design output, credenti
 
 ## Image verification
 
-Verified on 2026-10-30: **395 packaged Linux tests, 393 passed and two Windows-only skips**; three native Windows upgrade regressions; zero kit errors/warnings; source/archive privacy, strict Twine validation and fresh offline Windows wheel installation. Docker smoke passed offline/read-only operation, preview/apply/refusal, all optional modules, preserved files, stable reruns, SIGTERM and actual build-context exclusions. All 205 inspected packaged resources matched source. Anonymous registry manifest/configuration/layer read-back, immutable pull and published CLI/kit checks passed.
+Verified on 2026-10-30 from a clean source export: **443 packaged Linux tests passed with three expected skips** (non-root, offline, read-only root) and 443 native Windows tests; zero kit errors/warnings; wheel/sdist metadata, resource, privacy and license checks, strict Twine and an offline fresh-venv wheel installation. Docker smoke passed offline/read-only operation, preview/apply/refusal, all optional modules, preserved files, stable reruns, `aikit mcp report` on a read-only root and SIGTERM with and without `--init`. All 312 packaged files in the wheel and the image are byte-identical.
 
-The dedicated release builder reclaimed 340 MB, then its container and state volume were removed. Existing unrelated workloads remained running; no host-wide prune, WSL shutdown or physical disk compaction was performed. The image contains instructions for those host operations and does not execute them itself.
+The dedicated builder and its 341.9 MB cache were removed after verification. No host-wide prune, WSL shutdown or physical disk compaction was performed. The image contains instructions for those host operations and does not execute them itself.
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.4.5
+docker pull tigusigalpa/ai-kit:1.5.0
 ```
 
 Check the CLI version and help:
 
 ```sh
-docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.4.5 --version
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.5.0 --version
 
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.4.5 --help
+  tigusigalpa/ai-kit:1.5.0 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -84,7 +96,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.4.5"
+image="tigusigalpa/ai-kit:1.5.0"
 
 runtime=(
   --rm --init
@@ -97,7 +109,7 @@ runtime=(
 )
 ```
 
-**Defaults you should know:** chat replies default to Russian, and conventions default to the owner's opinionated Laravel conventions, including no database foreign key constraints. Authored project files are always English. For English replies and your project's own conventions, add `--chat-language English --conventions standard` after `install /workspace` in both the preview and the apply command, for example:
+**Defaults you should know:** chat replies default to Russian, and conventions default to the owner's opinionated Laravel conventions, including no database foreign key constraints. Authored project files are always English. For English replies and your project's own conventions, add `--chat-language English --conventions standard` after `install /workspace` in both the preview and the apply command. Docker cleanup defaults to `maximum`; `--docker-cleanup keep-cache` keeps the dedicated project builder cache. For example:
 
 ```bash
 docker run "${runtime[@]}" \
@@ -131,6 +143,8 @@ docker run "${runtime[@]}" \
   "$image" doctor /workspace
 ```
 
+`doctor /workspace --fix` previews repairs; with a writable mount, `--fix --apply` writes them.
+
 Files written into `/workspace` persist in the mounted host directory after the container exits.
 
 ## Install into a project: Windows PowerShell
@@ -139,7 +153,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.4.5'
+$image = 'tigusigalpa/ai-kit:1.5.0'
 
 $runtime = @(
     '--rm', '--init',
@@ -271,6 +285,9 @@ docker run "${runtime[@]}" "$image" route "review an interface"
 
 # Show provider records.
 docker run "${runtime[@]}" "$image" providers
+
+# Print every installer option as JSON.
+docker run "${runtime[@]}" "$image" flags
 ```
 
 `check` validates the bundled distribution. `doctor /workspace` examines an installed application project.
@@ -285,6 +302,16 @@ docker run "${runtime[@]}" \
 
 Context selection reports the relevant files and their scope. It does not send them to a model.
 
+Review the project's MCP servers without starting them:
+
+```bash
+docker run "${runtime[@]}" \
+  --mount "type=bind,source=$app_path,target=/workspace,readonly" \
+  "$image" mcp report /workspace
+```
+
+The JSON report hides secret values and lists warnings. User-level client files outside the project are not read.
+
 ## Runtime contract
 
 | Setting | Value |
@@ -296,7 +323,7 @@ Context selection reports the relevant files and their scope. It does not send t
 | Working directory | `/workspace` |
 | Temporary writable storage | `/tmp`, supplied by the caller |
 | Exposed ports | None |
-| Shutdown signal | SIGTERM |
+| Shutdown signal | SIGTERM, handled as PID 1 (`--init` optional) |
 
 The image is a CLI workload. Each invocation runs a command and exits.
 
@@ -306,17 +333,17 @@ The examples use a read-only container root and explicit project mounts. Preview
 
 ## Updates and reproducible references
 
-To update a project, pull the selected image version, preview installation against the same project folder and review any conflicts before applying.
+To update a project, pull the selected image version, preview installation against the same project folder and review any conflicts before applying. `doctor /workspace` names the commands when the image is newer than the installation. An older image refuses to apply over a newer installation unless you pass `--allow-downgrade` deliberately.
 
 Existing project documents, settings, private dialogue memory and local edits retain the normal preservation rules.
 
-Immutable reference to this verified build:
+The registry digest of `1.5.0` is recorded here after publication and read-back. The previous verified image remains available by its immutable reference:
 
 ```sh
 docker pull tigusigalpa/ai-kit@sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979
 ```
 
-Registry manifest digest: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`.
+Registry manifest digest of `1.4.5`: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`.
 
 ## Documentation and license
 
@@ -325,6 +352,7 @@ Registry manifest digest: `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8a
 - [All guides](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/README.md)
 - [Docker usage](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/DOCKER.md)
 - [Installer flags and options](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALLER_FLAGS.md)
+- [MCP server review](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/INSTALL.md#review-mcp-servers)
 - [Web Design](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/WEB_DESIGN.md)
 - [Shared dialogue context](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/DIALOGUE_MEMORY.md)
 - [OpenRouter guidance](https://github.com/tigusigalpa/ai-kit/blob/main/docs/guide/OPENROUTER.md)
