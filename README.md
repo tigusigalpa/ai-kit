@@ -76,7 +76,16 @@ From a checkout, run `python scripts/install.py` or `python aikit_cli.py COMMAND
 
 ## Update AI-KIT
 
-**1. Update the Python package.** If you installed with pip, run this using the same Python environment as the existing installation (activate its virtual environment first if applicable):
+**Update the CLI first, then update the AI-KIT files in each project.** These are separate operations:
+
+| What you update | Command | Result |
+| --- | --- | --- |
+| Installed Python package / CLI | `python -m pip install --upgrade ai-kit-python` | Updates the installer available to that Python environment. Existing project files are unchanged. |
+| AI-KIT inside the current project | `python -m aikit.aikit_cli install . --apply --check` | Uses that installer to update the current project's instructions and selected adapters, then checks the installation. |
+
+### 1. Update the globally installed package
+
+If you installed with pip, use the same Python environment as the existing installation. For a global installation, leave any project virtual environment first; if you intentionally installed AI-KIT in a virtual environment, activate that environment instead:
 
 ~~~powershell
 python -m pip install --upgrade ai-kit-python
@@ -92,14 +101,54 @@ aikit --version
 
 These commands install the newest version published on PyPI; unreleased source changes become available there only after a release. They update the CLI without rewriting the AI-KIT files already installed in your application projects.
 
-**2. Update each application project separately.** Open a terminal in that project's root folder (`.` means the current directory), inspect the preview, then apply the update and run its health check:
+### 2. Update AI-KIT in the current project, preserving its settings
+
+Open a terminal in your application's root folder, the folder containing its `ai-kit/settings.json`. In PowerShell, use `Set-Location "C:\Projects\my-app"` with your own path. **`.` means the current folder**, so check that you are in the intended project before continuing.
+
+For a routine update, keep the saved language, clients, sharing mode, conventions and optional modules. Preview first, then apply the same update and run its installation health check:
 
 ~~~powershell
 python -m aikit.aikit_cli install .
 python -m aikit.aikit_cli install . --apply --check
 ~~~
 
-For a pipx installation, use `aikit install .` and then `aikit install . --apply --check`. Omit `--agent`, `--mode` and module flags when you want to retain the project's saved choices. Existing project documents and local adaptations follow the preservation/conflict rules; review reported candidates before accepting a manual merge. Updating the CLI once does not automatically update every project.
+For a pipx installation, use `aikit install .` and then `aikit install . --apply --check`. Updating the CLI once does not automatically update every project; repeat this step in each project's root folder.
+
+### 3. Full update example: Russian chat, Codex, Claude and Devin (Windsurf)
+
+Use this example when you also want to **set the listed options explicitly**: Russian chat, all three clients, private sharing, strict client protections, maximum Docker cleanup and documentation/design/security workflows. It changes saved choices to match the flags; choose the options for your project before running it.
+
+**Preview** (one line; works in PowerShell and POSIX shells):
+
+~~~powershell
+python -m aikit.aikit_cli install . --chat-language Russian --agent codex --agent claude --agent devin --mode private --conventions owner --preset strict --docker-cleanup maximum --with-context7 --with-web-design --with-security-audit --with-strix --with-claude-github
+~~~
+
+Review `writes`, `preserved`, `conflicts`, `adapter_conflicts` and `warnings`. Then **apply the same selection and check it**:
+
+~~~powershell
+python -m aikit.aikit_cli install . --chat-language Russian --agent codex --agent claude --agent devin --mode private --conventions owner --preset strict --docker-cleanup maximum --with-context7 --with-web-design --with-security-audit --with-strix --with-claude-github --apply --check
+~~~
+
+For pipx, replace the `python -m aikit.aikit_cli` prefix with `aikit`; keep the remaining arguments. Future routine updates can use the shorter commands in step 2 because these choices are saved.
+
+| Option in the example | Meaning / how to adapt it |
+| --- | --- |
+| `--chat-language Russian` | Russian chat replies and explanations; authored project files stay English. Use `English` for English replies. |
+| `--agent codex --agent claude --agent devin` | Select Codex, Claude Code and Devin (Windsurf). **An explicit list replaces the saved client selection**; include every client you want to keep. Remove `--agent devin` if unused; append other clients as repeated `--agent NAME` flags. Adapter retirement is separate from deselection. |
+| `--mode private` | Keep AI-KIT instructions/configuration local through ignore rules. Use `team` to share them in Git. Already tracked files are not automatically untracked. |
+| `--conventions owner` | Apply the owner's preferences only for confirmed stacks. Use `standard` to follow the existing project's conventions. Neither option enables UUID guidance by itself. |
+| `--preset strict` | Enable session-start, Git guards, destructive-action guards, native settings and scoped rules. These are instructions/client rules; verify their activation in the actual clients. CI remains a separate choice. |
+| `--docker-cleanup maximum` | Save the maximum post-task Docker cleanup policy, preserving persistent/unrelated data. The installer itself performs no Docker cleanup or host compaction. Use `keep-cache` to retain the dedicated project builder cache. |
+| `--with-context7` | Add the documentation lookup skill. Register/authenticate its MCP server separately. |
+| `--with-web-design` | Add Web Design workflows and missing project design documents. Existing brief/design/acceptance documents are preserved; [TypeUI setup](#connect-typeui-to-codex-and-claude) is separate. |
+| `--with-security-audit --with-strix` | Add the optional security workflows and pinned reference resources. Installation starts no audit or scan; Strix runtime/model setup is separate. |
+| `--with-claude-github` | Add authenticated human GitHub identity checks before authorized Claude commits. Installation does not log in, change Git identity, commit or push. |
+| `--apply --check` | Write the update, then run the AI-KIT installation doctor. This checks installed kit files/configuration; application tests and audits are separate. Without `--apply`, even `--check` remains a preview. |
+
+**Additional opt-ins:** add `--with-uuid` to both commands only if you want public UUID guidance for the project's confirmed technology; it changes no application code or schema during installation. Add `--with-orchestration` if you want optional Codex helper configuration and disabled OpenRouter configuration; credentials, budgets and execution are separate. For a shared team installation, change `--mode private` to `--mode team` and optionally add `--with-ci` to install the workflow that checks committed AI-KIT files. [Every flag and accepted value](docs/guide/INSTALLER_FLAGS.md).
+
+**Preservation and conflicts:** existing project documents and local adaptations follow the [upgrade rules](template/ai-kit/UPSTREAM.md#conflict-candidates). Review and merge reported candidates before using `--accept-local PATH` for a reviewed managed file. A failed post-apply doctor check does not roll back files already written. Omitting an enabled module flag later does not disable that module; deselection and removal need the [documented lifecycle](docs/guide/INSTALLER_FLAGS.md#optional-module-flags). An ordinary update without `--preset` preserves the saved preset-managed choices as well.
 
 For Docker, choose and pull an explicit new version tag and rerun the installer against the project mount; there is no `latest` image. [Full update and conflict guide](docs/guide/INSTALL.md#update-an-application-project) · [Windows troubleshooting](docs/guide/WINDOWS.md) · [Docker instructions](docs/guide/DOCKER.md).
 

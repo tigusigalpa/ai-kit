@@ -1,5 +1,9 @@
 # AI-KIT changelog
 
+## Unreleased
+
+- Expand the README's [update walkthrough](README.md#update-ai-kit) with separate package/current-project steps, a settings-preserving upgrade and matched preview/apply commands for Russian chat, Codex, Claude, Devin (Windsurf), strict protections and optional workflows. Explain selection replacement, opt-ins, conflicts and installation-only checks. Descriptive documentation only; the published wheel/image retain their earlier documentation snapshot.
+
 ## v1.6.0 (2026-10-31)
 
 - Published GitHub Release, Docker Hub 1.6.0 and owner-approved PyPI 1.6.0. Registry/immutable-pull checks, same-run public package hashes and a fresh hashed PyPI installation passed; 319 package files match the release image. [Publication receipts](docs/V1_6_0.md).
