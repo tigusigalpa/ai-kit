@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Document read-only current-folder installation/version checks next to the README update walkthrough, including `installed_version` versus `bundle_version`, missing/invalid state and offline comparison semantics. Descriptive documentation only; existing published wheel/image artifacts retain their earlier documentation snapshot.
 - Expand the README's [update walkthrough](README.md#update-ai-kit) with separate package/current-project steps, a settings-preserving upgrade and matched preview/apply commands for Russian chat, Codex, Claude, Devin (Windsurf), strict protections and optional workflows. Explain selection replacement, opt-ins, conflicts and installation-only checks. Descriptive documentation only; the published wheel/image retain their earlier documentation snapshot.
 
 ## v1.6.0 (2026-10-31)
