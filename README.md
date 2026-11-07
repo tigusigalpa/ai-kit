@@ -83,6 +83,36 @@ From a checkout, run `python scripts/install.py` or `python aikit_cli.py COMMAND
 | Installed Python package / CLI | `python -m pip install --upgrade ai-kit-python` | Updates the installer available to that Python environment. Existing project files are unchanged. |
 | AI-KIT inside the current project | `python -m aikit.aikit_cli install . --apply --check` | Uses that installer to update the current project's instructions and selected adapters, then checks the installation. |
 
+### Check installation and version in the current folder
+
+Open a terminal in the application's root folder and run this **read-only, offline** check (`.` means the current folder):
+
+~~~powershell
+python -m aikit.aikit_cli doctor .
+~~~
+
+If `aikit` is available in PATH, the equivalent short command is `aikit doctor .`; use that form for a pipx installation. If Python reports `No module named aikit`, first [install the CLI](#get-ai-kit) in the Python environment you are using.
+
+The JSON report includes these fields (example excerpt):
+
+~~~json
+{
+  "installed_version": "1.5.0",
+  "bundle_version": "1.6.0"
+}
+~~~
+
+| Field | Meaning |
+| --- | --- |
+| `installed_version` | The project's recorded AI-KIT baseline version, read from `ai-kit/.install-state.json` (`accepted_version`). Local edits or missing managed files are reported separately. |
+| `bundle_version` | The version bundled with the CLI you are running, used for the comparison and available for updating the project. The default check does not query PyPI; this field is not a claim about the newest published release. |
+| `errors` | Installation problems, such as missing/invalid installer state, invalid settings or missing managed files. Read these before treating the installation as healthy. |
+| `warnings` / `info` | Warnings and additional findings, including local changes and version comparisons. |
+
+In the example, the project records **1.5.0** while the CLI carries **1.6.0**: preview and apply a project update using step 2 below. If the project version is newer than the CLI, update the Python package first (step 1). Matching versions still require reviewing `errors` and `warnings` for installation health. To show only the CLI version, run `python -m aikit.aikit_cli --version`.
+
+**If installation cannot be confirmed:** `installed_version` stays `null` when the project version cannot be determined. Missing state produces `No installer state found; is AI-KIT installed in this project?`; invalid state produces an `Invalid installer state` error. This can mean AI-KIT was never initialized with the installer, was copied manually, or its state was lost or damaged. Review `errors` and the existing files before initializing or updating. Running `doctor .` without repair flags changes no project files.
+
 ### 1. Update the globally installed package
 
 If you installed with pip, use the same Python environment as the existing installation. For a global installation, leave any project virtual environment first; if you intentionally installed AI-KIT in a virtual environment, activate that environment instead:
