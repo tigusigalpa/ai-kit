@@ -8,7 +8,7 @@ Installer options and defaults are the same as outside Docker: put them after `i
 
 ## Use the published image
 
-**Published image:** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit), `linux/amd64`. Image tags match the repository `VERSION` of their release; a source `VERSION` that does not appear on the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags) is not published yet. Existing tags are retained and no `latest` tag is assigned, so always name a version. Version 1.7.0 is the release target; its [publication status](../V1_7_0.md#docker-hub-publication) records the registry and immutable-pull verification separately from preparation.
+**Published image:** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit), `linux/amd64`. Image tags match the repository `VERSION` of their release; a source `VERSION` that does not appear on the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags) is not published yet. Existing tags are retained and no `latest` tag is assigned, so always name a version. Version 1.7.0 is published; its [registry and immutable-pull verification](../V1_7_0.md#docker-hub-publication) matches the tested image and validated release wheel.
 
 ~~~sh
 docker pull tigusigalpa/ai-kit:1.7.0
