@@ -37,6 +37,9 @@
 !.agents/skills/
 !.agents/skills/**
 !.github/
+!.github/actions/
+!.github/actions/setup-python-retry/
+!.github/actions/setup-python-retry/action.yml
 !.github/workflows/
 !.github/workflows/check-kit.yml
 !.github/workflows/publish-pypi.yml

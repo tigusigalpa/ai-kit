@@ -57,7 +57,8 @@ def context_smoke(source: Path, base: Path, builder: str | None) -> None:
         (context / name).write_bytes((source / name).read_bytes())
     included = ("VERSION", "scripts/install.py", "template/AGENTS.md", "template/PROJECT_CONTEXT.md",
                 "template/WIKI.md", "template/.agents/skills/web-design/SKILL.md",
-                "template/ai-kit/vendor/security-audit/LICENSE", "docker/check_version.py")
+                "template/ai-kit/vendor/security-audit/LICENSE", "docker/check_version.py",
+                ".github/actions/setup-python-retry/action.yml")
     excluded = ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", ".env", ".git/config",
                 ".codex/auth.json", ".aws/credentials", "private-helper.py",
                 "docs/.private/brief.txt", "docs/auth.json", "template/.env", "ai-kit/.metrics/tasks.jsonl",

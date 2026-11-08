@@ -105,6 +105,12 @@ class DistributionTests(unittest.TestCase):
                 with self.assertRaises((ValueError, release.configparser.Error)):
                     release.inspect_distribution(path, VERSION)
 
+    def test_bundled_workflow_cannot_omit_its_local_python_setup_action(self):
+        payload = self.payload()
+        del payload[".github/actions/setup-python-retry/action.yml"]
+        with self.assertRaisesRegex(ValueError, "required distribution resources"):
+            release.inspect_distribution(self.wheel(payload=payload), VERSION)
+
     def test_source_description_and_portable_links_are_checked(self):
         with self.assertRaisesRegex(ValueError, "differs from"):
             release.inspect_distribution(self.wheel(metadata=self.metadata(description=b"Other description.\n")), VERSION)

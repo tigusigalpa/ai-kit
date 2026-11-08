@@ -34,6 +34,8 @@ A published stable GitHub Release starts PyPI preparation; manual dispatch defau
 
 ## Repository maintenance
 
+Repository Python setup uses [bounded retries](docs/CI_PYTHON_RETRY.md) around the pinned action only. Keep retry limits/cancellation/final failures, matrix/check names, same-commit local-action loading and protected uploads covered by workflow tests. Native hosted execution is separate from static validation.
+
 Before changing remote protection or required CI checks, verify live configuration and emitted names. Local jobs establish neither hosted success nor updated protection. Remote changes, commits, pushes and publication need the relevant user authorization. Private context snapshots require verification before use.
 
 ## Updating a reference repository
