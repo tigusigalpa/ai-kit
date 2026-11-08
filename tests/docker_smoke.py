@@ -61,7 +61,7 @@ def context_smoke(source: Path, base: Path, builder: str | None) -> None:
     excluded = ("AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", ".env", ".git/config",
                 ".codex/auth.json", ".aws/credentials", "private-helper.py",
                 "docs/.private/brief.txt", "docs/auth.json", "template/.env", "ai-kit/.metrics/tasks.jsonl",
-                "ai-kit/.orchestration/state.json", "ai-kit/.design/screenshots/private.png", "ai-kit/.memory/session/imports/private.json",
+                "ai-kit/.tasks/example.json", "ai-kit/.orchestration/state.json", "ai-kit/.design/screenshots/private.png", "ai-kit/.memory/session/imports/private.json",
                 "scripts/__pycache__/private.pyc")
     for name in included + excluded:
         path = context / name
@@ -131,6 +131,8 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
     docker([*runtime_arguments(image), "--help"])
     docker([*runtime_arguments(image), "route", "implement a feature"])
     docker([*runtime_arguments(image), "check"])
+    docker([*runtime_arguments(image)[:-1], "--entrypoint", "python", image, "-c",
+            "import pathlib,runpy,aikit; runpy.run_path(str(pathlib.Path(aikit.__file__).parent / 'tests/task_smoke.py'), run_name='__main__')"])
 
     with tempfile.TemporaryDirectory(prefix="aikit-container-") as folder:
         base = Path(folder).resolve()
@@ -149,7 +151,7 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
             raise RuntimeError("Read-only mount refusal left project writes")
         docker([*runtime_arguments(image, project), "install", "/workspace", "--agent", "codex", "--agent", "claude",
                 "--agent", "devin", "--with-uuid", "--with-claude-github", "--with-web-design", "--with-context7",
-                "--with-security-audit", "--with-strix", "--with-orchestration", "--apply", "--check"])
+                "--with-security-audit", "--with-strix", "--with-orchestration", "--with-task-workflow", "--apply", "--check"], timeout=600)
         for relative in ("ai-kit/UUID.md", "ai-kit/CLAUDE-GITHUB.md", ".devin/rules/ai-kit.md",
                          "ai-kit/stacks/JAVASCRIPT.md", ".claude/skills/javascript-work/SKILL.md"):
             if not (project / relative).is_file():

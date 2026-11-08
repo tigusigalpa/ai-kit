@@ -19,6 +19,7 @@ _COMMANDS = {
     "context": ("context", None),
     "memory": ("memory", None),
     "orchestrate": ("orchestrate", None),
+    "task": ("task_workflow", None),
     "adapters": ("adapters", None),
     "mcp": ("mcp_report", None),
     "route": ("router", "route"),

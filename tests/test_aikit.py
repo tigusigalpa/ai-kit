@@ -54,6 +54,13 @@ class AikitCliTests(unittest.TestCase):
         self.assertEqual(context.exception.code, 0)
         self.assertIn("{import,merge,export}", output.getvalue())
 
+    def test_task_help_reaches_explicit_lifecycle_commands(self):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output), self.assertRaises(SystemExit) as context:
+            aikit_cli.main(["task", "--help"])
+        self.assertEqual(context.exception.code, 0)
+        self.assertIn("{create,revise,status,transition,check,accept}", output.getvalue())
+
     def test_providers_dispatches_to_router(self):
         output = io.StringIO()
         with contextlib.redirect_stdout(output):

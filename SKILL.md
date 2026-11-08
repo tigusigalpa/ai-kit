@@ -46,6 +46,7 @@ Existing project documents and context are preserved; customized instructions be
 | `--with-strix` | Pinned Strix references and explicit-only skill; installs no runtime and starts no scan |
 | `--with-context7` | Documentation lookup skill; MCP setup/authentication is separate |
 | `--with-web-design` | Four UI skills, conditional guides and preserved project design documents; no external tool setup |
+| `--with-task-workflow` | Explicit task states and source-bound local check receipts; private history and manual acceptance, no agent coordination |
 | `--interactive`, `--check`, `--dry-run` | Guided prompts, doctor after apply, explicit preview |
 | `--accept-local PATH` | Record a reviewed semantic merge of a managed file |
 | `--allow-downgrade` | Apply although the project records a newer AI-KIT; otherwise preview warns and apply refuses |
@@ -113,3 +114,5 @@ AI-KIT installs instructions and opt-in helpers. The optional text executor requ
 This repository is the skill. For Claude Code, clone it into `~/.claude/skills/ai-kit`; for other clients, use a reviewed checkout beside the project. Follow [README](README.md), [Core](template/ai-kit/CORE.md), [adapters](template/ai-kit/ADAPTERS.md), [containers](template/ai-kit/CONTAINERS.md), [routing](template/ai-kit/router/POLICY.md) and [contribution rules](CONTRIBUTING.md).
 
 For explicitly requested [optional orchestration](template/ai-kit/ORCHESTRATION.md), preview installation with --with-orchestration; use `aikit orchestrate run|status|review|reconcile`. Native helpers and paid external requests require separate explicit execution; no real calls during integration tests.
+
+For explicitly requested [task workflows](template/ai-kit/TASK-WORKFLOW.md), preview installation with --with-task-workflow. Use `aikit task create|revise|status|transition|check|accept`; mutations require --apply, and check --apply executes only the selected declared command. Review/acceptance needs current source-bound receipts and explicit criterion evidence. Read [the walkthrough](README.md#optional-task-workflow-requirements-states-and-checks-tied-to-code); installation runs no check or agent.

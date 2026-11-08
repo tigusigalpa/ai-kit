@@ -19,6 +19,7 @@ Start with the [root README](../../README.md) for the overview, defaults and a t
 | [Library documentation with Context7](CONTEXT7.md) | The optional `context7-docs` workflow and its separate connection setup |
 | [Shared context from two dialogues](DIALOGUE_MEMORY.md) | Importing two conversations, reviewing facts and contradictions, exporting for ChatGPT and OpenRouter |
 | [Optional orchestration](ORCHESTRATION.md) | Codex helper agents and the bounded OpenRouter text executor: configuration, budgets, review, accounting and recovery |
+| [Optional task workflow](../../README.md#optional-task-workflow-requirements-states-and-checks-tied-to-code) | Task descriptions, explicit states, local checks and acceptance tied to a code fingerprint |
 | [Working with OpenRouter](OPENROUTER.md) | Reusing AI-KIT rules and context in API requests, caching and measurement; a proposed adapter design |
 | [Measure, recommend and select context](MEASUREMENT.md) | Benchmark trials, adaptive routing recommendations, local metrics, context selection and client documentation evidence |
 | [For maintainers](MAINTAINERS.md) | Maintainer checks, publication copy, the PyPI release procedure and release verification records |

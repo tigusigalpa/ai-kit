@@ -84,6 +84,8 @@ ai-kit/.memory
 ai-kit/.memory/**
 ai-kit/.orchestration
 ai-kit/.orchestration/**
+ai-kit/.tasks
+ai-kit/.tasks/**
 ai-kit/.upstream-cache
 ai-kit/.upstream-cache/**
 ai-kit/.design

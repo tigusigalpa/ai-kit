@@ -64,12 +64,21 @@ Open the application in your AI client and invoke `$ai-kit-bootstrap` in Codex o
 - **Routing and measurement:** offline model role/effort recommendations (no savings are claimed), context selection, metrics and benchmark scaffolding. Live execution needs a separately configured worker.
 - **Container guidance:** the kit instructs agents to make new Dockerfiles and services Kubernetes-ready, keep images fresh and clean up after every Docker task. The default `maximum` mode removes all eligible disposable resources, including the dedicated builder cache, without a size threshold, and reclaims host RAM/disk; `--docker-cleanup keep-cache` keeps the dedicated project builder cache and reclaims host resources only on request or observed pressure. Persistent data and unrelated workloads remain protected; installation starts no cleanup or compaction process.
 
+## Optional task workflow (v1.7.0)
+
+Enable `--with-task-workflow` in both installation preview and apply. Adapt the created-once `ai-kit/task.example.json` to the project's actual objective, constraints, acceptance criteria and check commands. The module stays off by default and independent of presets.
+
+`aikit task create|revise|status|transition|check|accept` provides explicit states, private preserved history and check receipts bound to task revision/cycle plus Git HEAD/index/current working files. A changed source version invalidates prior results; missing/failed/stale checks block acceptance. A reviewer must supply evidence for every criterion at the exact checked fingerprint.
+
+Mutations and command execution require `--apply`; previews/status are read-only. Checks use current local permissions and toolchains; this is not a process/network sandbox. Ignored dependencies, services, environment and tool versions need separate review. Acceptance records a local assertion, not authenticated identity or permission to publish. Installation launches no agent/check/model, and automatic coordination is separate. [Full task walkthrough](https://github.com/tigusigalpa/ai-kit#optional-task-workflow-requirements-states-and-checks-tied-to-code).
+
 ## Optional integrations
 
 Enable these modules explicitly in both preview and apply:
 
 | Option | Included guidance |
 | --- | --- |
+| `--with-task-workflow` | Local task requirements/states, source-bound checks and explicit criterion acceptance. |
 | `--with-uuid` | Optional public UUID guidance across confirmed languages/technologies; no automatic schema changes. |
 | `--with-claude-github` | Human GitHub account verification before authorized Claude commits; no login/config changes during installation. Claude baseline entries suppress its added commit-credit trailer and preserve human authorship. |
 | `--with-web-design` | References and briefs, visual systems, UI implementation and acceptance, including a Blade route. |

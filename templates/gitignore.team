@@ -5,6 +5,7 @@
 /ai-kit/.metrics/
 /ai-kit/.memory/
 /ai-kit/.orchestration/
+/ai-kit/.tasks/
 /ai-kit/.design/
 /ai-kit/.install-state.json
 /ai-kit/.install-report.json

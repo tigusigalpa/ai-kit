@@ -16,9 +16,9 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 
 What changed in each release: [CHANGELOG](CHANGELOG.md).
 
-**v1.6.0:** English chat defaults, Devin (Windsurf), JavaScript/Node.js, optional UUIDs and human Claude GitHub identity. [Release verification and publication status](docs/V1_6_0.md).
+**v1.7.0:** optional task definitions, durable execution states and checks tied to the exact code version, with explicit acceptance and stale-result detection. [Release verification and publication status](docs/V1_7_0.md).
 
-**Published and verified:** [PyPI `ai-kit-python 1.6.0`](https://pypi.org/project/ai-kit-python/1.6.0/) installs from the public index; [Docker Hub `tigusigalpa/ai-kit:1.6.0`](https://hub.docker.com/r/tigusigalpa/ai-kit) passed an immutable pull and offline checks. Both carry the same 319 packaged source files. [Checks, hashes and digest](docs/V1_6_0.md).
+**Release status:** v1.7.0 is being verified for GitHub and Docker Hub; PyPI upload waits for the owner's approval. [Publication record](docs/V1_7_0.md). The previously verified [1.6.0 artifacts](docs/V1_6_0.md) remain available until the new registries are read back.
 
 [Get AI-KIT](#get-ai-kit) · [Update AI-KIT](#update-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
 
@@ -55,11 +55,11 @@ aikit --version
 
 The PyPI package is **`ai-kit-python`**; the command it installs is **`aikit`**. Never run `pip install aikit`: that is not this project's package name. Without pipx, run `python -m pip install ai-kit-python` inside a virtual environment. On Windows, the [Windows guide](docs/guide/WINDOWS.md) covers PATH and interpreter problems.
 
-**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example the verified `1.6.0`:
+**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example `1.7.0` (check the release status above):
 
 ~~~sh
-docker pull tigusigalpa/ai-kit:1.6.0
-docker run --rm tigusigalpa/ai-kit:1.6.0 --version
+docker pull tigusigalpa/ai-kit:1.7.0
+docker run --rm tigusigalpa/ai-kit:1.7.0 --version
 ~~~
 
 Project mounts, preview/apply examples and the runtime contract are in [Run AI-KIT with Docker](docs/guide/DOCKER.md).
@@ -82,6 +82,36 @@ From a checkout, run `python scripts/install.py` or `python aikit_cli.py COMMAND
 | --- | --- | --- |
 | Installed Python package / CLI | `python -m pip install --upgrade ai-kit-python` | Updates the installer available to that Python environment. Existing project files are unchanged. |
 | AI-KIT inside the current project | `python -m aikit.aikit_cli install . --apply --check` | Uses that installer to update the current project's instructions and selected adapters, then checks the installation. |
+
+### Check installation and version in the current folder
+
+Open a terminal in the application's root folder and run this **read-only, offline** check (`.` means the current folder):
+
+~~~powershell
+python -m aikit.aikit_cli doctor .
+~~~
+
+If `aikit` is available in PATH, the equivalent short command is `aikit doctor .`; use that form for a pipx installation. If Python reports `No module named aikit`, first [install the CLI](#get-ai-kit) in the Python environment you are using.
+
+The JSON report includes these fields (example excerpt):
+
+~~~json
+{
+  "installed_version": "1.5.0",
+  "bundle_version": "1.7.0"
+}
+~~~
+
+| Field | Meaning |
+| --- | --- |
+| `installed_version` | The project's recorded AI-KIT baseline version, read from `ai-kit/.install-state.json` (`accepted_version`). Local edits or missing managed files are reported separately. |
+| `bundle_version` | The version bundled with the CLI you are running, used for the comparison and available for updating the project. The default check does not query PyPI; this field is not a claim about the newest published release. |
+| `errors` | Installation problems, such as missing/invalid installer state, invalid settings or missing managed files. Read these before treating the installation as healthy. |
+| `warnings` / `info` | Warnings and additional findings, including local changes and version comparisons. |
+
+In the example, the project records **1.5.0** while the CLI carries **1.7.0**: preview and apply a project update using step 2 below. If the project version is newer than the CLI, update the Python package first (step 1). Matching versions still require reviewing `errors` and `warnings` for installation health. To show only the CLI version, run `python -m aikit.aikit_cli --version`.
+
+**If installation cannot be confirmed:** `installed_version` stays `null` when the project version cannot be determined. Missing state produces `No installer state found; is AI-KIT installed in this project?`; invalid state produces an `Invalid installer state` error. This can mean AI-KIT was never initialized with the installer, was copied manually, or its state was lost or damaged. Review `errors` and the existing files before initializing or updating. Running `doctor .` without repair flags changes no project files.
 
 ### 1. Update the globally installed package
 
@@ -434,6 +464,112 @@ The offline `aikit memory` command imports two conversations, preserves their so
 ### Optional orchestration
 
 `--with-orchestration` adds scoped Codex helper agents and a disabled-by-default, bounded OpenRouter text executor with explicit apply, capped-key preflight, private accounting and review. Installation launches no agents and makes no paid calls. [Orchestration guide](docs/guide/ORCHESTRATION.md).
+
+### Optional task workflow: requirements, states and checks tied to code
+
+**Introduced in v1.7.0.** Upgrade the CLI and update each project using the normal [update procedure](#update-ai-kit), then explicitly enable this extra. Version 1.6.0 does not contain these commands. Check the [release status](docs/V1_7_0.md) before selecting a registry artifact; PyPI availability follows the owner's approval. A wheel built from this checkout is also supported.
+
+Enable the module from your application's root folder. Omitting client flags preserves its saved clients and other settings:
+
+~~~powershell
+python -m aikit.aikit_cli install . --with-task-workflow
+python -m aikit.aikit_cli install . --with-task-workflow --apply --check
+~~~
+
+The flag saves `task_workflow=true`, installs the short `ai-kit/TASK-WORKFLOW.md` contract and creates `ai-kit/task.example.json` only if missing. It is off by default and independent of presets. No agent or check is launched during installation. The project-owned example and task history survive upgrades.
+
+#### Describe the task before implementing it
+
+Edit the installed example with a bounded objective, constraints/non-goals, concrete acceptance criteria and **verified commands for this project**. Its Python command is illustrative: for a Laravel application, use the actual PHP/Pest/PHPUnit command and environment established by that project. For example:
+
+~~~json
+{
+  "schema": 1,
+  "id": "catalog-filter",
+  "title": "Add a category filter to the catalog",
+  "description": "Filter by an existing category while retaining pagination. Preserve the public response format. Do not change authentication, database schema or unrelated pages.",
+  "acceptance": [
+    {"id": "filter", "description": "Selecting a category returns only matching items."},
+    {"id": "compatibility", "description": "Requests without a filter retain the existing response and pagination behavior."}
+  ],
+  "checks": [
+    {"id": "feature-tests", "argv": ["php", "artisan", "test", "--filter=CatalogFilterTest"], "cwd": ".", "timeout_seconds": 300}
+  ]
+}
+~~~
+
+The test name is an example to replace, not a test AI-KIT creates. `argv` is an argument array, not a shell command string. Each criterion/check has a distinct lowercase ID. Every declared check is required. Tasks and criteria describe the requested outcome; the commands run with your current local permissions/environment. Review their data/service access before execution.
+
+Save your definition in `ai-kit/task.example.json` or another reviewed JSON file, then preview and create it:
+
+~~~powershell
+python -m aikit.aikit_cli task create . --from-json ai-kit/task.example.json
+python -m aikit.aikit_cli task create . --from-json ai-kit/task.example.json --apply
+python -m aikit.aikit_cli task transition . --task-id catalog-filter --to implementing --apply
+~~~
+
+An identical repeated create preserves the existing state. Changed requirements need `task revise . --from-json FILE --apply`: the same task ID receives a new revision, returns to `planned` and requires another implementation/check cycle. Historical receipts and approvals are retained.
+
+#### Run and inspect checks explicitly
+
+After implementing the change, preview the exact declared command and execute it separately:
+
+~~~powershell
+python -m aikit.aikit_cli task check . --task-id catalog-filter --check-id feature-tests
+python -m aikit.aikit_cli task check . --task-id catalog-filter --check-id feature-tests --apply
+python -m aikit.aikit_cli task status . --task-id catalog-filter
+~~~
+
+Checks require the **Git working-tree root**. A fingerprint covers the task revision/cycle, Git HEAD and index, actual tracked file contents/deletions, and nonignored untracked files. A check is tied to that fingerprint before and after execution. New source edits, staging, commits or changed requirements invalidate earlier evidence. Ignored generated output does not invalidate it; ignored dependencies, databases, services, environment and tool versions are outside the fingerprint and need separate review. Source must remain quiescent during observation.
+
+Receipts retain the command, timestamps, return code, duration, output hash/byte count and fingerprint. Raw child output is discarded, so inspect a failed check with the project's normal test command when necessary. A nonzero exit, timeout, interruption or observed source change cannot be accepted as a pass. If a check changes source, review that change, return to `implementing`, then rerun the required checks. Checks execute locally; AI-KIT does not provide a process/network sandbox or provision a test environment.
+
+#### Review and accept the exact checked version
+
+The normal path is:
+
+`planned` -> `implementing` -> `checking` -> `reviewing` -> `awaiting_approval` -> `accepted`
+
+`task check --apply` enters `checking`; all required checks must have current passing receipts before these next transitions are allowed:
+
+~~~powershell
+python -m aikit.aikit_cli task transition . --task-id catalog-filter --to reviewing --apply
+python -m aikit.aikit_cli task transition . --task-id catalog-filter --to awaiting_approval --apply
+python -m aikit.aikit_cli task status . --task-id catalog-filter
+~~~
+
+Review the actual behavior against each criterion. Copy the current `fingerprint` from status into a review JSON file and supply evidence for every criterion. Keep that review file **outside source discovery**: for example, create `ai-kit/.tasks/reviews/` and save this as `catalog-filter.json` there. A review file included in the source fingerprint would itself change the version being reviewed.
+
+~~~json
+{
+  "schema": 1,
+  "task_id": "catalog-filter",
+  "fingerprint": "REPLACE_WITH_THE_64_CHARACTER_FINGERPRINT_FROM_STATUS",
+  "reviewer": "REPLACE_WITH_THE_ACTUAL_REVIEWER",
+  "criteria": [
+    {"id": "filter", "passed": true, "evidence": "REPLACE_WITH_THE_OBSERVED_FILTER_RESULT"},
+    {"id": "compatibility", "passed": true, "evidence": "REPLACE_WITH_THE_OBSERVED_COMPATIBILITY_RESULT"}
+  ]
+}
+~~~
+
+~~~powershell
+python -m aikit.aikit_cli task accept . --task-id catalog-filter --from-json ai-kit/.tasks/reviews/catalog-filter.json
+python -m aikit.aikit_cli task accept . --task-id catalog-filter --from-json ai-kit/.tasks/reviews/catalog-filter.json --apply
+~~~
+
+Acceptance requires the current fingerprint, every declared criterion and all current successful checks. It records the reviewer's local assertion; it does not authenticate identity or independently prove correctness. It grants no commit, push, release or deployment authorization. If source changes afterward, status reports `effective_state: stale` and `accepted_current: false`; the historical acceptance remains visible.
+
+| Situation | What to do |
+| --- | --- |
+| Continue implementation after review/failure or reopen an accepted task | Explicitly transition to `implementing`. This starts a new cycle and requires fresh checks. |
+| Mark work unsuccessful | Use `--to failed` from an active state; preserve the receipts and findings. |
+| Cancel an active task | Use `--to cancelled`. Cancellation is terminal and changes task state; stop/wait for any running check first. It does not undo code or control other processes. |
+| Interrupted check or stale lock | Confirm the recorded lock owner has stopped before removing only `ai-kit/.tasks/write.lock`. Return the task to `implementing`; pending receipts become interrupted history. |
+| Unsupported transition or missing/stale check | The operation refuses. Review status and follow the declared state path. |
+| Symlink/junction, submodule, unresolved merge, case collision or nonignored credential file | Source inspection refuses; resolve the boundary/visibility issue before checking. |
+
+All mutations preview without `--apply`; `status` is read-only. Exit code `0` means the requested operation succeeded, `1` means an executed check did not pass, and `2` means invalid input/state or a refused operation. Definitions, events, receipts and approvals stay in private `ai-kit/.tasks/` in both sharing modes and are excluded from wheel/image build inputs. Set `task_workflow=false` to disable the CLI without deleting its history. Automatic agent coordination, scheduling, model calls and hosted-CI import are separate work. [Technical contract and verification](docs/TASK_WORKFLOW.md).
 
 ### Working with OpenRouter
 

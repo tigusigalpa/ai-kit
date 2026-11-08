@@ -8,14 +8,14 @@ Installer options and defaults are the same as outside Docker: put them after `i
 
 ## Use the published image
 
-**Published image:** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit), `linux/amd64`. Image tags match the repository `VERSION` of their release; a source `VERSION` that does not appear on the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags) is not published yet. Existing tags are retained and no `latest` tag is assigned, so always name a version. Version 1.6.0 is published; its [registry and immutable-pull verification](../V1_6_0.md#docker-hub-publication) matches the tested image and PyPI package.
+**Published image:** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit), `linux/amd64`. Image tags match the repository `VERSION` of their release; a source `VERSION` that does not appear on the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags) is not published yet. Existing tags are retained and no `latest` tag is assigned, so always name a version. Version 1.7.0 is the release target; its [publication status](../V1_7_0.md#docker-hub-publication) records the registry and immutable-pull verification separately from preparation.
 
 ~~~sh
-docker pull tigusigalpa/ai-kit:1.6.0
-docker run --rm tigusigalpa/ai-kit:1.6.0 --version
+docker pull tigusigalpa/ai-kit:1.7.0
+docker run --rm tigusigalpa/ai-kit:1.7.0 --version
 ~~~
 
-Use that image name in the examples below (`$image = 'tigusigalpa/ai-kit:1.6.0'` in PowerShell, `image="tigusigalpa/ai-kit:1.6.0"` in Bash), or tag it locally as `ai-kit:1.6.0`. The [Docker Hub Overview](../DOCKER_HUB_OVERVIEW.md) covers capabilities, release changes and launch examples.
+Use that image name in the examples below (`$image = 'tigusigalpa/ai-kit:1.7.0'` in PowerShell, `image="tigusigalpa/ai-kit:1.7.0"` in Bash), or tag it locally as `ai-kit:1.7.0`. The [Docker Hub Overview](../DOCKER_HUB_OVERVIEW.md) covers capabilities, release changes and launch examples.
 
 ## Build the local image
 
@@ -50,7 +50,7 @@ Choose an existing application folder outside the AI-KIT distribution. Use its a
 
 ~~~powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = "ai-kit:$kitVersion"   # or 'tigusigalpa/ai-kit:1.6.0'
+$image = "ai-kit:$kitVersion"   # or 'tigusigalpa/ai-kit:1.7.0'
 $runtime = @('--rm', '--init', '--network', 'none', '--read-only',
     '--cap-drop', 'ALL', '--security-opt', 'no-new-privileges',
     '--tmpfs', '/tmp:rw,nosuid,nodev,size=256m')
@@ -73,7 +73,7 @@ Run from an ordinary host user. Forward that user's UID/GID so the bind-mounted 
 
 ~~~sh
 app_path="$(cd /path/to/my-app && pwd)"
-image="ai-kit:$kit_version"   # or tigusigalpa/ai-kit:1.6.0
+image="ai-kit:$kit_version"   # or tigusigalpa/ai-kit:1.7.0
 runtime=(--rm --init --network none --read-only --cap-drop ALL
   --security-opt no-new-privileges --tmpfs /tmp:rw,nosuid,nodev,size=256m
   --user "$(id -u):$(id -g)")
@@ -126,7 +126,7 @@ Its `ai-kit:local` image with `imagePullPolicy: Never` is a local-cluster exampl
 ~~~sh
 python scripts/check_kit.py
 python -m unittest discover -s tests -v
-python tests/docker_smoke.py ai-kit:1.6.0 --context .
+python tests/docker_smoke.py ai-kit:1.7.0 --context .
 ~~~
 
 Use the tag you actually built. The Docker smoke uses disposable synthetic projects, no runtime network and Docker's actual ignore engine; it checks preview/apply, all optional modules, preservation, rerun stability, read-only refusal and SIGTERM. CI builds and tests a local image without publishing it. [Maintainer contract and results](../DOCKER.md) records pins, packaging, checks and unavailable environments.
