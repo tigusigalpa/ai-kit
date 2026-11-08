@@ -18,7 +18,7 @@ What changed in each release: [CHANGELOG](CHANGELOG.md).
 
 **v1.7.0:** optional task definitions, durable execution states and checks tied to the exact code version, with explicit acceptance and stale-result detection. [Release verification and publication status](docs/V1_7_0.md).
 
-**Published and verified:** [GitHub Release v1.7.0](https://github.com/tigusigalpa/ai-kit/releases/tag/v1.7.0) and [Docker Hub `tigusigalpa/ai-kit:1.7.0`](https://hub.docker.com/r/tigusigalpa/ai-kit) are available. The image passed an immutable pull and offline checks; all 328 packaged files match the validated release wheel. **PyPI 1.7.0 awaits the owner's approval** in the [release workflow](https://github.com/tigusigalpa/ai-kit/actions/runs/42461254634). [Checks, hashes and digest](docs/V1_7_0.md).
+**Published and verified:** [GitHub Release v1.7.0](https://github.com/tigusigalpa/ai-kit/releases/tag/v1.7.0), [Docker Hub `tigusigalpa/ai-kit:1.7.0`](https://hub.docker.com/r/tigusigalpa/ai-kit) and owner-approved [PyPI `ai-kit-python 1.7.0`](https://pypi.org/project/ai-kit-python/1.7.0/) are available. An immutable image pull and fresh hashed PyPI installation passed; all 328 packaged source files match. [Checks, hashes and digest](docs/V1_7_0.md).
 
 [Get AI-KIT](#get-ai-kit) · [Update AI-KIT](#update-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
 

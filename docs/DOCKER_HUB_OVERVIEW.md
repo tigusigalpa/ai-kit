@@ -14,7 +14,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
 
-**PyPI:** the equivalent [ai-kit-python](https://pypi.org/project/ai-kit-python/) 1.7.0 wheel has passed the release workflow checks and matches all 328 image source files. Upload awaits the owner's approval of the protected `pypi` environment. [Package status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md#pypi-publication-status).
+**PyPI:** owner-approved [ai-kit-python 1.7.0](https://pypi.org/project/ai-kit-python/1.7.0/) is published and installs from the public index. File hashes match the validated release artifacts, and all 328 source files match this image. A fresh hashed installation and the actual task CLI lifecycle passed. [Package verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md#pypi-publication-status).
 
 ## What AI-KIT provides
 
