@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Retry repository CI/release Python setup up to three times with 20/40-second pauses and a final hard failure; preserve matrix/check names and human PyPI approval. Package the pinned local action and guard retry/failure/cancellation/resource boundaries. Linux passed; one Windows Git fixture timed out and passed on recheck. [Contract and verification](docs/CI_PYTHON_RETRY.md).
+- Retry repository CI/release Python setup up to three times with 20/40-second pauses and a final hard failure; preserve matrix/check names and human PyPI approval. Package the pinned local action and guard retry/failure/cancellation/resource boundaries. Hosted matrix and package validation passed; local Windows fixture timeout details remain recorded. [Contract and verification](docs/CI_PYTHON_RETRY.md).
 
 ## v1.7.0 (2026-11-08)
 
