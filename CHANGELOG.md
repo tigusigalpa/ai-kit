@@ -1,5 +1,9 @@
 # AI-KIT changelog
 
+## Unreleased
+
+- Retry repository CI/release Python setup up to three times with 20/40-second pauses and a final hard failure; preserve matrix/check names and human PyPI approval. Package the pinned local action and guard retry/failure/cancellation/resource boundaries. Hosted matrix and package validation passed; local Windows fixture timeout details remain recorded. [Contract and verification](docs/CI_PYTHON_RETRY.md).
+
 ## v1.7.0 (2026-11-08)
 
 - Publish GitHub Release, verified Docker Hub 1.7.0 and its complete Overview; all 32 PR checks succeeded and 328 source files match the validated hosted wheel/image. Owner-approved PyPI 1.7.0 is published; public hashes and a fresh hashed installation with task CLI passed. Publication-only documents retain the tagged artifacts.

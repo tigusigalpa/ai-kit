@@ -1,0 +1,47 @@
+name: Set up Python with bounded retries
+description: Retry the pinned Python setup step before failing CI; never retry tests or publication.
+inputs:
+  python-version:
+    description: Python version or range accepted by the pinned setup-python action.
+    required: true
+outputs:
+  python-version:
+    description: Installed Python version from the successful attempt.
+    value: ${{ steps.attempt_3.outputs.python-version || steps.attempt_2.outputs.python-version || steps.attempt_1.outputs.python-version }}
+  python-path:
+    description: Python executable from the successful attempt.
+    value: ${{ steps.attempt_3.outputs.python-path || steps.attempt_2.outputs.python-path || steps.attempt_1.outputs.python-path }}
+runs:
+  using: composite
+  steps:
+    - name: Set up Python (attempt 1 of 3)
+      id: attempt_1
+      continue-on-error: true
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Wait before Python setup attempt 2
+      if: ${{ !cancelled() && steps.attempt_1.outcome == 'failure' }}
+      shell: pwsh
+      run: |
+        Write-Host 'Python setup failed; retrying in 20 seconds.'
+        Start-Sleep -Seconds 20
+    - name: Set up Python (attempt 2 of 3)
+      id: attempt_2
+      if: ${{ !cancelled() && steps.attempt_1.outcome == 'failure' }}
+      continue-on-error: true
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+      with:
+        python-version: ${{ inputs.python-version }}
+    - name: Wait before Python setup attempt 3
+      if: ${{ !cancelled() && steps.attempt_2.outcome == 'failure' }}
+      shell: pwsh
+      run: |
+        Write-Host 'Python setup failed again; final attempt in 40 seconds.'
+        Start-Sleep -Seconds 40
+    - name: Set up Python (attempt 3 of 3)
+      id: attempt_3
+      if: ${{ !cancelled() && steps.attempt_2.outcome == 'failure' }}
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+      with:
+        python-version: ${{ inputs.python-version }}
