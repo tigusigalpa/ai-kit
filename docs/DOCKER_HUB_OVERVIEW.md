@@ -6,15 +6,15 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current published image:** `tigusigalpa/ai-kit:1.6.0`
+**Release image:** `tigusigalpa/ai-kit:1.7.0`
 
-**New in v1.6.0:** English chat defaults with saved-language preservation, current Devin (Windsurf) rules, a JavaScript/Node.js profile, optional public UUIDs and human Claude GitHub identity, plus detailed TypeUI setup for Codex and Claude. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_6_0.md).
+**New in v1.7.0:** an optional local task workflow: requirements and acceptance criteria, durable states, source-bound check receipts, explicit approval and stale-result detection. Automatic agent coordination is separate. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md).
 
 **Published platform:** `linux/amd64`
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
 
-**PyPI:** [ai-kit-python 1.6.0](https://pypi.org/project/ai-kit-python/1.6.0/) is also published and installs from the public index. The package and image contain the same 319 source files.
+**PyPI:** the equivalent distribution is [ai-kit-python](https://pypi.org/project/ai-kit-python/). Version 1.7.0 uploads only after the owner approves the release workflow; see the release record for its verified registry status.
 
 ## What AI-KIT provides
 
@@ -24,6 +24,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 | **Configuration for 11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Devin (Windsurf), Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified. |
 | **Stack-specific guidance** | Profiles for Go, PHP, Laravel, Filament, Moodle, Python, JavaScript/TypeScript/Node.js, frontend, libraries, Rust, .NET, Java and Terraform/Helm. |
 | **Preview-first installation** | Review proposed changes before writing. Existing project documents and local modifications follow preservation and conflict rules; an older CLI refuses to downgrade a newer installation unless explicitly allowed. |
+| **Optional task workflow** | `--with-task-workflow` adds explicit task definitions, durable states, code-bound check receipts and criterion acceptance. Changed source invalidates prior evidence; private history survives upgrades. |
 | **Engineering workflows** | Plan, implement, test, review and document, supported by bootstrap, review and context synchronization skills. |
 | **Optional Web Design** | Reference analysis, project briefs, visual systems, stack-aware implementation guidance and UI acceptance criteria, including a Laravel Blade route. |
 | **Optional security workflows** | Pinned Cloudflare security-audit references and Strix workflow skills, installed explicitly and invoked on request. |
@@ -36,49 +37,42 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed in v1.6.0
+## What changed in v1.7.0
 
-- **English defaults:** new-project and interactive chat defaults to English; saved languages remain on upgrades. Use `--chat-language Russian` or `--chat-language English` explicitly to change an existing choice.
-- **Devin (Windsurf):** `--agent devin` installs `.devin/rules/`; the legacy `windsurf` adapter remains available. Preserve custom legacy rules and retire unchanged owned files explicitly.
-- **JavaScript / Node.js:** a dedicated profile covers services, CLIs, workers, TypeScript and packages. Browser/frontend suggestions require dependency evidence.
-- **Optional public UUIDs:** `--with-uuid` enables guidance across confirmed languages/technologies, independently of owner/standard conventions and presets. Installation changes no application schema or code.
-- **Human Claude authorship:** default Claude entries preserve the human Git identity and suppress added Claude commit credit. `--with-claude-github` adds authenticated human GitHub account verification before authorized commits. Conflicting native settings require review; installation performs no login, Git config, commit or push.
-- **Clear setup/update instructions:** the README includes TypeUI MCP setup for Codex and Claude Code, troubleshooting, and exact package/project update commands.
+- **Independent opt-in:** `--with-task-workflow` persists outside presets and stays off by default. Installation creates a short contract and a project-owned JSON example, launches no check or agent, and preserves existing clients/settings.
+- **Task definitions:** objective, constraints, acceptance criteria and explicit local check commands, with validated IDs and bounded inputs.
+- **Durable execution states:** planned, implementing, checking, reviewing, awaiting approval and accepted, with explicit failure/cancellation, reopening and requirement revision.
+- **Checks tied to code:** receipts bind the task revision/cycle to Git HEAD, index and current working files. Missing, failed or stale checks block review and acceptance; changed accepted work is reported stale.
+- **Explicit criterion decisions:** acceptance records evidence for every criterion against the exact checked fingerprint. This is a local reviewer assertion, not authenticated identity or independent proof of correctness.
+- **Private, preserved history:** task state stays under ignored `ai-kit/.tasks/` in both sharing modes, survives installation upgrades and is excluded from distributions.
+- **Clear update/version help:** README explains global package updates, current-project updates, installed versus bundle versions and the full task lifecycle.
 
-AI-KIT still includes the read-only MCP report, downgrade protection, shared dialogue context, security/design modules and bounded optional orchestration from earlier releases. Old image tags remain intact and no `latest` tag is assigned.
+Automatic agent scheduling, retry/review loops, model execution and hosted-CI ingestion are separate. Local checks run with your permissions and environment; AI-KIT does not sandbox them. Ignored dependencies, services and tool versions are outside the code fingerprint. Existing Web Design, security, Context7, orchestration and language/client options remain available.
 
 ## Image verification
 
-Published on 2026-10-31 from tagged commit `d4cdaaacf54dd46d0dd34ce7387341594140d28e`. All 32 PR checks succeeded. The final image passed 458 Linux tests (455 passed, three platform/distribution skips), offline/read-only installation smoke, preservation/reruns, actual build-context exclusions and SIGTERM with and without init. The incorrect image-version guard refused a mismatched label. All 319 packaged files equal committed source, the hosted release wheel and the verified PyPI package.
+Before release labeling, both Windows and packaged Linux suites completed 483 tests (12 and three platform/environment skips). Isolated archives, strict Twine, fresh offline wheel CLI, existing-1.6.0 project upgrade preservation and Docker smoke passed, including a complete synthetic task lifecycle on a Windows bind mount. The versioned image is rebuilt and checked from committed v1.7.0 source. [Final checks and publication identity](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md) distinguish those results from preparation.
 
-Anonymous registry read-back matched the tested configuration and layers. An immutable pull passed version 1.6.0, kit check (zero errors/warnings) and the new flag/default checks. Earlier version tags stay unchanged and no `latest` tag is assigned. [Full release receipts](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_6_0.md).
-
-**Immutable digest:** `sha256:0fa4b24681b5a03f49674342d3460e90cbfec76a9d7fcf17e7c7cd8046dcace1`
-
-```sh
-docker pull tigusigalpa/ai-kit@sha256:0fa4b24681b5a03f49674342d3460e90cbfec76a9d7fcf17e7c7cd8046dcace1
-```
-
-The dedicated release builder, 342.3MB cache and state volume were removed. Unrelated workloads and persistent data were preserved; no host-wide prune, WSL shutdown or physical disk compaction ran. Later descriptive receipts retain the tested image with its earlier bundled documentation snapshot. Live TypeUI/Claude activation and real model/scanner trials remain separate.
+No registry digest is claimed before anonymous read-back and immutable-pull checks. Old version tags remain intact and no `latest` tag is assigned. Disposable release resources are removed after testing; unrelated workloads and persistent data remain protected. Docker cache cleanup does not establish host RAM or physical-disk compaction.
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.6.0
+docker pull tigusigalpa/ai-kit:1.7.0
 ```
 
 Check the CLI version and help:
 
 ```sh
-docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.6.0 --version
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.7.0 --version
 
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.6.0 --help
+  tigusigalpa/ai-kit:1.7.0 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -91,7 +85,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.6.0"
+image="tigusigalpa/ai-kit:1.7.0"
 
 runtime=(
   --rm --init
@@ -148,7 +142,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.6.0'
+$image = 'tigusigalpa/ai-kit:1.7.0'
 
 $runtime = @(
     '--rm', '--init',
@@ -192,6 +186,7 @@ Optional modules are selected explicitly and remain independent of installation 
 
 | Installer option | Installs |
 | --- | --- |
+| `--with-task-workflow` | Local task definitions/states, code-bound checks and explicit criterion acceptance; no automatic agent coordination. |
 | `--with-uuid` | Optional public UUID policy for any confirmed stack; no automatic code/schema changes. |
 | `--with-claude-github` | Authenticated human GitHub identity guidance for selected Claude, without installation-time login or Git changes. |
 | `--with-web-design` | Design skills, conditional guides and project design documents. |
@@ -217,6 +212,23 @@ docker run "${runtime[@]}" \
 To apply that selection, use a writable project mount and append `--apply --check`, keeping the same agent and module options.
 
 Installing these modules does not start a security scan, connect an MCP server or invoke a model. External tools and client activation are configured separately.
+
+## Local task workflow
+
+Enable `--with-task-workflow` in both installation preview and apply, then adapt `ai-kit/task.example.json` to the project's actual acceptance criteria and check commands. Use the existing project mount/runtime options above, replacing the arguments after the image name with these CLI arguments:
+
+```text
+task create /workspace --from-json ai-kit/task.example.json
+task create /workspace --from-json ai-kit/task.example.json --apply
+task transition /workspace --task-id catalog-filter --to implementing --apply
+task check /workspace --task-id catalog-filter --check-id feature-tests
+task check /workspace --task-id catalog-filter --check-id feature-tests --apply
+task status /workspace --task-id catalog-filter
+```
+
+Replace task/check IDs with those in your definition. Mutations require a writable project mount and explicit `--apply`; status is read-only. Source inspection requires the Git working-tree root. Use `task revise` for changed requirements, then fresh checks, explicit review transitions and `task accept` with current fingerprint/criterion evidence. [Complete task walkthrough](https://github.com/tigusigalpa/ai-kit#optional-task-workflow-requirements-states-and-checks-tied-to-code).
+
+The image contains Python and Git, not application frameworks such as PHP/Node.js. Declared checks must exist in the execution environment. Use the host-installed AI-KIT CLI with the project's toolchain for those checks, or a separately prepared reviewed environment; image installation alone does not supply it. Keep raw credentials out of task commands/evidence. Installation never executes checks.
 
 ## Optional orchestration
 

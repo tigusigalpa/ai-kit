@@ -34,7 +34,7 @@ def source_files(root: Path):
     for directory, dirs, files in os.walk(root, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded]
         if Path(directory) == root / "ai-kit":
-            dirs[:] = [d for d in dirs if d not in {".metrics", ".memory", ".orchestration"}]
+            dirs[:] = [d for d in dirs if d not in {".metrics", ".memory", ".orchestration", ".tasks"}]
         for name in files:
             path = Path(directory) / name
             if path.parent == root and name in LOCAL_ONLY_FILES:
@@ -171,6 +171,7 @@ def visibility(root: Path, git: str) -> list[str]:
                 if ignored(path) != (mode == "private"):
                     errors.append(f"{mode}: wrong shared visibility: {path}")
             for path in (".env", ".claude/settings.local.json", "ai-kit/.upstream-cache/a",
+                         "ai-kit/.tasks/example.json", "ai-kit/.tasks/write.lock",
                          "ai-kit/.metrics/tasks.jsonl", "ai-kit/.metrics/write.lock", "ai-kit/.memory/session/imports/chat.json",
                          "ai-kit/.design/screenshots/home.png", "ai-kit/.design/extractions/DESIGN.md",
                          "go-cache/a", "test.out", "__pycache__/a.pyc", ".idea/workspace.xml",
@@ -259,7 +260,8 @@ def check(root: Path, *, git: str | None = None) -> tuple[list[str], list[str]]:
                 "templates/gitignore.private", "templates/gitignore.team",
                 "aikit_cli.py", "__init__.py", "MANIFEST.in", "pyproject.toml", "tests/wheel_smoke.py",
                 "scripts/check_distribution.py", "tests/test_distribution.py", "scripts/orchestrate.py",
-                "tests/test_orchestration.py", "docs/ORCHESTRATION.md", "docs/PYPI.md", "docs/PYPI_DESCRIPTION.md",
+                "tests/test_orchestration.py", "scripts/task_workflow.py", "scripts/task_snapshot.py",
+                "tests/test_task_workflow.py", "docs/TASK_WORKFLOW.md", "docs/ORCHESTRATION.md", "docs/PYPI.md", "docs/PYPI_DESCRIPTION.md",
                 "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml",
                 "tests/build_distribution.py", "tests/test_pypi_events.py",
                 ".github/workflows/check-kit.yml", "docs/IMPLEMENTATION.md",

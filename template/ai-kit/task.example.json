@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "id": "example-change",
+  "title": "Replace this example with a bounded project change",
+  "description": "Record the intended behavior, affected interfaces, constraints and non-goals before implementation. Replace the example Python check with a verified command for this project.",
+  "acceptance": [
+    {"id": "behavior", "description": "The requested behavior works, including the declared edge cases."},
+    {"id": "compatibility", "description": "Existing interfaces and unrelated behavior are preserved."}
+  ],
+  "checks": [
+    {"id": "tests", "argv": ["python", "-m", "unittest", "discover", "-s", "tests", "-v"], "cwd": ".", "timeout_seconds": 300}
+  ]
+}

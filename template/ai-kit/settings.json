@@ -3,6 +3,7 @@
   "chat_language": "English",
   "uuid": false,
   "claude_github": false,
+  "task_workflow": false,
   "sharing_mode": "private",
   "conventions": "owner",
   "docker_cleanup": "maximum",

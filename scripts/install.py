@@ -26,14 +26,14 @@ PROFILE_MANIFESTS = {
 FILAMENT_PACKAGES = {"filament/filament", "filament/forms", "filament/tables", "filament/schemas",
                      "filament/actions", "filament/widgets", "filament/infolists", "filament/notifications"}
 EXTRAS = {"session-start", "guards", "data-guards", "native-settings", "scoped-rules", "ci", "security-audit", "strix",
-          "context7", "web-design", "orchestration", "uuid", "claude-github"}
+          "context7", "web-design", "orchestration", "uuid", "claude-github", "task-workflow"}
 EXTRA_TEMPLATE = {"session-start": (".agents/hooks/session-start.md", ".agents/hooks/session-start.sh")}
 EXTRA_INTEGRATIONS = {"ci": ("ai-kit-check.yml", ".github/workflows/ai-kit.yml")}
 EXTRA_SETTINGS_KEYS = {"session-start": "session_start", "guards": "guards", "data-guards": "data_guards",
                        "native-settings": "native_settings", "scoped-rules": "scoped_rules", "ci": "ci",
                        "security-audit": "security_audit", "strix": "strix", "context7": "context7",
                        "web-design": "web_design", "orchestration": "orchestration",
-                       "uuid": "uuid", "claude-github": "claude_github"}
+                       "uuid": "uuid", "claude-github": "claude_github", "task-workflow": "task_workflow"}
 SECURITY_AUDIT_SKILL = ".agents/skills/security-audit/"
 SECURITY_AUDIT_PACKAGE = "ai-kit/vendor/security-audit/"
 SECURITY_AUDIT_MANIFEST = "integrations/security-audit.json"
@@ -54,8 +54,11 @@ OPTIONAL_SKILLS = {
 # Local documentation workflows share selection/preservation behavior, without an upstream payload.
 OPTIONAL_ENTRY_POINTS = {**{name: (name,) for name in OPTIONAL_SKILLS}, "context7": ("context7-docs",),
                          "web-design": ("web-design", "laravel-blade-ui", "ui-review", "design-extract")}
-OPTIONAL_DOCUMENTS = {"orchestration": ("ai-kit/orchestration.json",), "web-design": ("docs/design/BRIEF.md", "docs/design/SYSTEM.md", "docs/design/ACCEPTANCE.md")}
+OPTIONAL_DOCUMENTS = {"orchestration": ("ai-kit/orchestration.json",),
+                      "task-workflow": ("ai-kit/task.example.json",),
+                      "web-design": ("docs/design/BRIEF.md", "docs/design/SYSTEM.md", "docs/design/ACCEPTANCE.md")}
 OPTIONAL_RESOURCES = {"uuid": ("ai-kit/UUID.md",), "claude-github": ("ai-kit/CLAUDE-GITHUB.md",),
+                     "task-workflow": ("ai-kit/TASK-WORKFLOW.md",),
                      "orchestration": ("ai-kit/ORCHESTRATION.md",), "web-design": ("ai-kit/WEB-DESIGN.md", "ai-kit/web-design/LARAVEL.md",
                                     "ai-kit/web-design/LIBRARIES.md", "ai-kit/web-design/TOOLS.md",
                                     "ai-kit/web-design/REVIEW.md")}
@@ -1683,6 +1686,8 @@ def build_parser(root: Path = ROOT) -> argparse.ArgumentParser:
                         help="Enable public UUID guidance for any confirmed stack; no schema/code changes")
     parser.add_argument("--with-claude-github", action="store_true",
                         help="Require the authenticated human GitHub identity for authorized Claude commits; no login")
+    parser.add_argument("--with-task-workflow", action="store_true",
+                        help="Install explicit task states and source-bound local checks; no agent coordination")
     parser.add_argument("--allow-downgrade", action="store_true",
                         help="Apply even when the project has a newer AI-KIT version than this installer")
     return parser
@@ -1742,7 +1747,8 @@ def main(argv: list[str] | None = None) -> int:
                                       ("context7", args.with_context7),
                                       ("web-design", args.with_web_design),
                                       ("orchestration", args.with_orchestration),
-                                      ("uuid", args.with_uuid), ("claude-github", args.with_claude_github)) if flag]
+                                      ("uuid", args.with_uuid), ("claude-github", args.with_claude_github),
+                                      ("task-workflow", args.with_task_workflow)) if flag]
     mode, language, conventions, agents = args.mode, args.chat_language, args.conventions, args.agent
     preset = args.preset
     if args.interactive:

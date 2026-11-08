@@ -32,6 +32,7 @@ Defaults: English files and chat, owner Laravel conventions, explicit commits/pu
 | Language, Git authorization, verified facts | [Core](../template/ai-kit/CORE.md) |
 | User/project selections | [Settings](../template/ai-kit/settings.json) |
 | Work cycle, tests/review/docs/migrations | [Engineering](../template/ai-kit/ENGINEERING.md) |
+| Optional task state and source-bound checks | [Task workflow](../template/ai-kit/TASK-WORKFLOW.md), [implementation/verification](TASK_WORKFLOW.md) |
 | Security implementation checks | [Security baseline](../template/ai-kit/SECURITY.md) |
 | Optional security workflows | [Cloudflare](../template/ai-kit/SECURITY-AUDIT.md), [Strix](../template/ai-kit/STRIX.md) |
 | Container design, maximum cleanup and host reclamation | [Containers](../template/ai-kit/CONTAINERS.md) |

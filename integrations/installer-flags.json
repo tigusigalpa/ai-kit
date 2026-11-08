@@ -195,6 +195,13 @@
       "help": "Require the authenticated human GitHub identity for authorized Claude commits; no login"
     },
     {
+      "option": "--with-task-workflow",
+      "value": "switch",
+      "setting": "task_workflow",
+      "fresh_default": false,
+      "help": "Install explicit task states and source-bound local checks; no agent coordination"
+    },
+    {
       "option": "--allow-downgrade",
       "value": "switch",
       "help": "Apply even when the project has a newer AI-KIT version than this installer"

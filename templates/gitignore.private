@@ -14,6 +14,7 @@
 /ai-kit/
 /ai-kit/.memory/
 /ai-kit/.orchestration/
+/ai-kit/.tasks/
 /.ai-kit-install.lock
 /.agents/
 /.claude/

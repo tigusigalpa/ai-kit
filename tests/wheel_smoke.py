@@ -54,10 +54,11 @@ def main(argv: list[str] | None = None) -> int:
              + repr(check_distribution.PROJECT_NAME) + ") == " + repr(version)])
         run([aikit, "--version"])
         run([aikit, "route", "implement a feature"])
-        for module in ("learning", "adaptive", "benchmark", "memory", "orchestrate"):
+        for module in ("learning", "adaptive", "benchmark", "memory", "orchestrate", "task_workflow", "task_snapshot"):
             run([python, "-c", "from aikit.scripts import " + module])
         run([aikit, "benchmark", "--help"])
         run([aikit, "check"])
+        run([python, Path(__file__).with_name("task_smoke.py")])
         # Exercise the packaged offline dialogue pipeline, not only dispatcher help.
         workspace = root / "private memory"
         for name in ("chatgpt", "openrouter"):
@@ -77,7 +78,7 @@ def main(argv: list[str] | None = None) -> int:
         run([aikit, "adapters", "report", "--project", project])
         run([aikit, "context", "select", project])
         audit_project = root / "audit project"
-        run([aikit, "install", audit_project, "--with-security-audit", "--with-strix", "--with-context7", "--with-web-design", "--with-orchestration", "--agent", "codex",
+        run([aikit, "install", audit_project, "--with-security-audit", "--with-strix", "--with-context7", "--with-web-design", "--with-orchestration", "--with-task-workflow", "--agent", "codex",
              "--agent", "claude", "--agent", "devin", "--with-uuid", "--with-claude-github", "--apply", "--check"])
         for relative in ("ai-kit/UUID.md", "ai-kit/CLAUDE-GITHUB.md", ".devin/rules/ai-kit.md",
                          "ai-kit/stacks/JAVASCRIPT.md", ".claude/skills/javascript-work/SKILL.md"):

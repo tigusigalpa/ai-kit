@@ -55,6 +55,7 @@ Opt-in flags add machinery beyond the standard entries; accepted choices persist
 | Data guards | --with-data-guards | Claude Code ask rules for rm -rf, git reset --hard, git clean, Docker prune/volume removal, and migrations of detected Laravel/Moodle modules (integrations/claude-settings.data-ask.json) | Command-prefix confirmation, not a security boundary; requires the claude selection |
 | Native settings | --with-native-settings | Claude allow/secret rules and managed secret blocks in selected client ignores | Secret list plus detected stack additions; shell operators are not allowed; settings ownership below |
 | Scoped rules | --with-scoped-rules | One path-scoped rule per module with stack profiles, pointing to its profiles and recorded commands | Generated managed files: rerun the installer after project.json changes; edited files become conflicts |
+| Task workflow | --with-task-workflow | Short TASK-WORKFLOW.md contract, preserved task.example.json and local task CLI opt-in | Independent of presets; explicit checks/manual acceptance; private history; no scheduling or agent coordination |
 | Security audit | --with-security-audit | Explicit-only skill, pinned Cloudflare method and validators | [Contract](SECURITY-AUDIT.md); files only |
 | Strix | --with-strix | Explicit-only skill, nine pinned upstream skills and license/provenance | [Contract](STRIX.md); no runtime installation or scan |
 | Context7 | --with-context7 | Optional context7-docs skill, source/Claude copies | [Contract](CONTEXT7.md); MCP setup/authentication separate |

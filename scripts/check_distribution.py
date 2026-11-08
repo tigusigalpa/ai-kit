@@ -19,14 +19,15 @@ LICENSES = ("LICENSE", "template/ai-kit/vendor/security-audit/LICENSE",
             "template/ai-kit/vendor/strix/LICENSE")
 LOCAL_FILES = {"AGENTS.md", "PROJECT_CONTEXT.md", "WIKI.md", "CLAUDE.local.md"}
 PRIVATE_PARTS = {".git", ".aws", ".codex", ".claude", ".secrets", ".metrics", ".memory",
-                 ".upstream-cache", ".design", ".orchestration", ".private", "__pycache__"}
+                 ".upstream-cache", ".design", ".orchestration", ".tasks", ".private", "__pycache__"}
 REQUIRED = {"VERSION", "LICENSE", "aikit_cli.py", "scripts/install.py", "scripts/check_distribution.py",
             "template/AGENTS.md", "template/PROJECT_CONTEXT.md", "template/WIKI.md",
             "template/ai-kit/settings.json", "docs/PYPI_DESCRIPTION.md", "docs/PYPI.md",
             "docker/pypi-requirements.txt", ".github/workflows/publish-pypi.yml", "tests/build_distribution.py",
             "tests/test_pypi_events.py", "scripts/orchestrate.py", "template/ai-kit/ORCHESTRATION.md",
             "template/ai-kit/orchestration.json", "integrations/codex-agents/aikit_worker.toml",
-            "scripts/flags.py", "integrations/installer-flags.json", "scripts/mcp_report.py",
+            "scripts/task_workflow.py", "scripts/task_snapshot.py", "tests/task_smoke.py", "template/ai-kit/TASK-WORKFLOW.md",
+            "template/ai-kit/task.example.json", "scripts/flags.py", "integrations/installer-flags.json", "scripts/mcp_report.py",
             "template/ai-kit/UUID.md", "template/ai-kit/CLAUDE-GITHUB.md", "template/ai-kit/stacks/JAVASCRIPT.md",
             "template/.agents/skills/javascript-work/SKILL.md", "integrations/ai-kit-devin.md", *LICENSES}
 

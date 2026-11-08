@@ -274,7 +274,7 @@ def link_warnings(target: Path) -> list[str]:
     excluded = {".git", ".upstream-cache", "node_modules", "vendor", ".venv", "venv", "env", "__pycache__",
                 ".tox", ".nox", "build", "dist", "target", "site-packages", ".mypy_cache", ".pytest_cache"}
     # Private runtime data stays out of reports: its text may quote dialogues or task inputs.
-    private = {".metrics", ".memory", ".design", ".orchestration", ".upstream-cache"}
+    private = {".metrics", ".memory", ".design", ".orchestration", ".tasks", ".upstream-cache"}
     for directory, dirs, files in os.walk(target, followlinks=False):
         dirs[:] = [d for d in dirs if d not in excluded and not install.is_link(Path(directory) / d)]
         if Path(directory) == target / "ai-kit":

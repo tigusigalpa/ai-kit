@@ -1,7 +1,10 @@
 # AI-KIT changelog
 
-## Unreleased
+## v1.7.0 (2026-11-08)
 
+- Prepare v1.7.0; [release verification and publication status](docs/V1_7_0.md) distinguishes local/hosted checks, Docker Hub publication and owner-approved PyPI upload. Older tags remain unchanged.
+- Add opt-in `--with-task-workflow` and local `aikit task create|revise|status|transition|check|accept`: explicit task definitions/acceptance criteria, durable states, and check receipts bound to task revision/cycle plus Git/index/working-tree fingerprints. Guard review/acceptance against missing, failed or stale evidence; retain private history through updates and exclude it from distributions. Agent coordination and model execution remain separate. [Walkthrough](README.md#optional-task-workflow-requirements-states-and-checks-tied-to-code), [contract](docs/TASK_WORKFLOW.md).
+- Validate the task module with both 483-test suites (Windows: 12 skips; packaged Linux: three), Python 3.10 grammar, isolated archives/Twine, fresh wheel CLI smoke, published-1.6.0 upgrade preservation and Docker smoke. Refresh local `ai-kit:dev`; its 327 packaged files match the tested source/wheel. Dedicated build resources were retired. Verification-only documentation keeps the prepared artifacts with their earlier documentation snapshot; registry publication remains separate. [Evidence and limits](docs/TASK_WORKFLOW.md#verification).
 - Document read-only current-folder installation/version checks next to the README update walkthrough, including `installed_version` versus `bundle_version`, missing/invalid state and offline comparison semantics. Descriptive documentation only; existing published wheel/image artifacts retain their earlier documentation snapshot.
 - Expand the README's [update walkthrough](README.md#update-ai-kit) with separate package/current-project steps, a settings-preserving upgrade and matched preview/apply commands for Russian chat, Codex, Claude, Devin (Windsurf), strict protections and optional workflows. Explain selection replacement, opt-ins, conflicts and installation-only checks. Descriptive documentation only; the published wheel/image retain their earlier documentation snapshot.
 
