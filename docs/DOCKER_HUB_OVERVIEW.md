@@ -6,7 +6,7 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Release image:** `tigusigalpa/ai-kit:1.7.0`
+**Current published image:** `tigusigalpa/ai-kit:1.7.0`
 
 **New in v1.7.0:** an optional local task workflow: requirements and acceptance criteria, durable states, source-bound check receipts, explicit approval and stale-result detection. Automatic agent coordination is separate. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md).
 
@@ -14,7 +14,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
 
-**PyPI:** the equivalent distribution is [ai-kit-python](https://pypi.org/project/ai-kit-python/). Version 1.7.0 uploads only after the owner approves the release workflow; see the release record for its verified registry status.
+**PyPI:** the equivalent [ai-kit-python](https://pypi.org/project/ai-kit-python/) 1.7.0 wheel has passed the release workflow checks and matches all 328 image source files. Upload awaits the owner's approval of the protected `pypi` environment. [Package status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md#pypi-publication-status).
 
 ## What AI-KIT provides
 
@@ -51,9 +51,17 @@ Automatic agent scheduling, retry/review loops, model execution and hosted-CI in
 
 ## Image verification
 
-Before release labeling, both Windows and packaged Linux suites completed 483 tests (12 and three platform/environment skips). Isolated archives, strict Twine, fresh offline wheel CLI, existing-1.6.0 project upgrade preservation and Docker smoke passed, including a complete synthetic task lifecycle on a Windows bind mount. The versioned image is rebuilt and checked from committed v1.7.0 source. [Final checks and publication identity](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md) distinguish those results from preparation.
+Published on 2026-11-08 from tagged commit `6796b6059b1f147660f73f04be3ec3a1821d6ef2`. All 32 PR checks succeeded across Linux, Windows and macOS. The final non-root image completed 483 Linux tests (three platform/distribution skips) and Docker smoke, including offline/read-only runtime, all modules, task CLI, preservation/reruns, build-context privacy and SIGTERM with/without init. A mismatched version build was refused. Isolated archives, strict Twine, fresh offline wheel CLI and a published-1.6.0 project upgrade also passed.
 
-No registry digest is claimed before anonymous read-back and immutable-pull checks. Old version tags remain intact and no `latest` tag is assigned. Disposable release resources are removed after testing; unrelated workloads and persistent data remain protected. Docker cache cleanup does not establish host RAM or physical-disk compaction.
+All 328 packaged files match committed source, the local wheel and the validated same-run release workflow wheel. Anonymous registry read-back matched the tested version/revision, platform, non-root user, exec entrypoint and layer diff IDs. An immutable pull passed version, kit and flag checks. [Release receipts and limits](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md).
+
+**Immutable digest:** `sha256:82d58b7d59df439d8dccd2fa084530b5d14698942552b5fb4b8de7af31cf98a2`
+
+```sh
+docker pull tigusigalpa/ai-kit@sha256:82d58b7d59df439d8dccd2fa084530b5d14698942552b5fb4b8de7af31cf98a2
+```
+
+Earlier tags remain intact and no `latest` tag is assigned. The dedicated release builder/cache, state volume and superseded test images were removed; unrelated workloads and persistent data were preserved. No host RAM/disk compaction was performed. These publication-only notes retain the tested image and wheel with their earlier documentation snapshot. Automatic coordination and real client/model/scanner trials remain separate.
 
 ## Pull and check the image
 
