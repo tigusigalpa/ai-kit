@@ -34,6 +34,26 @@ print(json.dumps({"schema": 1, "attempts": [a], "rework": 0, "escalations": 0}))
 
 
 class BenchmarkTests(unittest.TestCase):
+    def test_instruction_controls_reach_isolated_trials_and_resume_identity(self):
+        settings = self.root / "ai-kit/settings.json"
+        config = json.loads(settings.read_text(encoding="utf-8"))
+        config.update(model_switching_enabled=False, instruction_profile="minimal")
+        settings.write_text(json.dumps(config), encoding="utf-8")
+        plan = self.prepare()
+        self.assertEqual(plan["instruction_settings"],
+                         {"model_switching_enabled": False, "instruction_profile": "minimal"})
+        self.assertTrue(all(unit["route"] == self.pack["fixed"] for unit in plan["units"]))
+        benchmark.execute(plan)
+        run = self.root / plan["relative"]
+        unit = next(u for u in plan["units"] if u["arm"] == "kit-fixed")
+        workspace = run / unit["unit_id"] / "workspace"
+        self.assertNotIn("UPSTREAM.md", (workspace / "AGENTS.md").read_text(encoding="utf-8"))
+        self.assertEqual(install.load_instruction_settings(workspace), plan["instruction_settings"])
+        config["instruction_profile"] = "full"
+        settings.write_text(json.dumps(config), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "different plan"):
+            benchmark.execute(self.prepare())
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)

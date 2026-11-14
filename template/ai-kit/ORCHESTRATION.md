@@ -4,11 +4,15 @@ Load only for an explicitly requested delegation or external text task. Installa
 
 ## Native Codex helpers
 
+Apply [instruction controls](ENGINEERING.md#instruction-controls) first. With model_switching_enabled=false, managed helper files omit model/effort assignments; do not supply such overrides when spawning. Host defaults can still affect inheritance. Locally edited files require conflict review. Minimal does not introduce extra roles unless the requested task needs them. Installation changes neither the parent model nor its reasoning effort.
+
 The installer can add project-scoped aikit_explorer, aikit_worker and aikit_reviewer TOML files under .codex/agents/. Read/reconcile their model and effort against the actual Codex session's supported controls and account access before use. Model defaults derive from the canonical OpenAI provider catalogue; they are independent of offline router advice. Native helpers inherit their parent's provider, permissions and tool access. No root Codex configuration, credentials or MCP servers are changed.
 
 The main agent owns decomposition and final acceptance. Delegate only bounded, independent work when the user/host permits it and the expected benefit exceeds coordination cost. Pass paths, exact invariants, expected output and acceptance checks; return concise evidence and uncertain cases. Helpers do not delegate further or call paid APIs. Keep independent review distinct from self-review. Native helpers use the host's billing/limits: the OpenRouter ledger does not cap subscription or Codex usage.
 
 ## OpenRouter text executor
+
+A separately enabled, explicitly selected executor model remains usable with either instruction profile and switching setting. It does not replace the parent model or authorize automatic delegation. Requests propagate the instruction controls, keep the configured model and use no model fallback. Budget limits are execution safety boundaries and remain active in minimal.
 
 Use the installed `aikit orchestrate` CLI. `run PROJECT --task RELATIVE_JSON` previews without network or writes. `--apply` separately authorizes sending the selected text/instructions to OpenRouter. Enable orchestration.json, select a verified exact provider/model ID and set a dedicated API key in OPENROUTER_API_KEY. Never put credentials in chats, task files, configuration, reports or logs.
 

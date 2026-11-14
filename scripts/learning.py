@@ -209,6 +209,8 @@ def recommend(records: list[dict], incumbent: dict, *, stack: str, task_class: s
 def save_proposal(project: Path, proposal: dict, *, apply: bool = False) -> dict:
     """Freeze evidence and selection for a reviewed, explicitly restorable proposal."""
     project = metrics._target(project)
+    if not install.load_instruction_settings(project)["model_switching_enabled"]:
+        raise ValueError("AI-KIT model recommendations are disabled; no routing proposal saved")
     selection_path = install.safe_path(project, "ai-kit/router/selection.json")
     selection = selection_path.read_text(encoding="utf-8")
     payload = {"schema": 1, "selection_before": selection, "proposal": proposal,

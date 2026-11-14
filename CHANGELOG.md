@@ -1,6 +1,10 @@
 # AI-KIT changelog
 
-## Unreleased
+## v1.8.0 (2026-11-14)
+
+- Model/instruction verification: full Windows discovery passed (501 tests, 12 environment/platform skips); the final 11 control tests, kit validation, clean archives, strict Twine and offline wheel smoke passed. Final packaged resources match 333 reviewed source files. The initial Docker preflight was unavailable; release rebuild/publication progress is recorded in [v1.8.0](docs/V1_8_0.md). [Results and limits](docs/MODEL_INSTRUCTIONS.md#verification).
+
+- Add independent `model_switching_enabled` (legacy default true) and `instruction_profile` (full) settings, installer flags and observable effective controls. Disabled recommendations preserve user model/effort, suppress offline/adaptive proposals and omit managed Codex helper overrides; minimal removes unsolicited guidance while retaining project/security/quality constraints. Existing external execution remains explicitly configured and budgeted. [Audit, behavior and limits](docs/MODEL_INSTRUCTIONS.md); [usage](README.md#keep-your-chosen-model-and-select-instruction-depth). Tests cover all four combinations, persistence, native conflicts, architecture/security retention and unknown runtime telemetry. Implementation verification is recorded with the audit; release verification/publication is recorded separately in v1.8.0.
 
 - Retry repository CI/release Python setup up to three times with 20/40-second pauses and a final hard failure; preserve matrix/check names and human PyPI approval. Package the pinned local action and guard retry/failure/cancellation/resource boundaries. Hosted matrix and package validation passed; local Windows fixture timeout details remain recorded. [Contract and verification](docs/CI_PYTHON_RETRY.md).
 
@@ -78,22 +82,11 @@ CLI, packaging and image:
 
 ## v1.4.3 (2026-10-16)
 
-- Added a live PyPI version badge to README.
-- Added stable GitHub Release checks and owner-approved PyPI uploads, event/version/repository guards, future v* tags and manual validation. [Procedure](docs/PYPI.md#release-to-pypi-with-owner-approval). Archived v0.13.0 text intact.
-- Added fifteen event regression tests. Before labeling, 32 hosted checks and build-only verification passed, plus kit, 368 Linux tests (two skips), archive/privacy/Twine/offline wheel and Docker checks. [Verification](docs/V1_4_3.md).
-- Verified 1.4.3 CLI/archive/image identity, offline packaging, Docker smoke, 368 Linux tests and preserved private/team upgrades from v1.4.2.
-- Verified PyPI 1.4.3 publication, matching hosted hashes and fresh registry installation; [receipt](docs/V1_4_3.md#pypi-publication-and-read-back).
-- Published Docker Hub 1.4.3 with verified image/digest and refreshed README/Overview; [receipt](docs/V1_4_3.md#docker-hub-143).
+[Archived release entry](docs/history/v1.4.2-v1.4.3-changelog.md#v143-2026-10-16).
 
 ## v1.4.2 (2026-10-16)
 
-- Verified kit/archive/offline installation, 351 Linux tests (two skips), 23 Windows CLI/archive tests and Docker smoke. [Evidence](docs/V1_4_2.md).
-- Published `ai-kit-python` 1.4.2 with verified PyPI hashes and installation. Preserved v1.4.1 Git/Docker; [evidence](docs/V1_4_2.md).
-- Fixed quoted Twine wildcards for Windows CI.
-- Added PyPI metadata, a portable [description](docs/PYPI_DESCRIPTION.md), README guidance and a [release procedure](docs/PYPI.md). Wheel/sdist checks cover metadata, licenses, resources, private files, offline installation and publication identity. Manual Trusted Publishing defaults to validation, requires exact version/tag/repository, and gives OIDC only to upload jobs consuming tested artifacts. Required CI names stay unchanged.
-- Isolated builds inject synthetic private probes; archives exclude private drafts and credential filenames. Added tested `aikit --version`; published Docker 1.4.1 examples use its existing `--help`. Added a README Docker Hub badge.
-
-- Saved the complete [Docker Hub Overview](docs/DOCKER_HUB_OVERVIEW.md) for v1.4.1 and linked it from README/Docker docs. The [release checklist](CONTRIBUTING.md#docker-hub-releases) and continuity skill require updating it for every image release, with verified publication identity recorded after push. Exempted only this user-facing document from the size quota alongside README; instruction budgets remain unchanged, with regression coverage.
+[Archived release entry](docs/history/v1.4.2-v1.4.3-changelog.md#v142-2026-10-16).
 
 ## v1.4.1 (2026-10-15)
 

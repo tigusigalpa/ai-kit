@@ -36,6 +36,28 @@
       "help": "Git visibility of AI-KIT files: private keeps them local, team shares instructions"
     },
     {
+      "option": "--model-switching-enabled",
+      "value": "choice",
+      "choices": [
+        "true",
+        "false"
+      ],
+      "setting": "model_switching_enabled",
+      "fresh_default": true,
+      "help": "Enable/disable AI-KIT model recommendations and generated helper overrides; no host lock"
+    },
+    {
+      "option": "--instruction-profile",
+      "value": "choice",
+      "choices": [
+        "full",
+        "minimal"
+      ],
+      "setting": "instruction_profile",
+      "fresh_default": "full",
+      "help": "Select full guidance or task-relevant mandatory instructions; safety remains required"
+    },
+    {
       "option": "--chat-language",
       "value": "text",
       "setting": "chat_language",

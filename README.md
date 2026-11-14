@@ -16,9 +16,9 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 
 What changed in each release: [CHANGELOG](CHANGELOG.md).
 
-**v1.7.0:** optional task definitions, durable execution states and checks tied to the exact code version, with explicit acceptance and stale-result detection. [Release verification and publication status](docs/V1_7_0.md).
+**v1.8.0:** keep your selected model/effort, choose full or minimal instructions, and inspect effective settings. Existing defaults remain compatible. [Release verification and publication status](docs/V1_8_0.md).
 
-**Published and verified:** [GitHub Release v1.7.0](https://github.com/tigusigalpa/ai-kit/releases/tag/v1.7.0), [Docker Hub `tigusigalpa/ai-kit:1.7.0`](https://hub.docker.com/r/tigusigalpa/ai-kit) and owner-approved [PyPI `ai-kit-python 1.7.0`](https://pypi.org/project/ai-kit-python/1.7.0/) are available. An immutable image pull and fresh hashed PyPI installation passed; all 328 packaged source files match. [Checks, hashes and digest](docs/V1_7_0.md).
+**Release in progress:** GitHub, Docker Hub `tigusigalpa/ai-kit:1.8.0` and owner-approved PyPI `ai-kit-python 1.8.0` are being prepared and verified. [Current status](docs/V1_8_0.md). Previously verified [v1.7.0 artifacts](docs/V1_7_0.md) remain available.
 
 [Get AI-KIT](#get-ai-kit) · [Update AI-KIT](#update-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
 
@@ -55,11 +55,11 @@ aikit --version
 
 The PyPI package is **`ai-kit-python`**; the command it installs is **`aikit`**. Never run `pip install aikit`: that is not this project's package name. Without pipx, run `python -m pip install ai-kit-python` inside a virtual environment. On Windows, the [Windows guide](docs/guide/WINDOWS.md) covers PATH and interpreter problems.
 
-**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example the verified `1.7.0`:
+**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), the release target below is `1.8.0` (check its publication status above):
 
 ~~~sh
-docker pull tigusigalpa/ai-kit:1.7.0
-docker run --rm tigusigalpa/ai-kit:1.7.0 --version
+docker pull tigusigalpa/ai-kit:1.8.0
+docker run --rm tigusigalpa/ai-kit:1.8.0 --version
 ~~~
 
 Project mounts, preview/apply examples and the runtime contract are in [Run AI-KIT with Docker](docs/guide/DOCKER.md).
@@ -98,7 +98,7 @@ The JSON report includes these fields (example excerpt):
 ~~~json
 {
   "installed_version": "1.5.0",
-  "bundle_version": "1.7.0"
+  "bundle_version": "1.8.0"
 }
 ~~~
 
@@ -109,7 +109,7 @@ The JSON report includes these fields (example excerpt):
 | `errors` | Installation problems, such as missing/invalid installer state, invalid settings or missing managed files. Read these before treating the installation as healthy. |
 | `warnings` / `info` | Warnings and additional findings, including local changes and version comparisons. |
 
-In the example, the project records **1.5.0** while the CLI carries **1.7.0**: preview and apply a project update using step 2 below. If the project version is newer than the CLI, update the Python package first (step 1). Matching versions still require reviewing `errors` and `warnings` for installation health. To show only the CLI version, run `python -m aikit.aikit_cli --version`.
+In the example, the project records **1.5.0** while the CLI carries **1.8.0**: preview and apply a project update using step 2 below. If the project version is newer than the CLI, update the Python package first (step 1). Matching versions still require reviewing `errors` and `warnings` for installation health. To show only the CLI version, run `python -m aikit.aikit_cli --version`.
 
 **If installation cannot be confirmed:** `installed_version` stays `null` when the project version cannot be determined. Missing state produces `No installer state found; is AI-KIT installed in this project?`; invalid state produces an `Invalid installer state` error. This can mean AI-KIT was never initialized with the installer, was copied manually, or its state was lost or damaged. Review `errors` and the existing files before initializing or updating. Running `doctor .` without repair flags changes no project files.
 
@@ -181,6 +181,64 @@ For pipx, replace the `python -m aikit.aikit_cli` prefix with `aikit`; keep the 
 **Preservation and conflicts:** existing project documents and local adaptations follow the [upgrade rules](template/ai-kit/UPSTREAM.md#conflict-candidates). Review and merge reported candidates before using `--accept-local PATH` for a reviewed managed file. A failed post-apply doctor check does not roll back files already written. Omitting an enabled module flag later does not disable that module; deselection and removal need the [documented lifecycle](docs/guide/INSTALLER_FLAGS.md#optional-module-flags). An ordinary update without `--preset` preserves the saved preset-managed choices as well.
 
 For Docker, choose and pull an explicit new version tag and rerun the installer against the project mount; there is no `latest` image. [Full update and conflict guide](docs/guide/INSTALL.md#update-an-application-project) · [Windows troubleshooting](docs/guide/WINDOWS.md) · [Docker instructions](docs/guide/DOCKER.md).
+
+## Keep your chosen model and select instruction depth
+
+**Introduced in v1.8.0.** Version 1.7.0 predates these controls. Install the new CLI/package/image and update your project; check the [publication status](docs/V1_8_0.md) before selecting a registry artifact. AI-KIT does not technically switch or lock the model of an ordinary Codex/Claude chat. It can influence instructions, offline advice and explicitly configured helper tasks.
+
+Two independent keys in the project's **`ai-kit/settings.json`** control that influence:
+
+| Setting | Values | Default when absent | Effect |
+| --- | --- | --- | --- |
+| `model_switching_enabled` | JSON `true` / `false` | `true` | `true` retains existing conditional routing advice. `false` disables AI-KIT model/effort recommendations, including cheaper/weaker models for savings, and omits model/effort assignments in managed Codex helpers. It never changes the parent chat's settings. |
+| `instruction_profile` | `"full"` / `"minimal"` | `"full"` | `full` retains existing conditional instructions. `minimal` loads mandatory project and nested rules, architecture decisions, security, relevant stack rules and critical code-quality/check requirements, while skipping unsolicited upstream maintenance, optional workflows, extra roles and economic optimization. |
+
+For a difficult task on **Astra with High or Extra High**, select that model and effort yourself in the client, then use **`false` + `minimal`** to reduce optional AI-KIT guidance. Use **`false` + `full`** if you want the full project workflow while preserving your model choice. AI-KIT must not lower your effort, change other model settings, or suggest a weaker/cheaper model when recommendations are disabled. Availability and supported effort levels belong to the platform; see [OpenAI's model/effort controls](https://help.openai.com/en/articles/20001516-managing-usage-with-gpt-6-astra-in-work-and-codex).
+
+From the **application project's current folder**, preview then apply:
+
+```powershell
+aikit install . --agent codex --agent claude --model-switching-enabled false --instruction-profile minimal
+aikit install . --agent codex --agent claude --model-switching-enabled false --instruction-profile minimal --apply --check
+```
+
+Existing language, sharing mode, enabled extras and unrelated settings persist when omitted. Explicit `--agent` flags replace the selected client list; include all clients you want to keep. No client root configuration, model picker, reasoning effort, credentials or permissions are rewritten. A preview writes nothing; an apply with conflicts saves review candidates and leaves accepted files/settings unchanged. Reconcile local edits before claiming the new instructions are active. In particular, locally customized helpers are preserved as conflicts; unchanged managed helpers lose AI-KIT model/effort assignments when switching recommendations are disabled.
+
+For manual configuration, **merge these keys into the existing object**, retaining other project settings:
+
+```json
+{
+  "model_switching_enabled": false,
+  "instruction_profile": "minimal"
+}
+```
+
+Then rerun `aikit install .` to preview the generated entry/helper changes, followed by `aikit install . --apply --check`. The keys are validated strictly: booleans are JSON booleans, not strings. Saved choices survive subsequent upgrades, presets and `doctor --fix`; missing keys preserve legacy behavior. After applying, start a fresh client session or reload project instructions through the client's supported mechanism. AI-KIT cannot remove instructions already loaded into a conversation.
+
+| Combination | Behavior |
+| --- | --- |
+| `true` + `full` | Existing conditional workflows and offline routing recommendations. |
+| `false` + `full` | Full project guidance with model/effort selection advice disabled. |
+| `true` + `minimal` | Mandatory task context; a directly requested routing command may still recommend a model. No unsolicited economic review or extra roles. |
+| `false` + `minimal` | Mandatory task context; no model/effort switching advice or generated helper overrides. |
+
+`instruction_profile` is separate from installer **`--preset minimal`** (an extras bundle) and router **`--profile economy|balanced|quality`** (an optimization policy). Setting one never silently changes the others. Minimal retains Git authorization, secrets/data protections, MCP consent, Docker safety, enabled UUID/human-identity requirements, owner conventions, architecture and acceptance checks. Relevant explicitly requested workflows remain available with their safety boundaries; stored optional files are not automatically loaded merely because they exist.
+
+Inspect effective controls without running a model:
+
+```powershell
+aikit doctor .
+aikit context select . --path . --budget 32000
+aikit route "Investigate the failing integration" --project .
+```
+
+Installer previews, doctor, context selection and routing expose `instruction_settings`. With recommendations disabled, route reports `recommendations_enabled: false`, `model: null`, `effort: null` and `execution_confirmed: false`; adaptive recommendations and metrics routing proposals are suppressed. Bare `aikit route` also honors settings in the current project folder. For another project, pass `--project` explicitly. Context selection retains mandatory/nested rules and architectural decisions even over the byte budget.
+
+Doctor's `runtime.model` and `runtime.reasoning_effort` are **`null` with status `unavailable`**: an offline CLI cannot inspect the parent chat. Configured names, pins and helper defaults are not execution evidence. Inspect the client's actual model/effort display or platform telemetry when available. Existing `aikit orchestrate status .` receipts distinguish requested and provider-served models for those external calls; benchmark/metrics observations describe only their recorded execution. Missing effort telemetry stays unknown, and reasoning-token usage does not prove an effort setting.
+
+Limitations: these are instruction/configuration controls, not a host-enforced lock. Native client defaults, global/project instructions, host routing, platform policy and previously loaded text remain outside AI-KIT's control. Disabling recommendations prevents new Aider native model settings; existing user/Aider configuration is preserved and doctor flags it for review. Codex helpers without overrides leave model/effort resolution to the host, including its own defaults. A separately enabled OpenRouter executor or explicit benchmark fixed model remains usable for an authorized task; it never silently replaces the parent model, and budget/accounting protections remain active. With switching disabled, the benchmark's adaptive arm retains the pack's explicit fixed route.
+
+The [architecture audit and control boundaries](docs/MODEL_INSTRUCTIONS.md) explain which paths AI-KIT actually controls. No speed, quality or token-saving improvement is claimed without a separate measured trial.
 
 ## Defaults you should know
 

@@ -110,6 +110,12 @@ def main(argv: list[str] | None = None) -> int:
         run([aikit, "orchestrate", "status", audit_project])
         run([aikit, "context", "select", audit_project, "--workflow", "web-design"])
         run([aikit, "install", audit_project, "--apply", "--check"])
+        run([aikit, "install", audit_project, "--model-switching-enabled", "false",
+             "--instruction-profile", "minimal", "--apply", "--check"])
+        helper = (audit_project / ".codex/agents/aikit_worker.toml").read_text(encoding="utf-8")
+        if "model = " in helper or "model_reasoning_effort = " in helper:
+            raise RuntimeError("Wheel retained disabled AI-KIT helper model/effort overrides")
+        run([aikit, "route", "Analyze the change", "--project", audit_project])
     return 0
 
 

@@ -176,6 +176,15 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
         repeated = json.loads(docker([*runtime_arguments(image, project), "install", "/workspace", "--apply"]))
         if repeated["writes"]:
             raise RuntimeError("Repeated installation was not stable")
+        docker([*runtime_arguments(image, project), "install", "/workspace",
+                "--model-switching-enabled", "false", "--instruction-profile", "minimal", "--apply", "--check"])
+        route = json.loads(docker([*runtime_arguments(image, project, readonly=True),
+                                   "route", "Analyze the change", "--project", "/workspace"]))
+        if route["recommendations_enabled"] or route["model"] is not None or route["effort"] is not None:
+            raise RuntimeError("Image recommended a model/effort with advice disabled")
+        helper = (project / ".codex/agents/aikit_worker.toml").read_text(encoding="utf-8")
+        if "model = " in helper or "model_reasoning_effort = " in helper:
+            raise RuntimeError("Image retained disabled helper overrides")
         signal_smoke(image, project, init=True)
         signal_smoke(image, project, init=False)
         if source:

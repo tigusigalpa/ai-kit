@@ -6,6 +6,10 @@ AI-KIT installs a shared instruction layer into an application repository. It gi
 
 The `ai-kit-python` distribution exposes the `aikit` command. Python 3.10 or later is required; the runtime uses only the standard library. Git supports repository evidence and visibility checks. Application toolchains and AI clients are installed separately.
 
+Keep your chosen model and reasoning effort with `--model-switching-enabled false`, and select mandatory task-focused instructions with `--instruction-profile minimal`. The settings are independent; absent keys preserve legacy true/full behavior. Security, architecture and required checks remain active. These controls govern AI-KIT guidance and generated helper configuration; they do not enforce a platform model lock or change the parent chat's settings.
+
+Installer previews and `aikit doctor .` show effective controls. Unknown parent-session model/effort values remain unavailable rather than being inferred from configuration. See the [complete model/instruction guide](https://github.com/tigusigalpa/ai-kit#keep-your-chosen-model-and-select-instruction-depth).
+
 ## Install the CLI
 
 For an isolated command-line installation with pipx:

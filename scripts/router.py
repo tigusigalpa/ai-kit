@@ -281,6 +281,13 @@ def configure_plan(project: Path) -> dict:
     project = project.resolve()
     if not project.is_dir():
         raise ValueError("Target must be a directory")
+    controls = install.load_instruction_settings(project)
+    if not controls["model_switching_enabled"]:
+        return {"target": str(project), "actions": {"ai-kit/router/resolved.json": (json.dumps(
+                    {"schema": 1, "roles": {}, "recommendations_enabled": False}, indent=2) + "\n").encode()},
+                "conflicts": {}, "instruction_settings": controls,
+                "info": ["Model recommendations disabled: no native model/effort settings written. "
+                         "Existing Aider/user configuration is retained; review it in the host."]}
     base = project / "ai-kit" / "router"
     selection = load_selection(install.safe_path(project, "ai-kit/router/selection.json"))
     providers = load_providers(base / "providers")
@@ -307,7 +314,8 @@ def configure_plan(project: Path) -> dict:
     for name in sorted(providers):
         if providers[name].get("verification_status") == "pending":
             info.append(f"Provider {name} verification is pending; its roles are unresolved.")
-    return {"target": str(project), "actions": actions, "conflicts": conflicts, "info": info}
+    return {"target": str(project), "actions": actions, "conflicts": conflicts, "info": info,
+            "instruction_settings": controls}
 
 
 def apply_configure(plan: dict) -> bool:
@@ -367,12 +375,18 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "route":
             import adaptive
             import metrics
+            if args.project is None and (Path.cwd() / "ai-kit/settings.json").exists():
+                args.project = Path.cwd()
+            controls = install.load_instruction_settings(args.project, args.root)
+            if not controls["model_switching_enabled"]:
+                print(json.dumps(adaptive.recommend_route(args.task, {}, {}, instruction_settings=controls), indent=2))
+                return 0
             selection, providers = _selection_and_providers(args.project, args.root)
             config = adaptive.load_config(args.project, args.root)
             records = (metrics.read_records(args.project) if args.project is not None and
                        (args.mode or config["mode"]) == "adaptive" else [])
             print(json.dumps(adaptive.recommend_route(args.task, selection, providers,
-                                          config=config, records=records,
+                                          config=config, records=records, instruction_settings=controls,
                                           mode=args.mode, profile=args.profile, task_id=args.task_id,
                                           stack=args.stack, capabilities=args.capability, level=args.level,
                                           role=args.role, effort=args.effort, provider=args.provider,
@@ -386,7 +400,7 @@ def main(argv: list[str] | None = None) -> int:
         plan = configure_plan(args.project)
         print(json.dumps({"target": plan["target"], "preview": not args.apply,
                           "writes": sorted(plan["actions"]), "conflicts": sorted(plan["conflicts"]),
-                          "info": plan["info"]}, indent=2))
+                          "info": plan["info"], "instruction_settings": plan["instruction_settings"]}, indent=2))
         if args.apply:
             apply_configure(plan)
         return 2 if plan["conflicts"] else 0
