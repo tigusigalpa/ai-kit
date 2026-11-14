@@ -2,6 +2,8 @@
 
 ## v1.8.0 (2026-11-14)
 
+- Published GitHub Release and verified Docker Hub 1.8.0; 32 PR checks and 16 main jobs passed. Linux image: 501 tests, three skips; all 334 source files match the validated hosted wheel/image. Owner-approved PyPI 1.8.0 is published; public hashes and fresh hashed CLI installation passed. [Publication receipts](docs/V1_8_0.md).
+
 - Model/instruction verification: full Windows discovery passed (501 tests, 12 environment/platform skips); the final 11 control tests, kit validation, clean archives, strict Twine and offline wheel smoke passed. Final packaged resources match 333 reviewed source files. The initial Docker preflight was unavailable; release rebuild/publication progress is recorded in [v1.8.0](docs/V1_8_0.md). [Results and limits](docs/MODEL_INSTRUCTIONS.md#verification).
 
 - Add independent `model_switching_enabled` (legacy default true) and `instruction_profile` (full) settings, installer flags and observable effective controls. Disabled recommendations preserve user model/effort, suppress offline/adaptive proposals and omit managed Codex helper overrides; minimal removes unsolicited guidance while retaining project/security/quality constraints. Existing external execution remains explicitly configured and budgeted. [Audit, behavior and limits](docs/MODEL_INSTRUCTIONS.md); [usage](README.md#keep-your-chosen-model-and-select-instruction-depth). Tests cover all four combinations, persistence, native conflicts, architecture/security retention and unknown runtime telemetry. Implementation verification is recorded with the audit; release verification/publication is recorded separately in v1.8.0.

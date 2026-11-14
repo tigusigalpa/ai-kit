@@ -18,7 +18,7 @@ What changed in each release: [CHANGELOG](CHANGELOG.md).
 
 **v1.8.0:** keep your selected model/effort, choose full or minimal instructions, and inspect effective settings. Existing defaults remain compatible. [Release verification and publication status](docs/V1_8_0.md).
 
-**Release in progress:** GitHub, Docker Hub `tigusigalpa/ai-kit:1.8.0` and owner-approved PyPI `ai-kit-python 1.8.0` are being prepared and verified. [Current status](docs/V1_8_0.md). Previously verified [v1.7.0 artifacts](docs/V1_7_0.md) remain available.
+**Published and verified:** [GitHub Release v1.8.0](https://github.com/tigusigalpa/ai-kit/releases/tag/v1.8.0), [Docker Hub `tigusigalpa/ai-kit:1.8.0`](https://hub.docker.com/r/tigusigalpa/ai-kit) and owner-approved [PyPI `ai-kit-python 1.8.0`](https://pypi.org/project/ai-kit-python/1.8.0/) are available. Wheel/sdist and SHA256SUMS are attached to the release. An immutable image pull and fresh hashed PyPI installation passed; all 334 packaged source files match. [Checks, hashes and digest](docs/V1_8_0.md).
 
 [Get AI-KIT](#get-ai-kit) · [Update AI-KIT](#update-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
 
@@ -55,7 +55,7 @@ aikit --version
 
 The PyPI package is **`ai-kit-python`**; the command it installs is **`aikit`**. Never run `pip install aikit`: that is not this project's package name. Without pipx, run `python -m pip install ai-kit-python` inside a virtual environment. On Windows, the [Windows guide](docs/guide/WINDOWS.md) covers PATH and interpreter problems.
 
-**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), the release target below is `1.8.0` (check its publication status above):
+**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example the verified `1.8.0`:
 
 ~~~sh
 docker pull tigusigalpa/ai-kit:1.8.0

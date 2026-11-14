@@ -6,7 +6,7 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Release image:** `tigusigalpa/ai-kit:1.8.0` (publication in progress; see the release record below).
+**Current published image:** `tigusigalpa/ai-kit:1.8.0`
 
 **New in v1.8.0:** independent model-switching recommendation controls and full/minimal instruction profiles. Preserve your selected model and reasoning effort while retaining project, architecture, safety and critical quality requirements. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md).
 
@@ -14,7 +14,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
 
-**PyPI:** [ai-kit-python 1.8.0](https://pypi.org/project/ai-kit-python/1.8.0/) is prepared through GitHub Release checks and owner approval. Confirm availability in the [package publication record](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md#pypi-publication-status).
+**PyPI:** owner-approved [ai-kit-python 1.8.0](https://pypi.org/project/ai-kit-python/1.8.0/) is published. Public file hashes match the validated release artifacts, and all 334 source files match this image. A fresh hashed installation passed the new model/profile controls, unknown-runtime reporting, default/module preservation and actual task CLI lifecycle. [Package verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md#pypi-publication-status).
 
 ## What AI-KIT provides
 
@@ -50,7 +50,17 @@ AI-KIT installs instructions and supporting tools. Your coding client performs t
 
 ## Image verification
 
-Build, non-root/offline runtime checks, package/source equality and registry verification are in progress. Do not infer publication from a prepared tag. [Verified release status and eventual immutable digest](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md#docker-hub-publication).
+Published on 2026-11-14 from v1.8.0 at `b06486c7dfae52edf0540aad0b9002e926a64492`. All 32 release PR checks and 16 main checks passed. The packaged non-root Linux image completed 501 tests with three platform/distribution skips. Candidate and final Docker smoke covered offline/read-only startup, all modules, new model/profile flags, preservation/reruns, private build-context exclusions and SIGTERM with/without init. An incorrect version build was refused.
+
+All **334 packaged source files** match tagged source, the local wheel, the validated same-run release workflow wheel and the final image. Anonymous registry read-back matched the runtime configuration and layer identities; an immutable pull passed version, kit and installer-flag checks. [Complete verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md).
+
+**Immutable digest:** `sha256:ce75deea275bd8e202eb3963ffbea3bc60fc4d5e6973c036b52b6217171f607b`
+
+```sh
+docker pull tigusigalpa/ai-kit@sha256:ce75deea275bd8e202eb3963ffbea3bc60fc4d5e6973c036b52b6217171f607b
+```
+
+Earlier tags remain intact and no `latest` tag is assigned. The dedicated release builder/cache and superseded candidate were removed; final artifacts and unrelated data remain. No host RAM/disk compaction was performed. Publication-only documentation retains the tested image/wheel with their earlier documentation snapshot.
 
 Model/effort selection in the parent client, live client activation, paid API execution and performance trials remain separate. AI-KIT controls its instructions and generated configuration; it does not force a parent-session model lock.
 
