@@ -43,11 +43,12 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
         settings = install.read_json(install.safe_path(target, "ai-kit/settings.json"), {})
         install.validate_settings(settings)
         report["instruction_settings"] = install.instruction_settings(settings)
+        report["model_recommendation_policy"] = install.model_recommendation_policy(settings)
         report["runtime"] = {"model": None, "reasoning_effort": None, "source": None,
                              "status": "unavailable",
                              "note": "The offline CLI has no parent-session platform telemetry. "
                                      "Configuration and recommendations are not execution evidence."}
-        if not report["instruction_settings"]["model_switching_enabled"]:
+        if not install.helper_model_overrides_enabled(settings):
             for relative in [".aider.conf.yml", *(
                     ".codex/agents/" + p.name for p in (root / "integrations/codex-agents").glob("*.toml"))]:
                 path = install.safe_path(target, relative)

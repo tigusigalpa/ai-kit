@@ -54,3 +54,28 @@ Local checks on 2026-11-14:
 Hosted CI, Linux/macOS runtime tests, live Codex/Claude activation, actual model/effort telemetry and paid provider executions were not performed. Synthetic local tests establish behavior and preservation, not a performance improvement or a platform-enforced model lock.
 
 Release labeling, Docker availability and publication after these implementation checks are tracked separately in [v1.8.0](V1_8_0.md).
+
+## Conditional model exceptions
+
+Version 1.9.0 adds `model_switching_exceptions` to the existing settings and installer. Missing/empty retains legacy behavior. Entries select astra/fable/k3.1 families or exact custom model names/IDs; --protect-model appends without replacing saved entries. --preserve-model is an invocation-only route guard with no writes. The same shared policy guards route/adaptive, metrics proposals and explicit benchmark choices; Engineering owns the agent contract. Global switching off wins; protected or unknown current models suppress advice when exceptions are enabled. User declarations are recorded separately from actual runtime telemetry.
+
+Native Codex helper model/effort defaults are omitted whenever any exceptions are configured, because a static file cannot depend on the next parent session. Locally edited helpers retain conflict protection. Aider/native user configuration stays intact and is reported for review. One-call advice flags do not rewrite native configuration; incompatible fixed helpers must not be invoked for protected tasks. Explicit external executions remain separate and budgeted.
+
+Family syntax is a protection preference, not a new model availability/capability registry. Current naming examples were checked on 2026-11-14 against official [Astra model documentation](https://developers.openai.com/api/docs/models/gpt-6-astra), [Fable documentation](https://www.anthropic.com/claude/fable) and [Kimi model configuration](https://www.kimi.com/code/docs/en/kimi-code/models.html). [Codex helper inheritance](https://learn.chatgpt.com/docs/agent-configuration/subagents) also depends on host-wide defaults. Version-shaped family identifiers can be protected without asserting that such a version exists. No pricing, ranking or usage-speed inference selects the running model.
+
+Verification of this development change is recorded below separately from historical 1.8.0 release checks.
+
+### Development verification
+
+Checked locally on 2026-11-14:
+
+- Windows/Python 3.12.14: 12 new exception tests passed in 15.796 seconds; the 11 existing instruction-control tests passed in 13.160 seconds. They cover empty/missing defaults, independent profiles/global-off priority, family versus exact matching, unknown/declaration provenance, pins/effort/adaptive suppression, append/clear/idempotency, invocation-only zero project writes, native helper conflicts and unchanged user settings. The new benchmark regression additionally verifies protected fixed model/effort, settings propagation and resume identity.
+- Full packaged Linux/Python 3.13.16 discovery: **514 tests in 45.297 seconds**, successful with three platform/distribution skips. The full Windows suite was not repeated for this development change; targeted Windows and fresh-wheel checks above/below cover the new CLI paths.
+- Kit validation returned zero errors/warnings, including Git visibility; Python 3.10 grammar parsed 65 files. Native Python 3.10/macOS and hosted CI were not run for this unpublished change.
+- Clean isolated sdist-to-wheel resource/privacy checks, strict Twine and a fresh offline Windows wheel installation passed. Real packaged CLI smoke exercised family exceptions, persistent append, invocation-only preservation, disabled suggestions, helper overrides and existing modules.
+- The local linux/amd64 dev image passed offline/read-only smoke with a Windows project mount, all opt-in modules, new commands, preservation/reruns, build-context privacy and SIGTERM with/without init. All **335 package files** match the reviewed LF source snapshot, wheel and image; local maintainer files are absent. Image identity: `sha256:611dacc10e575048a3e2b44479a25e7066253b9b7dc8d2bda112f96bd74e6397`, revision `17be9723ece9fffb6d74499d7b327707f80b16e1-worktree-f0fc3ee4f3fc`. These result notes were appended afterward and are a later documentation snapshot.
+- The dedicated builder/cache/state volume were removed with zero remaining cache records (343.9 MB reported reclaimed). Dev image aliases remain available; published 1.8.0 images/tags were verified unchanged. No host RAM/disk compaction or registry publication occurred.
+
+These checks exercise local behavior with synthetic workers, not actual Astra/Fable/K3.1 execution, host-native client activation, effort telemetry or a platform model lock. Existing native/global defaults and loaded sessions remain subject to the documented inheritance/reload limitations.
+
+Release labeling and publication for conditional exceptions are tracked separately in [v1.9.0](V1_9_0.md).

@@ -185,6 +185,21 @@ def smoke(image: str, *, source: Path | None = None, builder: str | None = None)
         helper = (project / ".codex/agents/aikit_worker.toml").read_text(encoding="utf-8")
         if "model = " in helper or "model_reasoning_effort = " in helper:
             raise RuntimeError("Image retained disabled helper overrides")
+        docker([*runtime_arguments(image, project), "install", "/workspace", "--model-switching-enabled", "true",
+                "--model-switching-exceptions", "astra", "fable", "k3.1", "--apply", "--check"])
+        route = json.loads(docker([*runtime_arguments(image, project, readonly=True), "route", "Analyze",
+                                  "--project", "/workspace", "--current-model", "Astra"]))
+        if route["model_recommendation_policy"]["reason"] != "model_exception":
+            raise RuntimeError("Image ignored the selected model exception")
+        docker([*runtime_arguments(image, project), "install", "/workspace", "--protect-model",
+                "provider/custom-v1", "--apply", "--check"])
+        route = json.loads(docker([*runtime_arguments(image, project, readonly=True), "route", "Analyze",
+                                  "--project", "/workspace", "--preserve-model", "provider/new-model"]))
+        if route["model_recommendation_policy"]["reason"] != "explicit_preservation":
+            raise RuntimeError("Image ignored the invocation-only model exception")
+        helper = (project / ".codex/agents/aikit_worker.toml").read_text(encoding="utf-8")
+        if "model = " in helper or "model_reasoning_effort = " in helper:
+            raise RuntimeError("Image assigned helper overrides with exceptions enabled")
         signal_smoke(image, project, init=True)
         signal_smoke(image, project, init=False)
         if source:

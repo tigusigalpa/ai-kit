@@ -150,6 +150,7 @@ def select_context(target: Path, *, path: str = ".", budget: int = 32000,
     total = sum(item["bytes"] for item in selected)
     return {"selected": selected, "duplicates": duplicates, "modules": matching, "profiles": sorted(profiles),
             "workflow": workflow, "instruction_settings": controls,
+            "model_recommendation_policy": install.model_recommendation_policy(controls),
             "total_bytes": total, "budget_bytes": budget, "over_budget": total > budget,
             "selection_complete": bool(matching),
             "note": "Declared modules may still need bootstrap verification. Byte counts are not token counts. "

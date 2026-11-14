@@ -75,7 +75,9 @@ DEFAULT_AGENTS = ("codex",)
 # Installer options that persist a choice: argparse destination -> ai-kit/settings.json key.
 OPTION_SETTINGS = {"mode": "sharing_mode", "chat_language": "chat_language", "conventions": "conventions",
                    "docker_cleanup": "docker_cleanup", "model_switching_enabled": "model_switching_enabled",
-                   "instruction_profile": "instruction_profile"}
+                   "instruction_profile": "instruction_profile",
+                   "model_switching_exceptions": "model_switching_exceptions",
+                   "protect_model": "model_switching_exceptions"}
 CLAUDE_SETTINGS = ".claude/settings.json"
 CLAUDE_LOCAL_SETTINGS = ".claude/settings.local.json"
 GUARDS_SOURCE = "claude-settings.git-ask.json"
@@ -89,7 +91,21 @@ MODULE_PATH = re.compile(r"/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*/)*")
 UNSAFE_COMMAND = re.compile(r"[;&|<>`$()*\\\"'\r\n]")
 UPSTREAM_TEST_FILE = re.compile(r"\.test\.[cm]?[jt]s$")
 DOCKER_CLEANUP_MODES = ("maximum", "keep-cache")
-INSTRUCTION_DEFAULTS = {"model_switching_enabled": True, "instruction_profile": "full"}
+INSTRUCTION_DEFAULTS = {"model_switching_enabled": True, "instruction_profile": "full",
+                        "model_switching_exceptions": []}
+# Exact family/name syntax, not capability rankings or a catalogue of executable model IDs.
+MODEL_EXCEPTIONS = {
+    "astra": ({"openai", "chatgpt"}, r"(?:gpt-\d+(?:\.\d+)*-)?astra(?:-\d{4}-\d{2}-\d{2})?"),
+    "fable": ({"anthropic", "claude"}, r"(?:claude-)?fable(?:-\d+(?:[.-]\d+)*)?"),
+    "k3.1": ({"kimi", "moonshot", "moonshotai"}, r"(?:kimi-)?k3[.-]1(?:-pro)?(?:-highspeed)?"),
+}
+
+
+def model_name(value: str) -> str:
+    if (not isinstance(value, str) or not value.strip() or len(value) > 160 or
+            any(ord(c) < 32 or ord(c) == 127 for c in value)):
+        raise ValueError("Model must be a nonempty name/ID up to 160 characters without controls")
+    return value.strip()
 
 
 def instruction_settings(settings: dict) -> dict:
@@ -99,6 +115,15 @@ def instruction_settings(settings: dict) -> dict:
         raise ValueError("Settings model_switching_enabled must be a boolean")
     if result["instruction_profile"] not in ("full", "minimal"):
         raise ValueError("Settings instruction_profile must be full or minimal")
+    exceptions = result["model_switching_exceptions"]
+    if not isinstance(exceptions, list) or len(exceptions) > 32:
+        raise ValueError("Settings model_switching_exceptions must be a list of up to 32 names/IDs")
+    normalized = [model_name(v) for v in exceptions]
+    keys = [v.casefold() for v in normalized]
+    if "none" in keys or len(set(keys)) != len(keys):
+        raise ValueError("Model exceptions must be unique; use an empty list instead of none")
+    result["model_switching_exceptions"] = [v.casefold() if v.casefold() in MODEL_EXCEPTIONS else v
+                                             for v in normalized]
     return result
 
 
@@ -111,6 +136,54 @@ def load_instruction_settings(project: Path | None = None, root: Path = ROOT) ->
             raise ValueError("Refusing a linked project root")
         path = safe_path(project.resolve(), "ai-kit/settings.json")
     return instruction_settings(read_json(path, {}))
+
+
+def model_recommendation_policy(settings: dict, current_model: str | None = None, *,
+                                 preserve_model: bool = False) -> dict:
+    """Guard advice using explicit model intent, never infer the running platform model."""
+    controls = instruction_settings(settings)
+    if type(preserve_model) is not bool:
+        raise ValueError("preserve_model must be a boolean")
+    if current_model is not None:
+        current_model = model_name(current_model)
+    elif preserve_model:
+        raise ValueError("Declare the model to preserve")
+    matched = None
+    if current_model is not None:
+        name = re.sub(r"[ _]+", "-", current_model.strip().casefold())
+        provider, slash, model = name.partition("/")
+        for family in controls["model_switching_exceptions"]:
+            if family not in MODEL_EXCEPTIONS:
+                if current_model.casefold() == family.casefold():
+                    matched = family
+                    break
+                continue
+            providers, pattern = MODEL_EXCEPTIONS[family]
+            if (not slash or provider in providers) and re.fullmatch(pattern, model if slash else name):
+                matched = family
+                break
+    if not controls["model_switching_enabled"]:
+        reason = "switching_disabled"
+    elif preserve_model:
+        reason = "explicit_preservation"
+    elif matched:
+        reason = "model_exception"
+    elif controls["model_switching_exceptions"] and current_model is None:
+        reason = "current_model_unknown"
+    else:
+        reason = "no_matching_exception" if controls["model_switching_exceptions"] else "no_exceptions"
+    return {"recommendations_enabled": reason in {"no_exceptions", "no_matching_exception"},
+            "reason": reason, "matched_exception": matched, "declared_current_model": current_model,
+            "model_source": "user-declared" if current_model is not None else None,
+            "execution_verified": False, "scope": "invocation" if preserve_model else "project"}
+
+
+def helper_model_overrides_enabled(settings: dict) -> bool:
+    """Static helper files cannot follow the active parent model between sessions."""
+    controls = instruction_settings(settings)
+    return controls["model_switching_enabled"] and not controls["model_switching_exceptions"]
+
+
 # tr strips CR so a CRLF checkout of the hook script still runs under sh.
 SESSION_START_COMMAND = "tr -d '\\r' < \"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\" | sh"
 # Entries written by v0.3.6-v0.4.6, which managed the whole client settings file.
@@ -1169,7 +1242,9 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                extras: list[str] | None = None, preset: str | None = None,
                docker_cleanup: str | None = None, allow_downgrade: bool = False,
                model_switching_enabled: bool | None = None,
-               instruction_profile: str | None = None) -> dict:
+               instruction_profile: str | None = None,
+               model_switching_exceptions: list[str] | None = None,
+               protect_models: list[str] | None = None) -> dict:
     if docker_cleanup is not None and docker_cleanup not in DOCKER_CLEANUP_MODES:
         raise ValueError("Docker cleanup must be one of: " + ", ".join(DOCKER_CLEANUP_MODES))
     if preset is not None and preset not in PRESETS:
@@ -1222,10 +1297,19 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             settings[key] = True
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
     for key, value in (("model_switching_enabled", model_switching_enabled),
-                       ("instruction_profile", instruction_profile)):
+                       ("instruction_profile", instruction_profile),
+                       ("model_switching_exceptions", model_switching_exceptions)):
         if value is not None:
             settings[key] = value
     settings.update(instruction_settings(settings))
+    if protect_models is not None:
+        if not isinstance(protect_models, list):
+            raise ValueError("protect_models must be a list")
+        for value in protect_models:
+            value = model_name(value)
+            if value.casefold() not in {v.casefold() for v in settings["model_switching_exceptions"]}:
+                settings["model_switching_exceptions"].append(value)
+        settings.update(instruction_settings(settings))
     if docker_cleanup is not None:
         settings["docker_cleanup"] = docker_cleanup
     validate_settings(settings)
@@ -1269,15 +1353,16 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
     if "orchestration" in enabled_extras:
         incoming["AGENTS.md"] += b"\nFor explicitly requested orchestration read [the optional contract](ai-kit/ORCHESTRATION.md).\n"
         if "codex" in agents:
-            catalogue = read_json(root / "template/ai-kit/router/providers/openai.json", {})
+            native_overrides = helper_model_overrides_enabled(settings)
+            catalogue = read_json(root / "template/ai-kit/router/providers/openai.json", {}) if native_overrides else {}
             for source in sorted((root / "integrations/codex-agents").glob("*.toml")):
                 if is_link(source):
                     raise ValueError("Linked helper source")
                 text = source.read_text(encoding="utf-8")
-                if not settings["model_switching_enabled"]:
+                if not native_overrides:
                     text = "\n".join(line for line in text.splitlines()
                                      if not line.startswith(("model =", "model_reasoning_effort ="))) + "\n"
-                for role in ("cheap", "work"):
+                for role in (("cheap", "work") if native_overrides else ()):
                     spec = catalogue["roles"][role]
                     for field in ("model", "effort"):
                         value = spec[field]
@@ -1685,6 +1770,10 @@ def build_parser(root: Path = ROOT) -> argparse.ArgumentParser:
                         help="Enable/disable AI-KIT model recommendations and generated helper overrides; no host lock")
     parser.add_argument("--instruction-profile", choices=["full", "minimal"],
                         help="Select full guidance or task-relevant mandatory instructions; safety remains required")
+    parser.add_argument("--model-switching-exceptions", nargs="+",
+                        help="Set protected families (astra, fable, k3.1) or exact model IDs; none alone clears")
+    parser.add_argument("--protect-model", action="append",
+                        help="Append a protected family/name/ID without replacing saved exceptions; repeatable")
     parser.add_argument("--chat-language",
                         help="Language for chat replies and plans; project files stay English")
     parser.add_argument("--conventions", choices=["owner", "standard"],
@@ -1761,6 +1850,8 @@ def flag_schema(root: Path = ROOT) -> dict:
             entry["required"] = True
         if isinstance(action, argparse._AppendAction):
             entry["repeatable"] = True
+        if action.nargs == "+":
+            entry["multiple_values"] = True
         if name in excludes:
             entry["excludes"] = excludes[name]
         setting = OPTION_SETTINGS.get(action.dest) or extra_keys.get(name)
@@ -1807,13 +1898,19 @@ def main(argv: list[str] | None = None) -> int:
         extras = sorted(set(extras) | set(selections["extras"]))
         preset = preset or selections["preset"]
     try:
+        exceptions = args.model_switching_exceptions
+        if exceptions is not None and "none" in exceptions:
+            if exceptions != ["none"]:
+                raise ValueError("Use --model-switching-exceptions none alone to clear the list")
+            exceptions = []
         plan = build_plan(args.target, mode=mode, language=language,
                           conventions=conventions, agents=agents, accept_local=args.accept_local,
                           extras=extras, preset=preset, docker_cleanup=args.docker_cleanup,
                           allow_downgrade=args.allow_downgrade,
                           model_switching_enabled=(None if args.model_switching_enabled is None else
                                                    args.model_switching_enabled == "true"),
-                          instruction_profile=args.instruction_profile)
+                          instruction_profile=args.instruction_profile,
+                          model_switching_exceptions=exceptions, protect_models=args.protect_model)
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
                           "preset": plan["preset"],
                           "instruction_settings": plan["instruction_settings"],

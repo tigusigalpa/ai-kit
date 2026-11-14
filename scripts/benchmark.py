@@ -204,7 +204,7 @@ def prepare(project: Path, pack_file: Path, *, git: str | None = None) -> dict:
                 route = dict(pack["fixed"])
                 if arm == "kit-adaptive":
                     recommendation = adaptive.recommend_route(task["prompt"], selection, providers, config=config,
-                        instruction_settings=controls,
+                        instruction_settings=controls, current_model=pack["fixed"]["model"],
                         records=records, mode="adaptive", task_id=task["task_id"], stack=task["stack"],
                         operation=task["operation"], risks=tuple(task["risks"]), capabilities=task["capabilities"])
                     if recommendation["resolved"]:

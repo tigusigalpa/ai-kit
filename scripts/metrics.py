@@ -310,6 +310,7 @@ def main(argv: list[str] | None = None) -> int:
     propose_parser.add_argument("--capability", action="append", default=[])
     propose_parser.add_argument("--minimum", type=int, default=20)
     propose_parser.add_argument("--quality-floor", type=float, default=0.8)
+    propose_parser.add_argument("--current-model", help="User-declared current model for exception checks; not telemetry")
     propose_parser.add_argument("--apply", action="store_true")
     restore_parser = sub.add_parser("restore", help="Explicitly restore a proposal's prior selection with backup")
     restore_parser.add_argument("project", type=Path)
@@ -331,7 +332,8 @@ def main(argv: list[str] | None = None) -> int:
             elif args.command == "restore":
                 result = learning.restore_selection(args.project, args.proposal, apply=args.apply)
             else:
-                if not install.load_instruction_settings(args.project)["model_switching_enabled"]:
+                if not install.model_recommendation_policy(install.load_instruction_settings(args.project),
+                                                          args.current_model)["recommendations_enabled"]:
                     raise ValueError("AI-KIT model recommendations are disabled; no routing proposal generated")
                 proposal = {"stack": args.stack, "task_class": args.task_class, "level": args.level,
                             "capabilities": args.capability, "minimum": args.minimum,
@@ -339,7 +341,8 @@ def main(argv: list[str] | None = None) -> int:
                             "candidates": learning.candidates(read_records(args.project), stack=args.stack,
                                 task_class=args.task_class, level=args.level, capabilities=args.capability,
                                 minimum=args.minimum, quality_floor=args.quality_floor)}
-                result = learning.save_proposal(args.project, proposal, apply=args.apply)
+                result = learning.save_proposal(args.project, proposal, apply=args.apply,
+                                                current_model=args.current_model)
         else:
             result = summarize(read_records(args.project))
         print(json.dumps(result, indent=2, allow_nan=False))

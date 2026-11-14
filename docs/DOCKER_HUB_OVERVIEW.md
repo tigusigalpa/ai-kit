@@ -6,15 +6,15 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current published image:** `tigusigalpa/ai-kit:1.8.0`
+**Release image:** `tigusigalpa/ai-kit:1.9.0` (publication in progress; see the release record).
 
-**New in v1.8.0:** independent model-switching recommendation controls and full/minimal instruction profiles. Preserve your selected model and reasoning effort while retaining project, architecture, safety and critical quality requirements. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md).
+**New in v1.9.0:** model-family/exact-ID exceptions, quick persistent preservation and invocation-only routing guards. Keep the chosen model and reasoning effort, including helper inheritance, without globally disabling all recommendations. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md).
 
 **Published platform:** `linux/amd64`
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
 
-**PyPI:** owner-approved [ai-kit-python 1.8.0](https://pypi.org/project/ai-kit-python/1.8.0/) is published. Public file hashes match the validated release artifacts, and all 334 source files match this image. A fresh hashed installation passed the new model/profile controls, unknown-runtime reporting, default/module preservation and actual task CLI lifecycle. [Package verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md#pypi-publication-status).
+**Python package:** `ai-kit-python 1.9.0` is prepared through GitHub Release checks and owner approval. Confirm availability in the [package publication record](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md#pypi-publication-status).
 
 ## What AI-KIT provides
 
@@ -39,59 +39,50 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed in v1.8.0
+## What changed in v1.9.0
 
-- Independent persisted `model_switching_enabled` and `instruction_profile` settings, with matching installer flags and legacy defaults true/full.
-- Disabled model advice suppresses offline/adaptive routing and model-selection proposals, omits managed Codex helper model/effort assignments and preserves custom configuration through conflicts. Existing Aider/user configuration is retained.
-- Minimal instructions keep mandatory project and nested constraints, architecture decisions, security and critical checks; optional files remain available for directly relevant requested workflows.
-- Installer previews, doctor, context selection and routing show effective controls. The offline CLI reports parent model/effort unavailable instead of inferring them from configuration.
-- Explicitly configured OpenRouter execution remains opt-in and budgeted with no automatic fallback. Benchmark isolated projects inherit the controls; changing profiles cannot silently resume a previous experiment.
-- Repository CI retries temporary Python setup failures with bounded attempts and final failure, while preserving required checks and the owner's PyPI approval.
+- Opt-in `model_switching_exceptions`: protect astra, fable, k3.1 families or exact model IDs with general recommendations still enabled. Missing/empty retains previous behavior; global switching off takes precedence.
+- `install --protect-model MODEL` appends a persistent exception without replacing saved entries. `route --preserve-model MODEL` suppresses advice for one call and writes nothing.
+- `route --current-model MODEL` supplies declared intent, not execution telemetry. Protected or unknown current models suppress advice, effort candidates, adaptive model selection and routing proposals. Independent full/minimal profiles retain mandatory safety and quality rules.
+- Managed Codex helpers omit static model/effort assignments while exceptions are enabled; customized helper/native configuration retains conflict/review protection. Static Aider mappings are not generated in this mode.
+- Explicit external execution remains separate and budgeted. Benchmark fixed model/effort remain intact for protected choices, and changed exceptions cannot resume an incomparable run.
 
 ## Image verification
 
-Published on 2026-11-14 from v1.8.0 at `b06486c7dfae52edf0540aad0b9002e926a64492`. All 32 release PR checks and 16 main checks passed. The packaged non-root Linux image completed 501 tests with three platform/distribution skips. Candidate and final Docker smoke covered offline/read-only startup, all modules, new model/profile flags, preservation/reruns, private build-context exclusions and SIGTERM with/without init. An incorrect version build was refused.
+Build, runtime checks, package equality and registry verification are in progress. [Release verification and eventual immutable digest](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md#docker-hub-publication).
 
-All **334 packaged source files** match tagged source, the local wheel, the validated same-run release workflow wheel and the final image. Anonymous registry read-back matched the runtime configuration and layer identities; an immutable pull passed version, kit and installer-flag checks. [Complete verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md).
+These are instruction/configuration controls, not a platform model lock. Native/global defaults, already loaded sessions and actual model availability remain the host's responsibility. Live client/model/scanner execution and performance trials are separate.
 
-**Immutable digest:** `sha256:ce75deea275bd8e202eb3963ffbea3bc60fc4d5e6973c036b52b6217171f607b`
+## Quick persistent exception
 
-```sh
-docker pull tigusigalpa/ai-kit@sha256:ce75deea275bd8e202eb3963ffbea3bc60fc4d5e6973c036b52b6217171f607b
-```
-
-Earlier tags remain intact and no `latest` tag is assigned. The dedicated release builder/cache and superseded candidate were removed; final artifacts and unrelated data remain. No host RAM/disk compaction was performed. Publication-only documentation retains the tested image/wheel with their earlier documentation snapshot.
-
-Model/effort selection in the parent client, live client activation, paid API execution and performance trials remain separate. AI-KIT controls its instructions and generated configuration; it does not force a parent-session model lock.
-
-## Keep your selected model with minimal guidance
-
-After choosing the model and effort in your client, preview from the application folder (PowerShell):
+From an application folder in PowerShell, preview adding a specific model while preserving existing exceptions and clients:
 
 ```powershell
-docker run --rm --init --network none --read-only --tmpfs /tmp:rw,nosuid,nodev,size=256m --mount "type=bind,source=$($PWD.Path),target=/workspace" tigusigalpa/ai-kit:1.8.0 install /workspace --agent codex --agent claude --model-switching-enabled false --instruction-profile minimal
+docker run --rm --init --network none --read-only --tmpfs /tmp:rw,nosuid,nodev,size=256m --mount "type=bind,source=$($PWD.Path),target=/workspace" tigusigalpa/ai-kit:1.9.0 install /workspace --protect-model "provider/custom-model-v1"
 ```
 
-Repeat with `--apply --check` to update the mounted project. Existing local changes use preservation/conflict rules. Start a fresh client session afterward; AI-KIT cannot remove previously loaded instructions. `doctor /workspace` reports effective controls and unavailable parent-session telemetry. See the [complete model/instruction guide](https://github.com/tigusigalpa/ai-kit#keep-your-chosen-model-and-select-instruction-depth).
+Replace the example with your model name/ID; repeat with `--apply --check` to save and update managed helpers. Reload the client. To enable the three built-in families, use `--model-switching-enabled true --model-switching-exceptions astra fable k3.1`. `--model-switching-exceptions none` clears the list deliberately.
+
+For a read-only one-call advice guard, use `route "Investigate the regression" --project /workspace --preserve-model "provider/custom-model-v1"`. This does not change another chat or rewrite native helper settings. For conditional advice, --current-model declares the selected model separately from a recommendation's --model. [Full guide and limitations](https://github.com/tigusigalpa/ai-kit#conditional-exceptions-and-quick-model-preservation).
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.8.0
+docker pull tigusigalpa/ai-kit:1.9.0
 ```
 
 Check the CLI version and help:
 
 ```sh
-docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.8.0 --version
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.9.0 --version
 
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.8.0 --help
+  tigusigalpa/ai-kit:1.9.0 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -104,7 +95,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.8.0"
+image="tigusigalpa/ai-kit:1.9.0"
 
 runtime=(
   --rm --init
@@ -161,7 +152,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.8.0'
+$image = 'tigusigalpa/ai-kit:1.9.0'
 
 $runtime = @(
     '--rm', '--init',

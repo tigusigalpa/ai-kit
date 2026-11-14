@@ -1,5 +1,11 @@
 # AI-KIT changelog
 
+## v1.9.0 (2026-11-14)
+
+- Release verification/publication: [v1.9.0](docs/V1_9_0.md). Earlier artifacts remain intact.
+
+- Add opt-in model-family/exact-ID exceptions, persistent `--protect-model` additions and invocation-only `route --preserve-model`. Preserve model/effort and helper inheritance; guard unknown selections, adaptive advice, proposals and benchmark trials. Empty defaults retain compatibility. [Usage](README.md#conditional-exceptions-and-quick-model-preservation), [audit/checks](docs/MODEL_INSTRUCTIONS.md#conditional-model-exceptions).
+
 ## v1.8.0 (2026-11-14)
 
 - Published GitHub Release and verified Docker Hub 1.8.0; 32 PR checks and 16 main jobs passed. Linux image: 501 tests, three skips; all 334 source files match the validated hosted wheel/image. Owner-approved PyPI 1.8.0 is published; public hashes and fresh hashed CLI installation passed. [Publication receipts](docs/V1_8_0.md).
