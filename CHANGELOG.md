@@ -2,7 +2,7 @@
 
 ## v1.9.0 (2026-11-14)
 
-- Release verification/publication: [v1.9.0](docs/V1_9_0.md). Earlier artifacts remain intact.
+- Published GitHub, Docker Hub and owner-approved PyPI; CI, public hashes and fresh installation passed. [Receipts](docs/V1_9_0.md).
 
 - Add opt-in model-family/exact-ID exceptions, persistent `--protect-model` additions and invocation-only `route --preserve-model`. Preserve model/effort and helper inheritance; guard unknown selections, adaptive advice, proposals and benchmark trials. Empty defaults retain compatibility. [Usage](README.md#conditional-exceptions-and-quick-model-preservation), [audit/checks](docs/MODEL_INSTRUCTIONS.md#conditional-model-exceptions).
 
