@@ -116,6 +116,14 @@ def main(argv: list[str] | None = None) -> int:
         if "model = " in helper or "model_reasoning_effort = " in helper:
             raise RuntimeError("Wheel retained disabled AI-KIT helper model/effort overrides")
         run([aikit, "route", "Analyze the change", "--project", audit_project])
+        run([aikit, "install", audit_project, "--model-switching-enabled", "true",
+             "--model-switching-exceptions", "astra", "fable", "k3.1", "--apply", "--check"])
+        run([aikit, "route", "Analyze the change", "--project", audit_project, "--current-model", "Astra"])
+        run([aikit, "install", audit_project, "--protect-model", "provider/custom-v1", "--apply", "--check"])
+        run([aikit, "route", "Analyze the change", "--project", audit_project,
+             "--preserve-model", "provider/new-model"])
+        if "model = " in (audit_project / ".codex/agents/aikit_worker.toml").read_text(encoding="utf-8"):
+            raise RuntimeError("Wheel assigned a helper model with exceptions enabled")
     return 0
 
 

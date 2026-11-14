@@ -34,6 +34,25 @@ print(json.dumps({"schema": 1, "attempts": [a], "rework": 0, "escalations": 0}))
 
 
 class BenchmarkTests(unittest.TestCase):
+    def test_protected_fixed_model_and_effort_survive_adaptive_trial_and_resume(self):
+        path = self.root / "ai-kit/settings.json"
+        settings = json.loads(path.read_text())
+        settings.update(model_switching_enabled=True, model_switching_exceptions=["fable"])
+        path.write_text(json.dumps(settings), encoding="utf-8")
+        self.pack["fixed"].update(model="Fable", effort="xhigh")
+        self.pack["repeats"] = 1
+        plan = self.prepare()
+        self.assertTrue(all(u["route"] == self.pack["fixed"] for u in plan["units"]))
+        run = benchmark.execute(plan)
+        for unit in plan["units"]:
+            if unit["arm"] != "baseline":
+                self.assertEqual(install.load_instruction_settings(run / unit["unit_id"] / "workspace")
+                                 ["model_switching_exceptions"], ["fable"])
+        settings["model_switching_exceptions"] = []
+        path.write_text(json.dumps(settings), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "different plan"):
+            benchmark.execute(self.prepare())
+
     def test_instruction_controls_reach_isolated_trials_and_resume_identity(self):
         settings = self.root / "ai-kit/settings.json"
         config = json.loads(settings.read_text(encoding="utf-8"))
@@ -41,7 +60,7 @@ class BenchmarkTests(unittest.TestCase):
         settings.write_text(json.dumps(config), encoding="utf-8")
         plan = self.prepare()
         self.assertEqual(plan["instruction_settings"],
-                         {"model_switching_enabled": False, "instruction_profile": "minimal"})
+                         {"model_switching_enabled": False, "instruction_profile": "minimal", "model_switching_exceptions": []})
         self.assertTrue(all(unit["route"] == self.pack["fixed"] for unit in plan["units"]))
         benchmark.execute(plan)
         run = self.root / plan["relative"]

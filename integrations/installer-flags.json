@@ -58,6 +58,22 @@
       "help": "Select full guidance or task-relevant mandatory instructions; safety remains required"
     },
     {
+      "option": "--model-switching-exceptions",
+      "value": "text",
+      "multiple_values": true,
+      "setting": "model_switching_exceptions",
+      "fresh_default": [],
+      "help": "Set protected families (astra, fable, k3.1) or exact model IDs; none alone clears"
+    },
+    {
+      "option": "--protect-model",
+      "value": "text",
+      "repeatable": true,
+      "setting": "model_switching_exceptions",
+      "fresh_default": [],
+      "help": "Append a protected family/name/ID without replacing saved exceptions; repeatable"
+    },
+    {
       "option": "--chat-language",
       "value": "text",
       "setting": "chat_language",

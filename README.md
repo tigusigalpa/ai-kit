@@ -16,9 +16,9 @@ AI-KIT gives your coding agents persistent project memory, expert stack rules, *
 
 What changed in each release: [CHANGELOG](CHANGELOG.md).
 
-**v1.8.0:** keep your selected model/effort, choose full or minimal instructions, and inspect effective settings. Existing defaults remain compatible. [Release verification and publication status](docs/V1_8_0.md).
+**v1.9.0:** protect Astra, Fable, K3.1 or an exact model ID while keeping general recommendations enabled; add persistent exceptions quickly or preserve a model for one routing call. [Release verification and publication status](docs/V1_9_0.md).
 
-**Published and verified:** [GitHub Release v1.8.0](https://github.com/tigusigalpa/ai-kit/releases/tag/v1.8.0), [Docker Hub `tigusigalpa/ai-kit:1.8.0`](https://hub.docker.com/r/tigusigalpa/ai-kit) and owner-approved [PyPI `ai-kit-python 1.8.0`](https://pypi.org/project/ai-kit-python/1.8.0/) are available. Wheel/sdist and SHA256SUMS are attached to the release. An immutable image pull and fresh hashed PyPI installation passed; all 334 packaged source files match. [Checks, hashes and digest](docs/V1_8_0.md).
+**Release in progress:** GitHub Release, Docker Hub `tigusigalpa/ai-kit:1.9.0` and owner-approved PyPI `ai-kit-python 1.9.0` are being prepared and verified. [Current status](docs/V1_9_0.md). Previously verified [v1.8.0 artifacts](docs/V1_8_0.md) remain available.
 
 [Get AI-KIT](#get-ai-kit) · [Update AI-KIT](#update-ai-kit) · [Defaults](#defaults-you-should-know) · [Features](#features-at-a-glance) · [Honest boundaries](#honest-boundaries) · [Quick start](#install) · [Docs site](https://tigusigalpa.github.io/ai-kit-docs/) · [Guides](docs/guide/README.md) · [Install guide](docs/guide/INSTALL.md) · [CLI flags](docs/guide/INSTALLER_FLAGS.md) · [Windows](docs/guide/WINDOWS.md) · [Docker](docs/guide/DOCKER.md)
 
@@ -55,11 +55,11 @@ aikit --version
 
 The PyPI package is **`ai-kit-python`**; the command it installs is **`aikit`**. Never run `pip install aikit`: that is not this project's package name. Without pipx, run `python -m pip install ai-kit-python` inside a virtual environment. On Windows, the [Windows guide](docs/guide/WINDOWS.md) covers PATH and interpreter problems.
 
-**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), for example the verified `1.8.0`:
+**Docker image.** [`tigusigalpa/ai-kit`](https://hub.docker.com/r/tigusigalpa/ai-kit) runs the same CLI without host Python (`linux/amd64`). Image tags follow the repository [VERSION](VERSION) of each release and there is no `latest` tag, so pick a version from the [tags page](https://hub.docker.com/r/tigusigalpa/ai-kit/tags), the release target below is `1.9.0` (check its publication status above):
 
 ~~~sh
-docker pull tigusigalpa/ai-kit:1.8.0
-docker run --rm tigusigalpa/ai-kit:1.8.0 --version
+docker pull tigusigalpa/ai-kit:1.9.0
+docker run --rm tigusigalpa/ai-kit:1.9.0 --version
 ~~~
 
 Project mounts, preview/apply examples and the runtime contract are in [Run AI-KIT with Docker](docs/guide/DOCKER.md).
@@ -98,7 +98,7 @@ The JSON report includes these fields (example excerpt):
 ~~~json
 {
   "installed_version": "1.5.0",
-  "bundle_version": "1.8.0"
+  "bundle_version": "1.9.0"
 }
 ~~~
 
@@ -109,7 +109,7 @@ The JSON report includes these fields (example excerpt):
 | `errors` | Installation problems, such as missing/invalid installer state, invalid settings or missing managed files. Read these before treating the installation as healthy. |
 | `warnings` / `info` | Warnings and additional findings, including local changes and version comparisons. |
 
-In the example, the project records **1.5.0** while the CLI carries **1.8.0**: preview and apply a project update using step 2 below. If the project version is newer than the CLI, update the Python package first (step 1). Matching versions still require reviewing `errors` and `warnings` for installation health. To show only the CLI version, run `python -m aikit.aikit_cli --version`.
+In the example, the project records **1.5.0** while the CLI carries **1.9.0**: preview and apply a project update using step 2 below. If the project version is newer than the CLI, update the Python package first (step 1). Matching versions still require reviewing `errors` and `warnings` for installation health. To show only the CLI version, run `python -m aikit.aikit_cli --version`.
 
 **If installation cannot be confirmed:** `installed_version` stays `null` when the project version cannot be determined. Missing state produces `No installer state found; is AI-KIT installed in this project?`; invalid state produces an `Invalid installer state` error. This can mean AI-KIT was never initialized with the installer, was copied manually, or its state was lost or damaged. Review `errors` and the existing files before initializing or updating. Running `doctor .` without repair flags changes no project files.
 
@@ -239,6 +239,71 @@ Doctor's `runtime.model` and `runtime.reasoning_effort` are **`null` with status
 Limitations: these are instruction/configuration controls, not a host-enforced lock. Native client defaults, global/project instructions, host routing, platform policy and previously loaded text remain outside AI-KIT's control. Disabling recommendations prevents new Aider native model settings; existing user/Aider configuration is preserved and doctor flags it for review. Codex helpers without overrides leave model/effort resolution to the host, including its own defaults. A separately enabled OpenRouter executor or explicit benchmark fixed model remains usable for an authorized task; it never silently replaces the parent model, and budget/accounting protections remain active. With switching disabled, the benchmark's adaptive arm retains the pack's explicit fixed route.
 
 The [architecture audit and control boundaries](docs/MODEL_INSTRUCTIONS.md) explain which paths AI-KIT actually controls. No speed, quality or token-saving improvement is claimed without a separate measured trial.
+
+### Conditional exceptions and quick model preservation
+
+**Introduced in v1.9.0.** Update the CLI and project instructions first; check the [publication status](docs/V1_9_0.md) before selecting a registry artifact. Version 1.8.0 predates these exceptions. This extends the same settings mechanism, without a second router or a platform model-lock service.
+
+Keep recommendations enabled for ordinary models while protecting your selected **Astra, Fable or K3.1** model and reasoning effort:
+
+```powershell
+aikit install . --agent codex --agent claude --model-switching-enabled true --model-switching-exceptions astra fable k3.1 --instruction-profile minimal
+aikit install . --agent codex --agent claude --model-switching-enabled true --model-switching-exceptions astra fable k3.1 --instruction-profile minimal --apply --check
+```
+
+The protected list is saved in `ai-kit/settings.json`. Missing or empty means the previous behavior; existing installations do not opt in automatically. The setting is independent of full/minimal and presets. Merge this into the existing settings object if editing manually, then preview/apply the installer to reconcile managed helper files:
+
+```json
+{
+  "model_switching_enabled": true,
+  "instruction_profile": "minimal",
+  "model_switching_exceptions": ["astra", "fable", "k3.1"]
+}
+```
+
+| Condition | Model/effort recommendations |
+| --- | --- |
+| Global `model_switching_enabled: false` | Disabled, regardless of other choices. |
+| A direct request to preserve a model for this task/call | Preserve that choice; no automatic model change, effort change or cheaper-model handoff. |
+| Exceptions enabled and selected model matches | Preserve model and effort, including an explicitly chosen High/Extra High; never raise effort automatically either. |
+| Exceptions enabled and current model unknown | Suppressed until the user declares a choice; do not invent a model identity. |
+| Current model does not match, or the list is empty | Existing conditional recommendations remain available; required checks and explicit user preferences still apply. |
+
+The built-in names select families, accepting case-insensitive display names, version-shaped IDs and recognized provider prefixes. `K3.1 Pro` and its Highspeed variant are covered; K3 and K3.10 are not. Recognition is a protection preference, **not proof that a model exists, is available to your account or actually ran**. A custom entry matches an exact model name/ID case-insensitively; it does not protect unrelated names sharing a substring. Use the actual identifier from your client/provider when saving a custom entry.
+
+**Quick persistent exception for any model:** append it without replacing the existing list, clients, language or extras:
+
+```powershell
+aikit install . --protect-model "provider/custom-model-v1"
+aikit install . --protect-model "provider/custom-model-v1" --apply --check
+```
+
+Replace the example with your model's actual name/ID. Repeat `--protect-model` to add several; adding an existing entry is idempotent. `--model-switching-exceptions ...` replaces the whole list; `--model-switching-exceptions none --apply --check` explicitly clears it. Global switching off still takes precedence after adding an exception.
+
+**One-call exception without saving anything:**
+
+```powershell
+aikit route "Investigate the regression" --project . --preserve-model "provider/custom-model-v1"
+```
+
+This suppresses AI-KIT routing advice for that invocation only and writes no settings or helper files. It reports `reason: explicit_preservation`, `scope: invocation`, the declared name and `execution_verified: false`. It does not start a model or control another chat. In a client conversation, an explicit instruction to preserve the selected model/effort applies to that task; start a fresh session after installing updated instructions.
+
+For conditional offline advice, declare your current selection separately from the recommendation target:
+
+```powershell
+aikit route "Investigate the regression" --project . --current-model Astra
+aikit metrics propose . --stack PYTHON --task-class implement --level 2 --current-model Astra
+```
+
+`--current-model` declares user intent; it is not platform telemetry. A protected route reports `recommendations_enabled: false`, `model: null`, `effort: null` and `reason: model_exception`; a protected metrics proposal is refused. Null recommendation effort means **no proposed override**, not an API request to disable reasoning. `--model` remains the recommendation candidate and cannot silently bypass protection of `--current-model`. `--current-model` and `--preserve-model` are mutually exclusive. Doctor/context also show `model_recommendation_policy`; their offline current model remains unknown. Trusted platform metadata may guide an agent when available, but AI-KIT does not scrape global client settings, infer identity from quota usage or trust model self-identification.
+
+**Helpers:** while any saved exceptions exist, all managed Codex helper files omit static model/effort assignments, including sessions on non-exempt models. Static files cannot conditionally follow a changing parent model. The parent must not pass conflicting overrides or automatically delegate to cheaper models for a protected task. A separately requested other-model task remains explicit and scoped. Unchanged managed helpers update normally; locally edited helpers conflict and require review. User root configuration is preserved. Existing Aider settings remain for review; configure writes no new static weak/work mapping with exceptions enabled.
+
+A one-call flag cannot repair previously loaded or user-pinned helper definitions. For a protected task, use compatible inherited helpers; do not invoke conflicting fixed-model helpers. Report unavailable/unverified inheritance rather than claiming a lock. Persistent `--protect-model ... --apply --check` prepares managed helpers, followed by a client reload. Host-wide subagent defaults, platform routing and native client behavior remain outside AI-KIT enforcement.
+
+An explicitly enabled OpenRouter text task retains its configured model and budget protections; exception guards suppress model-change advice without inserting effort parameters or automatic fallback. Benchmark adaptive arms use the pack's declared fixed model for exception checks; protected model/effort stay fixed, and changing exceptions prevents resuming the same incomparable experiment. Observed execution remains separate from declared settings.
+
+Implementation, primary-source references and verification are tracked in [the model controls audit](docs/MODEL_INSTRUCTIONS.md#conditional-model-exceptions).
 
 ## Defaults you should know
 

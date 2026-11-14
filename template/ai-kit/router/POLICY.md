@@ -1,6 +1,6 @@
 # Adaptive routing policy
 
-First apply [instruction controls](../ENGINEERING.md#instruction-controls). When model_switching_enabled=false, skip this policy's model/effort recommendations, cost ladder and adaptive optimization. Preserve the user's model and effort. Minimal loads this policy only for a directly requested routing task when switching is enabled; safety and required checks always apply.
+First apply [instruction controls](../ENGINEERING.md#instruction-controls). Global switching off, a selected model exception, or an unknown current model with enabled exceptions suppresses model/effort advice, the cost ladder and adaptive optimization. Preserve the user's model/effort. CLI --current-model declares intent, not observed execution; --model and routing pins remain recommendation targets. Minimal loads this policy only for a directly requested, permitted routing task; safety and required checks always apply.
 
 Load for orchestration, model/budget/runtime decisions, or routing review. Ordinary execution need not load provider detail.
 Optimize total cost to a correct result, including failed calls, tool loops, review, context, reasoning/output tokens, and recovery. Avoid invented confidence scores or savings.

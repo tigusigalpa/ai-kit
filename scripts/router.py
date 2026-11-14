@@ -282,10 +282,11 @@ def configure_plan(project: Path) -> dict:
     if not project.is_dir():
         raise ValueError("Target must be a directory")
     controls = install.load_instruction_settings(project)
-    if not controls["model_switching_enabled"]:
+    policy = install.model_recommendation_policy(controls)
+    if not policy["recommendations_enabled"]:
         return {"target": str(project), "actions": {"ai-kit/router/resolved.json": (json.dumps(
                     {"schema": 1, "roles": {}, "recommendations_enabled": False}, indent=2) + "\n").encode()},
-                "conflicts": {}, "instruction_settings": controls,
+                "conflicts": {}, "instruction_settings": controls, "model_recommendation_policy": policy,
                 "info": ["Model recommendations disabled: no native model/effort settings written. "
                          "Existing Aider/user configuration is retained; review it in the host."]}
     base = project / "ai-kit" / "router"
@@ -315,7 +316,7 @@ def configure_plan(project: Path) -> dict:
         if providers[name].get("verification_status") == "pending":
             info.append(f"Provider {name} verification is pending; its roles are unresolved.")
     return {"target": str(project), "actions": actions, "conflicts": conflicts, "info": info,
-            "instruction_settings": controls}
+            "instruction_settings": controls, "model_recommendation_policy": policy}
 
 
 def apply_configure(plan: dict) -> bool:
@@ -354,6 +355,9 @@ def main(argv: list[str] | None = None) -> int:
     route_parser.add_argument("--effort")
     route_parser.add_argument("--provider", help="Provider override for this recommendation only")
     route_parser.add_argument("--model", help="Model ID override; capabilities must be declared")
+    current = route_parser.add_mutually_exclusive_group()
+    current.add_argument("--current-model", help="User-declared current model for exception checks; not telemetry")
+    current.add_argument("--preserve-model", help="Preserve this declared model/effort for this call only; writes nothing")
     route_parser.add_argument("--mode", choices=["manual", "fixed", "recommended", "adaptive"])
     route_parser.add_argument("--profile", choices=["economy", "balanced", "quality"])
     route_parser.add_argument("--task-id", help="Opaque task pin ID")
@@ -378,8 +382,13 @@ def main(argv: list[str] | None = None) -> int:
             if args.project is None and (Path.cwd() / "ai-kit/settings.json").exists():
                 args.project = Path.cwd()
             controls = install.load_instruction_settings(args.project, args.root)
-            if not controls["model_switching_enabled"]:
-                print(json.dumps(adaptive.recommend_route(args.task, {}, {}, instruction_settings=controls), indent=2))
+            current_model = args.current_model if args.preserve_model is None else args.preserve_model
+            preserve_model = args.preserve_model is not None
+            if not install.model_recommendation_policy(controls, current_model,
+                                                       preserve_model=preserve_model)["recommendations_enabled"]:
+                print(json.dumps(adaptive.recommend_route(args.task, {}, {}, instruction_settings=controls,
+                                                         current_model=current_model,
+                                                         preserve_model=preserve_model), indent=2))
                 return 0
             selection, providers = _selection_and_providers(args.project, args.root)
             config = adaptive.load_config(args.project, args.root)
@@ -387,6 +396,7 @@ def main(argv: list[str] | None = None) -> int:
                        (args.mode or config["mode"]) == "adaptive" else [])
             print(json.dumps(adaptive.recommend_route(args.task, selection, providers,
                                           config=config, records=records, instruction_settings=controls,
+                                          current_model=current_model, preserve_model=preserve_model,
                                           mode=args.mode, profile=args.profile, task_id=args.task_id,
                                           stack=args.stack, capabilities=args.capability, level=args.level,
                                           role=args.role, effort=args.effort, provider=args.provider,
@@ -400,7 +410,8 @@ def main(argv: list[str] | None = None) -> int:
         plan = configure_plan(args.project)
         print(json.dumps({"target": plan["target"], "preview": not args.apply,
                           "writes": sorted(plan["actions"]), "conflicts": sorted(plan["conflicts"]),
-                          "info": plan["info"], "instruction_settings": plan["instruction_settings"]}, indent=2))
+                          "info": plan["info"], "instruction_settings": plan["instruction_settings"],
+                          "model_recommendation_policy": plan["model_recommendation_policy"]}, indent=2))
         if args.apply:
             apply_configure(plan)
         return 2 if plan["conflicts"] else 0

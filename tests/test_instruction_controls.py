@@ -37,7 +37,7 @@ class InstructionControlsTests(unittest.TestCase):
                 with self.subTest(switching=switching, profile=profile):
                     plan = self.apply(model_switching_enabled=switching, instruction_profile=profile,
                                       extras=["orchestration", "uuid", "claude-github", "guards"])
-                    controls = {"model_switching_enabled": switching, "instruction_profile": profile}
+                    controls = {"model_switching_enabled": switching, "instruction_profile": profile, "model_switching_exceptions": []}
                     self.assertEqual(plan["instruction_settings"], controls)
                     entry = (self.project / "AGENTS.md").read_text(encoding="utf-8")
                     sizes[profile] = len(entry)
@@ -83,7 +83,7 @@ class InstructionControlsTests(unittest.TestCase):
         self.apply()
         self.apply(model_switching_enabled=False, instruction_profile="minimal")
         self.assertEqual(self.apply()["instruction_settings"],
-                         {"model_switching_enabled": False, "instruction_profile": "minimal"})
+                         {"model_switching_enabled": False, "instruction_profile": "minimal", "model_switching_exceptions": []})
 
     def test_invalid_controls_are_refused_before_writes(self):
         for bad in ("false", 0, 1, None, [], {}):
@@ -100,7 +100,7 @@ class InstructionControlsTests(unittest.TestCase):
         self.apply(model_switching_enabled=False, instruction_profile="minimal")
         plan = self.apply(preset="strict", mode="team")
         self.assertEqual(plan["instruction_settings"],
-                         {"model_switching_enabled": False, "instruction_profile": "minimal"})
+                         {"model_switching_enabled": False, "instruction_profile": "minimal", "model_switching_exceptions": []})
         self.assertEqual(plan["mode"], "team")
         self.assertTrue((self.project / ".claude/settings.json").is_file())
         self.assertEqual(self.apply(preset="minimal")["instruction_settings"], plan["instruction_settings"])

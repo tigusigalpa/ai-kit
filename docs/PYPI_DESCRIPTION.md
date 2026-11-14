@@ -10,6 +10,12 @@ Keep your chosen model and reasoning effort with `--model-switching-enabled fals
 
 Installer previews and `aikit doctor .` show effective controls. Unknown parent-session model/effort values remain unavailable rather than being inferred from configuration. See the [complete model/instruction guide](https://github.com/tigusigalpa/ai-kit#keep-your-chosen-model-and-select-instruction-depth).
 
+## Preserve selected models selectively
+
+With general recommendations enabled, `--model-switching-exceptions astra fable k3.1` protects selected families and reasoning effort. Exact model names/IDs are supported too. Append a persistent exception with `aikit install . --protect-model "provider/custom-model-v1" --apply --check`; existing entries/settings are preserved and managed helpers omit static model/effort assignments. Replace the example with your actual model ID.
+
+For one routing call without writes, use `aikit route "Investigate the regression" --project . --preserve-model "provider/custom-model-v1"`. `--current-model` is declared intent, not telemetry. Empty defaults retain compatibility; unknown current models suppress advice when exceptions are configured. User/native configuration and loaded sessions remain subject to host limitations and conflict/reload review.
+
 ## Install the CLI
 
 For an isolated command-line installation with pipx:
