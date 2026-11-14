@@ -72,7 +72,13 @@ def load_config(project: Path | None = None, root: Path = router.ROOT) -> dict:
 def recommend_route(text: str, selection: dict, providers: dict, *, config: dict | None = None,
                     records: list[dict] | None = None, mode: str | None = None, profile: str | None = None,
                     task_id: str | None = None, stack: str = "unknown", capabilities: list[str] | None = None,
-                    **overrides) -> dict:
+                    instruction_settings: dict | None = None, **overrides) -> dict:
+    controls = install.instruction_settings(instruction_settings or {})
+    if not controls["model_switching_enabled"]:
+        return {"resolved": False, "provider": None, "model": None, "effort": None,
+                "recommendations_enabled": False, "execution_confirmed": False,
+                "instruction_settings": controls,
+                "reason": "AI-KIT model recommendations are disabled; preserve the user's model and effort."}
     config = validate_config(config or {})
     mode, profile = mode or config["mode"], profile or config["profile"]
     if mode not in MODES or profile not in PROFILES:
@@ -149,6 +155,7 @@ def recommend_route(text: str, selection: dict, providers: dict, *, config: dict
             else:
                 learned = None
     result.update({"routing_mode": mode, "optimization_profile": profile,
+                   "instruction_settings": controls, "recommendations_enabled": True,
                    "context_budget_bytes": config["context_bytes"][profile],
                    "independent_review": profile == "quality" or result["level"] >= 4,
                    "escalation_policy": "diagnosed failure; independent review before acceptance" if profile == "quality" else

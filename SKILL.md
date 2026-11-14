@@ -42,6 +42,8 @@ Existing project documents and context are preserved; customized instructions be
 | `--with-claude-github` | Opt-in authenticated human GitHub identity checks before authorized Claude commits; no login or Git config changes |
 | `--with-ci` | Project workflow that validates committed AI-KIT files without cloning or installing anything; meaningful in team mode |
 | `--docker-cleanup maximum\|keep-cache` | Post-Docker cleanup scope (default maximum); keep-cache keeps the dedicated project builder cache and defers host reclamation |
+| `--model-switching-enabled true\|false` | Persist model advice/helper-override control (absent: true); false preserves user model/effort without claiming a platform lock |
+| `--instruction-profile full\|minimal` | Persist instruction depth (absent: full); minimal skips unsolicited workflows/roles/economics and retains mandatory project/security/quality rules |
 | `--with-security-audit` | Pinned Cloudflare references and an explicit-only skill; installs files without running an audit |
 | `--with-strix` | Pinned Strix references and explicit-only skill; installs no runtime and starts no scan |
 | `--with-context7` | Documentation lookup skill; MCP setup/authentication is separate |

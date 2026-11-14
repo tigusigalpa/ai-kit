@@ -6,15 +6,15 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Current published image:** `tigusigalpa/ai-kit:1.7.0`
+**Release image:** `tigusigalpa/ai-kit:1.8.0` (publication in progress; see the release record below).
 
-**New in v1.7.0:** an optional local task workflow: requirements and acceptance criteria, durable states, source-bound check receipts, explicit approval and stale-result detection. Automatic agent coordination is separate. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md).
+**New in v1.8.0:** independent model-switching recommendation controls and full/minimal instruction profiles. Preserve your selected model and reasoning effort while retaining project, architecture, safety and critical quality requirements. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md).
 
 **Published platform:** `linux/amd64`
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
 
-**PyPI:** owner-approved [ai-kit-python 1.7.0](https://pypi.org/project/ai-kit-python/1.7.0/) is published and installs from the public index. File hashes match the validated release artifacts, and all 328 source files match this image. A fresh hashed installation and the actual task CLI lifecycle passed. [Package verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md#pypi-publication-status).
+**PyPI:** [ai-kit-python 1.8.0](https://pypi.org/project/ai-kit-python/1.8.0/) is prepared through GitHub Release checks and owner approval. Confirm availability in the [package publication record](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md#pypi-publication-status).
 
 ## What AI-KIT provides
 
@@ -24,6 +24,8 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 | **Configuration for 11 AI clients** | Native entry files and configuration for Codex, Claude Code, Cursor, GitHub Copilot, Gemini CLI, Devin (Windsurf), Cline, Roo, Aider, Kimi and Manus. Documentation for Kimi and Manus is unverified, and activation in actual clients is unverified. |
 | **Stack-specific guidance** | Profiles for Go, PHP, Laravel, Filament, Moodle, Python, JavaScript/TypeScript/Node.js, frontend, libraries, Rust, .NET, Java and Terraform/Helm. |
 | **Preview-first installation** | Review proposed changes before writing. Existing project documents and local modifications follow preservation and conflict rules; an older CLI refuses to downgrade a newer installation unless explicitly allowed. |
+| **Selected model and effort** | `--model-switching-enabled false` disables AI-KIT model/effort recommendations and helper overrides. It does not enforce a platform lock or change the parent chat. |
+| **Instruction profiles** | `--instruction-profile minimal` skips unsolicited workflows, roles and economic optimization; required project/security/architecture/quality rules remain. Missing settings retain true/full. |
 | **Optional task workflow** | `--with-task-workflow` adds explicit task definitions, durable states, code-bound check receipts and criterion acceptance. Changed source invalidates prior evidence; private history survives upgrades. |
 | **Engineering workflows** | Plan, implement, test, review and document, supported by bootstrap, review and context synchronization skills. |
 | **Optional Web Design** | Reference analysis, project briefs, visual systems, stack-aware implementation guidance and UI acceptance criteria, including a Laravel Blade route. |
@@ -37,50 +39,49 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 AI-KIT installs instructions and supporting tools. Your coding client performs the development work.
 
-## What changed in v1.7.0
+## What changed in v1.8.0
 
-- **Independent opt-in:** `--with-task-workflow` persists outside presets and stays off by default. Installation creates a short contract and a project-owned JSON example, launches no check or agent, and preserves existing clients/settings.
-- **Task definitions:** objective, constraints, acceptance criteria and explicit local check commands, with validated IDs and bounded inputs.
-- **Durable execution states:** planned, implementing, checking, reviewing, awaiting approval and accepted, with explicit failure/cancellation, reopening and requirement revision.
-- **Checks tied to code:** receipts bind the task revision/cycle to Git HEAD, index and current working files. Missing, failed or stale checks block review and acceptance; changed accepted work is reported stale.
-- **Explicit criterion decisions:** acceptance records evidence for every criterion against the exact checked fingerprint. This is a local reviewer assertion, not authenticated identity or independent proof of correctness.
-- **Private, preserved history:** task state stays under ignored `ai-kit/.tasks/` in both sharing modes, survives installation upgrades and is excluded from distributions.
-- **Clear update/version help:** README explains global package updates, current-project updates, installed versus bundle versions and the full task lifecycle.
-
-Automatic agent scheduling, retry/review loops, model execution and hosted-CI ingestion are separate. Local checks run with your permissions and environment; AI-KIT does not sandbox them. Ignored dependencies, services and tool versions are outside the code fingerprint. Existing Web Design, security, Context7, orchestration and language/client options remain available.
+- Independent persisted `model_switching_enabled` and `instruction_profile` settings, with matching installer flags and legacy defaults true/full.
+- Disabled model advice suppresses offline/adaptive routing and model-selection proposals, omits managed Codex helper model/effort assignments and preserves custom configuration through conflicts. Existing Aider/user configuration is retained.
+- Minimal instructions keep mandatory project and nested constraints, architecture decisions, security and critical checks; optional files remain available for directly relevant requested workflows.
+- Installer previews, doctor, context selection and routing show effective controls. The offline CLI reports parent model/effort unavailable instead of inferring them from configuration.
+- Explicitly configured OpenRouter execution remains opt-in and budgeted with no automatic fallback. Benchmark isolated projects inherit the controls; changing profiles cannot silently resume a previous experiment.
+- Repository CI retries temporary Python setup failures with bounded attempts and final failure, while preserving required checks and the owner's PyPI approval.
 
 ## Image verification
 
-Published on 2026-11-08 from tagged commit `6796b6059b1f147660f73f04be3ec3a1821d6ef2`. All 32 PR checks succeeded across Linux, Windows and macOS. The final non-root image completed 483 Linux tests (three platform/distribution skips) and Docker smoke, including offline/read-only runtime, all modules, task CLI, preservation/reruns, build-context privacy and SIGTERM with/without init. A mismatched version build was refused. Isolated archives, strict Twine, fresh offline wheel CLI and a published-1.6.0 project upgrade also passed.
+Build, non-root/offline runtime checks, package/source equality and registry verification are in progress. Do not infer publication from a prepared tag. [Verified release status and eventual immutable digest](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_8_0.md#docker-hub-publication).
 
-All 328 packaged files match committed source, the local wheel and the validated same-run release workflow wheel. Anonymous registry read-back matched the tested version/revision, platform, non-root user, exec entrypoint and layer diff IDs. An immutable pull passed version, kit and flag checks. [Release receipts and limits](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_7_0.md).
+Model/effort selection in the parent client, live client activation, paid API execution and performance trials remain separate. AI-KIT controls its instructions and generated configuration; it does not force a parent-session model lock.
 
-**Immutable digest:** `sha256:82d58b7d59df439d8dccd2fa084530b5d14698942552b5fb4b8de7af31cf98a2`
+## Keep your selected model with minimal guidance
 
-```sh
-docker pull tigusigalpa/ai-kit@sha256:82d58b7d59df439d8dccd2fa084530b5d14698942552b5fb4b8de7af31cf98a2
+After choosing the model and effort in your client, preview from the application folder (PowerShell):
+
+```powershell
+docker run --rm --init --network none --read-only --tmpfs /tmp:rw,nosuid,nodev,size=256m --mount "type=bind,source=$($PWD.Path),target=/workspace" tigusigalpa/ai-kit:1.8.0 install /workspace --agent codex --agent claude --model-switching-enabled false --instruction-profile minimal
 ```
 
-Earlier tags remain intact and no `latest` tag is assigned. The dedicated release builder/cache, state volume and superseded test images were removed; unrelated workloads and persistent data were preserved. No host RAM/disk compaction was performed. These publication-only notes retain the tested image and wheel with their earlier documentation snapshot. Automatic coordination and real client/model/scanner trials remain separate.
+Repeat with `--apply --check` to update the mounted project. Existing local changes use preservation/conflict rules. Start a fresh client session afterward; AI-KIT cannot remove previously loaded instructions. `doctor /workspace` reports effective controls and unavailable parent-session telemetry. See the [complete model/instruction guide](https://github.com/tigusigalpa/ai-kit#keep-your-chosen-model-and-select-instruction-depth).
 
 ## Pull and check the image
 
 Docker must be running with Linux-container support.
 
 ```sh
-docker pull tigusigalpa/ai-kit:1.7.0
+docker pull tigusigalpa/ai-kit:1.8.0
 ```
 
 Check the CLI version and help:
 
 ```sh
-docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.7.0 --version
+docker run --rm --init --network none --read-only tigusigalpa/ai-kit:1.8.0 --version
 
 docker run --rm --init --network none --read-only \
   --cap-drop ALL \
   --security-opt no-new-privileges \
   --tmpfs /tmp:rw,nosuid,nodev,size=256m \
-  tigusigalpa/ai-kit:1.7.0 --help
+  tigusigalpa/ai-kit:1.8.0 --help
 ```
 
 Arguments after the image name go directly to `aikit`. Running the image without arguments displays CLI help.
@@ -93,7 +94,7 @@ Choose an existing application directory. Run as an ordinary host user so the fo
 
 ```bash
 app_path="$(cd /absolute/path/to/my-app && pwd)"
-image="tigusigalpa/ai-kit:1.7.0"
+image="tigusigalpa/ai-kit:1.8.0"
 
 runtime=(
   --rm --init
@@ -150,7 +151,7 @@ Use an existing application folder accessible to Docker Desktop.
 
 ```powershell
 $appPath = (Resolve-Path -LiteralPath 'C:\Projects\my-app').Path
-$image = 'tigusigalpa/ai-kit:1.7.0'
+$image = 'tigusigalpa/ai-kit:1.8.0'
 
 $runtime = @(
     '--rm', '--init',
@@ -354,13 +355,7 @@ To update a project, pull the selected image version, preview installation again
 
 Existing project documents, settings, private dialogue memory and local edits retain the normal preservation rules.
 
-Immutable reference to this verified build:
-
-```sh
-docker pull tigusigalpa/ai-kit@sha256:a224498c211db3e9e7c416dc91b3a1eacc85d675b71ab0c87c1faead4342a11b
-```
-
-Registry manifest digest: `sha256:a224498c211db3e9e7c416dc91b3a1eacc85d675b71ab0c87c1faead4342a11b`. The previous image `1.4.5` keeps `sha256:01c5ccae6d6b310e4230b6d7482c070c2b7a5b3bbc6c8af5d43180d852874979`. Existing version tags are retained; this release does not assign `latest`.
+Use the verified immutable reference in the Image verification section after publication. Earlier version tags remain intact and this release does not assign `latest`.
 
 ## Documentation and license
 

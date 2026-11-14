@@ -40,8 +40,21 @@ def examine(target: Path, *, root: Path = install.ROOT) -> dict:
         return report
     settings = {}
     try:
-        settings = install.read_json(target / "ai-kit" / "settings.json", {})
+        settings = install.read_json(install.safe_path(target, "ai-kit/settings.json"), {})
         install.validate_settings(settings)
+        report["instruction_settings"] = install.instruction_settings(settings)
+        report["runtime"] = {"model": None, "reasoning_effort": None, "source": None,
+                             "status": "unavailable",
+                             "note": "The offline CLI has no parent-session platform telemetry. "
+                                     "Configuration and recommendations are not execution evidence."}
+        if not report["instruction_settings"]["model_switching_enabled"]:
+            for relative in [".aider.conf.yml", *(
+                    ".codex/agents/" + p.name for p in (root / "integrations/codex-agents").glob("*.toml"))]:
+                path = install.safe_path(target, relative)
+                if path.is_file() and (relative == ".aider.conf.yml" or re.search(
+                        r"(?m)^\s*(?:model|model_reasoning_effort)\s*=", path.read_text(encoding="utf-8"))):
+                    warnings.append(f"Native model configuration remains in {relative}; review in the host. "
+                                    "AI-KIT does not overwrite custom settings or enforce a session lock.")
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         errors.append(f"Invalid installation settings: {exc}")
     state_path = target / "ai-kit" / ".install-state.json"

@@ -194,6 +194,7 @@ def prepare(project: Path, pack_file: Path, *, git: str | None = None) -> dict:
     selection, providers = router._selection_and_providers(project, ROOT)
     config = adaptive.load_config(project)
     records = metrics.read_records(project)
+    controls = install.load_instruction_settings(project)
     units = []
     for repetition in range(1, pack["repeats"] + 1):
         for task in pack["tasks"]:
@@ -203,6 +204,7 @@ def prepare(project: Path, pack_file: Path, *, git: str | None = None) -> dict:
                 route = dict(pack["fixed"])
                 if arm == "kit-adaptive":
                     recommendation = adaptive.recommend_route(task["prompt"], selection, providers, config=config,
+                        instruction_settings=controls,
                         records=records, mode="adaptive", task_id=task["task_id"], stack=task["stack"],
                         operation=task["operation"], risks=tuple(task["risks"]), capabilities=task["capabilities"])
                     if recommendation["resolved"]:
@@ -214,7 +216,7 @@ def prepare(project: Path, pack_file: Path, *, git: str | None = None) -> dict:
     relative = "ai-kit/.metrics/benchmarks/" + pack["experiment"]
     install.safe_path(project, relative + "/plan.json")
     return {"project": project, "relative": relative, "pack": pack, "files": files, "units": units,
-            "context_budget": config["context_bytes"][config["profile"]]}
+            "context_budget": config["context_bytes"][config["profile"]], "instruction_settings": controls}
 
 
 def clean_environment(workspace: Path) -> dict[str, str]:
@@ -252,7 +254,7 @@ def run_unit(plan: dict, manifest: dict, run: Path, unit: dict, tasks: dict) -> 
     context_report = {"selected": [], "total_bytes": 0}
     if unit["arm"] != "baseline":
         install_plan = install.build_plan(workspace, root=ROOT, agents=pack["kit_agents"],
-                                          preset=pack["kit_preset"])
+                                          preset=pack["kit_preset"], **plan["instruction_settings"])
         if install_plan["conflicts"] or not install.apply_plan(install_plan):
             raise ValueError("Kit installation conflict inside benchmark workspace")
         context_report = context.select_context(workspace, path=task["path"],
@@ -329,8 +331,11 @@ def failure_result(manifest: dict, unit: dict, task: dict, message: str) -> dict
 def execute(plan: dict) -> Path:
     project, pack = plan["project"], plan["pack"]
     run = install.safe_path(project, plan["relative"] + "/plan.json").parent
-    identity = install.digest(json.dumps({"experiment": pack["experiment"], "revision": pack["revision"],
-                                          "pack": pack, "units": plan["units"]}, sort_keys=True).encode())
+    identity_data = {"experiment": pack["experiment"], "revision": pack["revision"],
+                     "pack": pack, "units": plan["units"]}
+    if plan["instruction_settings"] != install.INSTRUCTION_DEFAULTS:
+        identity_data["instruction_settings"] = plan["instruction_settings"]
+    identity = install.digest(json.dumps(identity_data, sort_keys=True).encode())
     manifest_path = install.safe_path(run, "plan.json")
     if run.exists():
         if not manifest_path.is_file():
@@ -345,7 +350,7 @@ def execute(plan: dict) -> Path:
                     "kit_version": (ROOT / "VERSION").read_text(encoding="utf-8").strip(),
                     "pack_sha256": install.digest(json.dumps(pack, sort_keys=True).encode()),
                     "identity_sha256": identity,
-                    "units": plan["units"], "complete": False}
+                    "units": plan["units"], "instruction_settings": plan["instruction_settings"], "complete": False}
         install.atomic_write(manifest_path, json_bytes(manifest))
     tasks = {task["task_id"]: task for task in pack["tasks"]}
     finished = {path.parent.name for path in run.glob("unit-*/result.json")}

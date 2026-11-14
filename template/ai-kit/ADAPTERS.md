@@ -38,6 +38,8 @@ Sources: [Codex instructions](https://learn.chatgpt.com/docs/agent-configuration
 
 ## Model routing
 
+[Instruction controls](ENGINEERING.md#instruction-controls) apply first. With model_switching_enabled=false, route returns a disabled status and configure writes no native model settings. Existing user/native settings remain for host review; no parent-chat lock is enforced.
+
 The reference distribution ships `scripts/router.py` (offline, no credentials). `route "<task>"` prints a capability recommendation and the resolved provider/model; `configure PROJECT --apply` writes `ai-kit/router/resolved.json` and, for a selected Aider agent, a native `.aider.conf.yml` mapping the cheap/work/escalation roles to `weak_model`/`model`.
 Provider availability and role overrides live in [selection.json](router/selection.json). Most clients select models in their own UI or environment rather than a shared config file; apply `resolved.json` through the client's native mechanism (for example, Claude Code environment model variables) and verify activation in the actual client.
 

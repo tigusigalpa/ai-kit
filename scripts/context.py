@@ -101,6 +101,7 @@ def select_context(target: Path, *, path: str = ".", budget: int = 32000,
     critical = ["AGENTS.md", "ai-kit/CORE.md", "ai-kit/settings.json", "PROJECT_CONTEXT.md",
                 "ai-kit/ENGINEERING.md", "ai-kit/SECURITY.md", "docs/DECISIONS.md"]
     settings = install.read_json(install.safe_path(target, "ai-kit/settings.json"), {})
+    controls = install.instruction_settings(settings)
     workflow_files = []
     if workflow is not None:
         if settings.get("web_design") is not True:
@@ -148,7 +149,7 @@ def select_context(target: Path, *, path: str = ".", budget: int = 32000,
         raise ValueError("Missing required context: " + ", ".join(missing))
     total = sum(item["bytes"] for item in selected)
     return {"selected": selected, "duplicates": duplicates, "modules": matching, "profiles": sorted(profiles),
-            "workflow": workflow,
+            "workflow": workflow, "instruction_settings": controls,
             "total_bytes": total, "budget_bytes": budget, "over_budget": total > budget,
             "selection_complete": bool(matching),
             "note": "Declared modules may still need bootstrap verification. Byte counts are not token counts. "

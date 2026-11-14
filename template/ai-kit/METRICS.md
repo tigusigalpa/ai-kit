@@ -59,6 +59,8 @@ These are descriptive records, not evidence of causation or savings. Compare mat
 
 ## Analyze for routing
 
+Follow [instruction controls](ENGINEERING.md#instruction-controls): when model switching recommendations are disabled, analyze observations without suggesting model/effort changes; routing proposals are refused. Minimal does not start an economic review unless the user's task calls for it.
+
 `analyze` aggregates the journal per provider: attempts, reviewed tasks, correct tasks, task success rate, known cost by currency, cost coverage, cost per correct result, and the models/efforts seen. Task identity is `(experiment, arm, task_id)`, so paired baseline/kit rows never collapse. Schema 2 also reports attempt-disposition coverage and decisive attempt success rate. A task is attributed to every provider used in its attempts, so neither measure establishes causation.
 
 Use the report to inform `ai-kit/router/selection.json`, never to rewrite it automatically. Prefer the provider with the best cost per correct result for the work role and the cheapest provider that still passes checks for the cheap role, then run a separate matched experiment before trusting the change. `analyze` writes nothing and performs no API calls or price lookup; unknown cost or outcome coverage stays unknown rather than becoming zero.

@@ -1,4 +1,6 @@
 {
+  "model_switching_enabled": true,
+  "instruction_profile": "full",
   "project_language": "English",
   "chat_language": "English",
   "uuid": false,

@@ -74,7 +74,8 @@ PRESETS = {
 DEFAULT_AGENTS = ("codex",)
 # Installer options that persist a choice: argparse destination -> ai-kit/settings.json key.
 OPTION_SETTINGS = {"mode": "sharing_mode", "chat_language": "chat_language", "conventions": "conventions",
-                   "docker_cleanup": "docker_cleanup"}
+                   "docker_cleanup": "docker_cleanup", "model_switching_enabled": "model_switching_enabled",
+                   "instruction_profile": "instruction_profile"}
 CLAUDE_SETTINGS = ".claude/settings.json"
 CLAUDE_LOCAL_SETTINGS = ".claude/settings.local.json"
 GUARDS_SOURCE = "claude-settings.git-ask.json"
@@ -88,6 +89,28 @@ MODULE_PATH = re.compile(r"/(?:[A-Za-z0-9_-][A-Za-z0-9._-]*/)*")
 UNSAFE_COMMAND = re.compile(r"[;&|<>`$()*\\\"'\r\n]")
 UPSTREAM_TEST_FILE = re.compile(r"\.test\.[cm]?[jt]s$")
 DOCKER_CLEANUP_MODES = ("maximum", "keep-cache")
+INSTRUCTION_DEFAULTS = {"model_switching_enabled": True, "instruction_profile": "full"}
+
+
+def instruction_settings(settings: dict) -> dict:
+    """Effective instruction controls; missing keys retain the legacy behavior."""
+    result = {key: settings.get(key, value) for key, value in INSTRUCTION_DEFAULTS.items()}
+    if type(result["model_switching_enabled"]) is not bool:
+        raise ValueError("Settings model_switching_enabled must be a boolean")
+    if result["instruction_profile"] not in ("full", "minimal"):
+        raise ValueError("Settings instruction_profile must be full or minimal")
+    return result
+
+
+def load_instruction_settings(project: Path | None = None, root: Path = ROOT) -> dict:
+    if project is None:
+        path = root / "template/ai-kit/settings.json"
+    else:
+        project = project.absolute()
+        if is_link(project):
+            raise ValueError("Refusing a linked project root")
+        path = safe_path(project.resolve(), "ai-kit/settings.json")
+    return instruction_settings(read_json(path, {}))
 # tr strips CR so a CRLF checkout of the hook script still runs under sh.
 SESSION_START_COMMAND = "tr -d '\\r' < \"$CLAUDE_PROJECT_DIR/.agents/hooks/session-start.sh\" | sh"
 # Entries written by v0.3.6-v0.4.6, which managed the whole client settings file.
@@ -274,6 +297,7 @@ def agent_selection(value: object, agents: set[str], *, unique: bool = False) ->
 
 
 def validate_settings(settings: dict) -> None:
+    instruction_settings(settings)
     for field in ("project_language", "chat_language", "sharing_mode", "conventions"):
         if not isinstance(settings.get(field), str):
             raise ValueError(f"Settings {field} must be a string")
@@ -1143,7 +1167,9 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                language: str | None = None, conventions: str | None = None,
                agents: list[str] | None = None, accept_local: list[str] | None = None,
                extras: list[str] | None = None, preset: str | None = None,
-               docker_cleanup: str | None = None, allow_downgrade: bool = False) -> dict:
+               docker_cleanup: str | None = None, allow_downgrade: bool = False,
+               model_switching_enabled: bool | None = None,
+               instruction_profile: str | None = None) -> dict:
     if docker_cleanup is not None and docker_cleanup not in DOCKER_CLEANUP_MODES:
         raise ValueError("Docker cleanup must be one of: " + ", ".join(DOCKER_CLEANUP_MODES))
     if preset is not None and preset not in PRESETS:
@@ -1195,6 +1221,11 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
         if name in enabled_extras:
             settings[key] = True
     settings.update(sharing_mode=mode, chat_language=language, conventions=conventions)
+    for key, value in (("model_switching_enabled", model_switching_enabled),
+                       ("instruction_profile", instruction_profile)):
+        if value is not None:
+            settings[key] = value
+    settings.update(instruction_settings(settings))
     if docker_cleanup is not None:
         settings["docker_cleanup"] = docker_cleanup
     validate_settings(settings)
@@ -1228,6 +1259,9 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             continue
         incoming[relative] = src.read_bytes()
     incoming.update(upstream_files)
+    if settings["instruction_profile"] == "minimal":
+        incoming["AGENTS.md"] = re.sub(rb"<!-- full-only -->.*?<!-- /full-only -->\r?\n",
+                                        b"", incoming["AGENTS.md"], flags=re.DOTALL)
     if "uuid" in enabled_extras:
         incoming["AGENTS.md"] += b"\nFor identifier changes apply the enabled [UUID policy](ai-kit/UUID.md) across confirmed stacks.\n"
     if "claude-github" in enabled_extras and "claude" in agents:
@@ -1240,6 +1274,9 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
                 if is_link(source):
                     raise ValueError("Linked helper source")
                 text = source.read_text(encoding="utf-8")
+                if not settings["model_switching_enabled"]:
+                    text = "\n".join(line for line in text.splitlines()
+                                     if not line.startswith(("model =", "model_reasoning_effort ="))) + "\n"
                 for role in ("cheap", "work"):
                     spec = catalogue["roles"][role]
                     for field in ("model", "effort"):
@@ -1504,7 +1541,8 @@ def build_plan(target: Path, *, root: Path = ROOT, mode: str | None = None,
             "adapter_conflicts": sorted(retirements), "preserved": preserved,
             "detected_profiles": detected, "detected_agents": detected_agents,
             "suggested_agents": suggested_agents, "extras": sorted(enabled_extras), "preset": preset,
-            "warnings": warnings, "downgrade_from": downgrade_from, "allow_downgrade": allow_downgrade}
+            "warnings": warnings, "downgrade_from": downgrade_from, "allow_downgrade": allow_downgrade,
+            "instruction_settings": instruction_settings(settings)}
 
 
 def atomic_write(path: Path, data: bytes) -> None:
@@ -1643,6 +1681,10 @@ def build_parser(root: Path = ROOT) -> argparse.ArgumentParser:
     group.add_argument("--dry-run", action="store_true", help="Explicitly request the read-only preview (the default)")
     parser.add_argument("--mode", choices=["private", "team"],
                         help="Git visibility of AI-KIT files: private keeps them local, team shares instructions")
+    parser.add_argument("--model-switching-enabled", choices=["true", "false"],
+                        help="Enable/disable AI-KIT model recommendations and generated helper overrides; no host lock")
+    parser.add_argument("--instruction-profile", choices=["full", "minimal"],
+                        help="Select full guidance or task-relevant mandatory instructions; safety remains required")
     parser.add_argument("--chat-language",
                         help="Language for chat replies and plans; project files stay English")
     parser.add_argument("--conventions", choices=["owner", "standard"],
@@ -1768,9 +1810,13 @@ def main(argv: list[str] | None = None) -> int:
         plan = build_plan(args.target, mode=mode, language=language,
                           conventions=conventions, agents=agents, accept_local=args.accept_local,
                           extras=extras, preset=preset, docker_cleanup=args.docker_cleanup,
-                          allow_downgrade=args.allow_downgrade)
+                          allow_downgrade=args.allow_downgrade,
+                          model_switching_enabled=(None if args.model_switching_enabled is None else
+                                                   args.model_switching_enabled == "true"),
+                          instruction_profile=args.instruction_profile)
         print(json.dumps({"target": str(plan["target"]), "version": plan["version"], "mode": plan["mode"],
                           "preset": plan["preset"],
+                          "instruction_settings": plan["instruction_settings"],
                           "preview": not args.apply, "writes": sorted(plan["actions"]),
                           "conflicts": sorted(plan["conflicts"]), "preserved": sorted(plan["preserved"]),
                           "candidates": plan["candidates"], "adapter_conflicts": plan["adapter_conflicts"],

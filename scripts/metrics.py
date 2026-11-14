@@ -331,6 +331,8 @@ def main(argv: list[str] | None = None) -> int:
             elif args.command == "restore":
                 result = learning.restore_selection(args.project, args.proposal, apply=args.apply)
             else:
+                if not install.load_instruction_settings(args.project)["model_switching_enabled"]:
+                    raise ValueError("AI-KIT model recommendations are disabled; no routing proposal generated")
                 proposal = {"stack": args.stack, "task_class": args.task_class, "level": args.level,
                             "capabilities": args.capability, "minimum": args.minimum,
                             "quality_floor": args.quality_floor,
