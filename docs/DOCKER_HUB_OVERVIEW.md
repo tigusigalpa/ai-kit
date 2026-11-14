@@ -6,7 +6,7 @@ AI-KIT installs portable project instructions, stack profiles, client configurat
 
 The Docker image packages the installer and CLI helpers with Python, Git, templates and integration resources. You can use AI-KIT without installing Python on your host.
 
-**Release image:** `tigusigalpa/ai-kit:1.9.0` (publication in progress; see the release record).
+**Release image:** `tigusigalpa/ai-kit:1.9.0` (published and verified).
 
 **New in v1.9.0:** model-family/exact-ID exceptions, quick persistent preservation and invocation-only routing guards. Keep the chosen model and reasoning effort, including helper inheritance, without globally disabling all recommendations. [Release and publication status](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md).
 
@@ -14,7 +14,7 @@ The Docker image packages the installer and CLI helpers with Python, Git, templa
 
 **Source:** [github.com/tigusigalpa/ai-kit](https://github.com/tigusigalpa/ai-kit)
 
-**Python package:** `ai-kit-python 1.9.0` is prepared through GitHub Release checks and owner approval. Confirm availability in the [package publication record](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md#pypi-publication-status).
+**Python package:** [ai-kit-python 1.9.0](https://pypi.org/project/ai-kit-python/1.9.0/) is published after owner approval; public hashes and a fresh installation passed. [Package verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md#pypi-publication-status).
 
 ## What AI-KIT provides
 
@@ -49,7 +49,13 @@ AI-KIT installs instructions and supporting tools. Your coding client performs t
 
 ## Image verification
 
-Build, runtime checks, package equality and registry verification are in progress. [Release verification and eventual immutable digest](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md#docker-hub-publication).
+Verified on 2026-11-14: 514 packaged Linux tests (three platform/distribution skips), offline/read-only CLI smoke with a Windows project mount, all modules/new exception commands, preservation/reruns, build-context privacy and SIGTERM with/without init. All 336 packaged files match the tagged LF source and validated hosted wheel. Anonymous registry configuration/layers and immutable-pull checks passed; earlier tags remain unchanged and no latest tag is assigned. [Release verification](https://github.com/tigusigalpa/ai-kit/blob/main/docs/V1_9_0.md#docker-hub-publication).
+
+Immutable pull:
+
+```sh
+docker pull tigusigalpa/ai-kit@sha256:1fac612c046d3b1e7bbb4134263ac7257639fc847aecc2517275a5c8c6d08269
+```
 
 These are instruction/configuration controls, not a platform model lock. Native/global defaults, already loaded sessions and actual model availability remain the host's responsibility. Live client/model/scanner execution and performance trials are separate.
 
